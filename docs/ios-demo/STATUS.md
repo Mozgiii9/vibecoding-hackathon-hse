@@ -1,12 +1,13 @@
 # Статус iOS demo «Рядом»
 
-Обновлено: 25 октября 2026, 14:32 МСК. Состояние: **BLOCKED для сквозной приёмки; исходники и unsigned device build готовы**. Подписанная установка в процессе через Xcode. Цель не принята.
+Обновлено: 25 октября 2026, 14:38 МСК. Состояние: **BLOCKED для сквозной приёмки; оболочка установлена и запущена на физическом iPhone**. Пользователь подтвердил открытие с иконки и экран «Не удалось загрузить». Настоящий web UI недоступен. Полная цель не принята.
 
 ## Версия и границы
 
 - Ветка: `codex/ios-demo`; отдельный worktree `.worktrees/ios-demo` внутри исходного workspace.
 - Base SHA: `484c396e71b3fbfe2ff65c04f6260e1899aa6bd1`, актуальный `origin/codex/integration-ui` при старте.
 - Ready source SHA: `a2fabcf4a534dd9a9f03bd92bd8d57bcb99014df`. Это SHA оболочки, а не принятый интегрированный MVP.
+- Первые исходники и инструкции опубликованы: `a2fabcf` и `9542e0f` в `origin/codex/ios-demo`; последующие изменения статуса не меняют native исходники.
 - Изменяемые пути: только `clients/ios-demo/**` и `docs/ios-demo/**`.
 - Общий checkout с незакоммиченными изменениями команды не переключался; frontend, gateway, contracts и manifests не менялись. Серверные процессы не менялись. Внешних сообщений не отправляли.
 
@@ -21,20 +22,27 @@
 | Device build, arm64, без подписи | PASS | `xcodebuild ... -destination 'generic/platform=iOS' CODE_SIGNING_ALLOWED=NO build` → BUILD SUCCEEDED |
 | Сборка внутри sandbox | FAIL окружения | SwiftUI macro plugin блокируется sandbox-exec; та же сборка вне sandbox проходит |
 | Настройка Personal Team/profile | PASS | Через Computer Use выбрана личная команда, Xcode показал Managed Profile и Apple Development certificate; ID команды только в ignored Local.xcconfig |
-| Установка и запуск с иконки | NOT_RUN | Xcode готовит Air, копирует OS library symbols; успешная установка ещё не подтверждена |
+| Подписанная установка на iPhone | PASS | CoreDevice apps показывает «Рядом», `ru.mozgiii9.ryadom.iosdemo`, версия 1.0 / build 1 |
+| Запуск через Xcode | PASS | После доверия Developer App на телефоне Xcode показал Running RyadomDemo on iPhone; работает WebContent process |
+| Запуск с иконки / экран ошибки | PASS | Пользователь открыл приложение с домашнего экрана и сообщил: «Постоянно пишет “Не удалось загрузить”» |
 | HTTPS на указанном IP | FAIL | HTTP 80: empty reply; HTTPS 443: SSL_ERROR_SYSCALL с Mac; это не диагностика listener на сервере |
-| Нативная/веб-приёмка 1–8 | NOT_RUN | Нужны HTTPS UI/backend и подписанная установка на физическом iPhone |
+| Подключение с физического iPhone | FAIL | Xcode WebKit console: NSURLErrorDomain -1004 (cannot connect to host); пользователь видит экран сетевой ошибки |
+| Пункт 1 физической приёмки | PASS | Запуск с иконки состоялся; загрузка настоящего UI отдельно FAIL |
+| Пункты 2–7 физической приёмки | NOT_RUN | Нужен доступный HTTPS UI/backend; обычный вход, модель, цитаты, прогресс и сессия не проверены |
 | Аудио через реальный STT | NOT_RUN | Общий STT и file upload на iPhone не проверены; запись с микрофона в текущем web UI отсутствует |
 | HTTPS/Nginx шаблон | NOT_RUN | Только предложение интегратору; не применялось, server nginx -t не выполнялся |
+| SSH read-only preflight | FAIL | BatchMode со штатными ключами → Permission denied (publickey,password); серверные команды не выполнились, доступ не менялся |
 
 Unsigned build находится локально в ignored `clients/ios-demo/build/DerivedData/Build/Products/Debug-iphoneos/RyadomDemo.app`; он не является устанавливаемым пакетом. Единственное предупреждение успешной сборки: пропуск AppIntents metadata, поскольку AppIntents не используется.
 
 ## Зависимости и передача владельцу / интегратору
 
-1. Xcode: завершить первичную подготовку Air и установить подписанное приложение. Personal Team/profile и Developer Mode уже настроены. При запросе Keychain/Apple Account подтверждает пользователь; секреты в чат не нужны.
+1. Установка завершена: Personal Team/profile, Developer Mode и доверие Developer App настроены. После успешного запуска через Xcode отладчик остановлен; пользователь открыл приложение с иконки. Пароли/коды Apple не запрашивались и не вводились агентом.
 2. Интегратор C: подтвердить реальные UI/gateway порты и опубликовать единый доверенный HTTPS origin на `77.239.111.64`; предложенный путь [HTTPS_IP.md](HTTPS_IP.md). Порты `17073/18789` пока только из плана резервирования, не подтверждённый deployment.
 3. Интегратор: подтвердить SHA реально обслуживаемого web/backend и готовность STT; обычный auth, `/api` rewrite, cookies, mobile viewport/keyboard, file MIME M4A проверяются на кандидате. При необходимости правки общих файлов делает их владелец.
-4. Пользователь и iOS: подписать/установить через Xcode, пройти восемь физических проверок [DEMO.md](DEMO.md). При блокировке использовать честно обозначенный Safari fallback; он не закрывает нативную приёмку.
+4. После HTTPS: пройти оставшиеся физические проверки [DEMO.md](DEMO.md) на той же установленной оболочке. Веб-версия Safari сейчас тоже зависит от готовности HTTPS; резерв не закрывает нативную приёмку. При изменении URL потребуется пересборка, при сохранении IP `/` — достаточно повторной загрузки.
+
+Точная передача интегратору: получить `docs/ios-demo/HTTPS_IP.md` и шаблон из `codex/ios-demo`; проверить listeners/реальные порты, выпустить IP SAN certificate и опубликовать UI + `/api` под `https://77.239.111.64/`. Нужен владелец с серверным доступом: в этом чате SSH-ключ не принят. По исходным границам общие настройки и перезапуски принадлежат интегратору; пароль в Git/чат не нужен. После готовности передать endpoint, web/backend SHA и STT status владельцу iOS. В другие чаты сообщения не отправлялись.
 
 ## Реализация и ограничения
 
