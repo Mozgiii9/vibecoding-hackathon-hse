@@ -1,13 +1,13 @@
 # Лендинг «Рядом»: передача
 
-Дата: 25 октября 2026, МСК. Ветка: `codex/landing`. Worktree: `.worktrees/landing`. Base SHA: `ef360ae0627e35ddfe615143b5409690ac222ed8`, актуальный `origin/codex/integration-ui` на старте в 14:35. SHA поставки: первый коммит с сообщением `Add standalone Ryadom landing and verified demo`; точный SHA фиксируется следующей записью после коммита, без самоссылки на ещё не существующий hash.
+Дата: 25 октября 2026, МСК. Ветка: `codex/landing`. Worktree: `.worktrees/landing`. Base SHA: `ef360ae0627e35ddfe615143b5409690ac222ed8`, актуальный `origin/codex/integration-ui` на старте в 14:35. Первый проверенный срез опубликован в 14:49 МСК: `86340cd753f9aa41f1d610e5431df092ae359402` (`Add standalone Ryadom landing and verified demo`).
 
 ## Результат первого среза
 
 - Отдельный buildless HTML/CSS/JS сайт, без новых зависимостей и backend.
 - Тёплая тёмная палитра текущего интерфейса, нативная иллюстрация с явной подписью synthetic.
 - Детерминированная демонстрация: намерение 0 → действие proposed 0 → confirm 1 → duplicate 1 → reject 0, reset, три критерия. Модель не вызывается.
-- Публичный config `landing/config.js`. Без подтверждённого URL CTA показывает «Ссылка на демо готовится». Локальные и URL с credentials/query не активируются; разрешён только публичный HTTPS DNS/IPv4.
+- Публичный config `landing/config.js`. Без подтверждённого URL CTA показывает «Ссылка на демо готовится». Локальные и URL с credentials/query не активируются; разрешён только публичный HTTP(S) DNS/IPv4.
 - Title/description, SVG favicon, готовая PNG Open Graph 1200×630 и редактируемый SVG-исходник.
 - Документация запуска/публикации, отдельный allowlist static server и шаблон собственного systemd service.
 - Атрибуция BrainDrive MIT; цитата не выдаётся за независимую проверку истинности.
