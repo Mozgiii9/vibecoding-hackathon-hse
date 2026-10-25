@@ -1,0 +1,122 @@
+{
+  "status": "PASS",
+  "deployment": {
+    "sourceSha": "93f2ab69ccf5caf7d7599f3266f0aac2d22055c2",
+    "previousSha": "15ab6ebee73ab19c1727dd999db0a3f6f979e185",
+    "phase": "DEPLOYED",
+    "startedAt": 1792937240.70966,
+    "domainStateSha256": "44b2708a5cea697af8bf9a059daba2b6a648a79d90d2a8d0cc695810edd77b7e",
+    "backupFiles": 50,
+    "chatHistoryFiles": 1,
+    "chatHistoryInventorySha256": "baed30b708ac559a129d23ed9b45885801a78df3f59dd0b0a378da2c27045d11",
+    "memoryPreserved": true,
+    "backup": "/srv/ryadom-hackathon/integration/backups/before-home-93f2ab6",
+    "activeInstance": "/srv/ryadom-hackathon/integration/instances/home-93f2ab6",
+    "supervisorPid": 89713,
+    "finishedAt": 1792937248.4881616
+  },
+  "publicHomepage": {
+    "status": "PASS",
+    "origin": "https://77.239.111.64",
+    "mode": "anonymous public homepage, no data writes",
+    "startedAt": "2026-10-25T14:07:46.931Z",
+    "checks": [
+      {
+        "name": "anonymous root explains all three directions without private API",
+        "status": "PASS"
+      },
+      {
+        "name": "local intention-action confirm-undo demo makes zero API requests",
+        "status": "PASS"
+      },
+      {
+        "name": "FAQ opens with keyboard and explains grounding",
+        "status": "PASS"
+      },
+      {
+        "name": "320/375/768/1440 layouts, touch targets and reduced motion",
+        "status": "PASS"
+      },
+      {
+        "name": "in-page navigation reaches explanation",
+        "status": "PASS"
+      },
+      {
+        "name": "public login CTA reaches ordinary account login",
+        "status": "PASS"
+      },
+      {
+        "name": "no import, model or unrestricted agent request",
+        "status": "PASS"
+      }
+    ],
+    "apiRequests": [
+      {
+        "method": "GET",
+        "path": "/api/config"
+      },
+      {
+        "method": "GET",
+        "path": "/api/auth/bootstrap-status"
+      },
+      {
+        "method": "POST",
+        "path": "/api/auth/refresh"
+      }
+    ],
+    "finishedAt": "2026-10-25T14:07:51.296Z"
+  },
+  "protectedWorkspace": {
+    "status": "PASS",
+    "kind": "read-only public resume; no chat/import/provider writes",
+    "sourceSha": "93f2ab69ccf5caf7d7599f3266f0aac2d22055c2",
+    "checks": [
+      {
+        "name": "public /chat reload restores all four messages",
+        "status": "PASS"
+      },
+      {
+        "name": "no BrainDrive shell",
+        "status": "PASS"
+      },
+      {
+        "name": "existing goal progress and evidence preserved exactly",
+        "status": "PASS"
+      },
+      {
+        "name": "375px mobile composer fits",
+        "status": "PASS"
+      },
+      {
+        "name": "read-only verification: zero chat or general-agent writes",
+        "status": "PASS"
+      }
+    ],
+    "domainSnapshotSha256": "528413ed153c8009cb912d60cc26df87546b7b253303f3a757a8d61250a373b6",
+    "messageCount": 4,
+    "finishedAt": "2026-10-25T14:07:53.417Z"
+  },
+  "frontendSecretScan": {
+    "changedFiles": 19,
+    "builtAssets": 13,
+    "actualPrivateModelKeyMatches": 0
+  },
+  "publicScreenshots": {
+    "home-1440.png": {
+      "path": "/private/tmp/ryadom-home-public/home-1440.png",
+      "sha256": "31685714f670dc4da5c83d485ffb9b1e8a00e8142dc0d039f5a1a4221d640f97"
+    },
+    "home-375.png": {
+      "path": "/private/tmp/ryadom-home-public/home-375.png",
+      "sha256": "791b8d61d1a6fc5b4129ab156da911b2d37df5e7a300879714449e88339bc6df"
+    },
+    "home-320.png": {
+      "path": "/private/tmp/ryadom-home-public/home-320.png",
+      "sha256": "f25783f7105eed3aa2739171d96c9095cee9fc724a7c90cbd27f0c916e890203"
+    }
+  },
+  "limitations": [
+    "Chrome desktop with mobile viewport emulation; physical iPhone not retested.",
+    "Documentation commits after this release do not alter the immutable deployed app SHA."
+  ]
+}

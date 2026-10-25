@@ -1,5 +1,7 @@
 # Машина показа «Рядом»
 
+**Актуально, 25 октября 17:07 МСК:** публичная главная и приложение работают на source `93f2ab69ccf5caf7d7599f3266f0aac2d22055c2` из `main`. Актуальные release/instance/env и команды — в [описании главной, публичное развёртывание](../features/HOME_PAGE.md#публичное-развёртывание). Аккаунт, цель, прогресс и история чата сохранены. Обновления и пути ниже — архив предыдущих выпусков.
+
 **Обновление 25 октября, 16:50 МСК:** на публичном HTTPS развёрнут чат из `main`, source SHA `15ab6ebee73ab19c1727dd999db0a3f6f979e185`. Актуальные release/instance/env и команды запуска — в [публичном выпуске чата](../features/CONTEXT_CHAT_DEPLOYMENT.md). Данные и аккаунт сохранены. Ниже — архив предыдущего кандидата `eba453c`; его пути запуска не использовать для текущего instance.
 
 Рабочий source-кандидат: **eba453caec424c47a31c8f8947a83ed9389dc8a3**. Backend/MCP/frontend собраны на Linux/x64, Node22.21.1 из Git-архива этого SHA. [Manifest](evidence/c-production/build-manifest.json), [проверки C](evidence/c-production/summary.json), [восстановление](evidence/c-production/restore-proof.json). Более свежие Git-коммиты могут содержать только отчёты и материалы; фактический deployment SHA всегда проверять через `/release.json`.

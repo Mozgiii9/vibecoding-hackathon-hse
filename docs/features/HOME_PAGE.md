@@ -1,5 +1,7 @@
 # Главная страница «Рядом»
 
+**Публично развёрнута 25 октября 2026, 17:07 МСК:** https://77.239.111.64/. Source SHA `93f2ab69ccf5caf7d7599f3266f0aac2d22055c2` подтверждён через публичный HTTPS `/release.json`.
+
 Публичный маршрут `/` показывает возможности сервиса до входа. Три основных направления заданы владельцем: проверка пути к целям; развитие навыков по накопленному контексту; помощь в принятии решений с учётом прошлых ошибок.
 
 Главная показывает конкретные примеры для каждого направления, четыре шага работы, интерактивную разницу между намерением и выполненным действием, источники/аудиорасшифровки, чат и FAQ. Визуальная система сохранена: тёплая тёмная палитра, абрикос и шалфей, системный шрифт, Lucide. Новых зависимостей, внешних скриптов и изображений нет.
@@ -37,3 +39,29 @@ HOME_CHECK_OUTPUT=/private/tmp/ryadom-home-check node scripts/home/check-browser
 HOME_CHECK_URL=https://77.239.111.64/ \
 HOME_CHECK_OUTPUT=/private/tmp/ryadom-home-public node scripts/home/check-browser.mjs
 ```
+
+## Публичное развёртывание
+
+Linux/x64 Node22.21.1: npm ci, backend/MCP/frontend build и frontend typecheck прошли под shared heavy.lock. Исходники экспортированы из точного Git SHA в новый immutable release. Перед переключением проверены release, PID, instance, private env и порты прежнего supervisor.
+
+Аккаунт и настройки сохранены. После остановки сделан согласованный backup50файлов, включая историю чата; manifest/checksums проверены при восстановлении. SHA256 domain state до/после совпал. Старый instance и релиз сохранены. STT, TLS proxy и соседние приложения не перезапускались.
+
+Пути относительно `/srv/ryadom-hackathon/integration`:
+
+- release: `releases/home-93f2ab6`;
+- instance: `instances/home-93f2ab6`;
+- private env: `private-home-93f2ab6.env`, mode600;
+- backup: `backups/before-home-93f2ab6`;
+- предыдущие release/instance/env: `releases/context-chat-15ab6eb`, `instances/context-chat-15ab6eb`, `private-context-chat-15ab6eb.env`.
+
+Текущий PID читать из `instances/home-93f2ab6/runtime.json`. UI17073/gateway18789/MCP18931–18933 остаются на loopback; HTTPS443 обслуживает прежний proxy. Для отката после новых записей сначала сохранить актуальную память, не подменять её архивной копией.
+
+```sh
+# Read-only smoke работающего релиза:
+./tools/node-v22.21.1-linux-x64/bin/node releases/home-93f2ab6/scripts/release/smoke-hackathon.mjs private-home-93f2ab6.env 93f2ab69ccf5caf7d7599f3266f0aac2d22055c2
+
+# Запуск только остановленного instance, после проверки свободных собственных портов:
+./tools/node-v22.21.1-linux-x64/bin/node releases/home-93f2ab6/scripts/release/launch-source.mjs private-home-93f2ab6.env /srv/ryadom-hackathon/integration/releases/home-93f2ab6 /srv/ryadom-hackathon/integration/instances/home-93f2ab6
+```
+
+Публичная браузерная приёмка: 7/7 PASS (главная/три направления/пример без API/FAQ/320–1440px/reduced motion/вход). Отдельный read-only проход защищённого пространства: 5/5 PASS, обычный login→`/app`, четыре прежних сообщения после reload `/chat`, точное совпадение цели/progress/evidence и composer375px. Импорта и новых запросов к модели не было. [Evidence публичного выпуска](home-page-public-deployment.json).
