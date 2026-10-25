@@ -107,7 +107,7 @@ export default function AuthFlow({ mode, onAuthenticated }: AuthFlowProps) {
 
     if (wantsSignup && isInitialized) {
       setError("Аккаунт уже создан. Войдите с вашим именем и паролем.");
-      navigate("/", { replace: true });
+      navigate("/login", { replace: true });
     }
 
     if (screen !== "forgot-password") {
@@ -141,7 +141,7 @@ export default function AuthFlow({ mode, onAuthenticated }: AuthFlowProps) {
       if (message.toLowerCase().includes("already initialized")) {
         setAccountInitialized(true);
         setScreen("login");
-        navigate("/", { replace: true });
+        navigate("/login", { replace: true });
       }
     } finally {
       setIsSubmitting(false);
@@ -186,7 +186,7 @@ export default function AuthFlow({ mode, onAuthenticated }: AuthFlowProps) {
           onNavigateToForgotPassword={() => {
             setError(null);
             setScreen("forgot-password");
-            navigate("/");
+            navigate("/login");
           }}
         />
       );
@@ -204,7 +204,7 @@ export default function AuthFlow({ mode, onAuthenticated }: AuthFlowProps) {
           onNavigateToLogin={() => {
             setError(null);
             setScreen("login");
-            navigate("/");
+            navigate("/login");
           }}
         />
       );
@@ -215,7 +215,7 @@ export default function AuthFlow({ mode, onAuthenticated }: AuthFlowProps) {
           onNavigateToLogin={() => {
             setError(null);
             setScreen("login");
-            navigate("/");
+            navigate("/login");
           }}
         />
       );

@@ -1,0 +1,252 @@
+{
+  "status": "PASS",
+  "frontendTests": {
+    "passed": 252,
+    "files": 23
+  },
+  "frontendTypecheck": "PASS",
+  "productionBuild": "PASS",
+  "independentReview": "NO_BLOCKING after auth route fix and conditional audio-timecode wording",
+  "reports": {
+    "isolatedIntegration": {
+      "status": "PASS",
+      "origin": "http://127.0.0.1:5130",
+      "mode": "isolated synthetic signup, no model requests",
+      "startedAt": "2026-10-25T14:01:39.322Z",
+      "checks": [
+        {
+          "name": "anonymous root explains all three directions without private API",
+          "status": "PASS"
+        },
+        {
+          "name": "local intention-action confirm-undo demo makes zero API requests",
+          "status": "PASS"
+        },
+        {
+          "name": "FAQ opens with keyboard and explains grounding",
+          "status": "PASS"
+        },
+        {
+          "name": "320/375/768/1440 layouts, touch targets and reduced motion",
+          "status": "PASS"
+        },
+        {
+          "name": "in-page navigation reaches explanation",
+          "status": "PASS"
+        },
+        {
+          "name": "homepage CTA opens protected signup/workspace",
+          "status": "PASS"
+        },
+        {
+          "name": "goal/chat round trip retains draft and stays in protected workspace",
+          "status": "PASS"
+        },
+        {
+          "name": "logout clears draft; recovery and ordinary login still work",
+          "status": "PASS"
+        },
+        {
+          "name": "no import, model or unrestricted agent request",
+          "status": "PASS"
+        }
+      ],
+      "apiRequests": [
+        {
+          "method": "GET",
+          "path": "/api/config"
+        },
+        {
+          "method": "GET",
+          "path": "/api/config"
+        },
+        {
+          "method": "GET",
+          "path": "/api/auth/bootstrap-status"
+        },
+        {
+          "method": "GET",
+          "path": "/api/auth/bootstrap-status"
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/signup"
+        },
+        {
+          "method": "GET",
+          "path": "/api/goals/demo"
+        },
+        {
+          "method": "PUT",
+          "path": "/api/goals/demo"
+        },
+        {
+          "method": "GET",
+          "path": "/api/goals/demo"
+        },
+        {
+          "method": "GET",
+          "path": "/api/goals/demo/evidence"
+        },
+        {
+          "method": "GET",
+          "path": "/api/goals/demo/progress"
+        },
+        {
+          "method": "GET",
+          "path": "/api/goals/demo/chat"
+        },
+        {
+          "method": "GET",
+          "path": "/api/goals/demo"
+        },
+        {
+          "method": "GET",
+          "path": "/api/goals/demo/evidence"
+        },
+        {
+          "method": "GET",
+          "path": "/api/goals/demo/progress"
+        },
+        {
+          "method": "GET",
+          "path": "/api/goals/demo/chat"
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/logout"
+        },
+        {
+          "method": "GET",
+          "path": "/api/auth/bootstrap-status"
+        },
+        {
+          "method": "GET",
+          "path": "/api/auth/bootstrap-status"
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/refresh"
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/login"
+        },
+        {
+          "method": "GET",
+          "path": "/api/goals/demo"
+        },
+        {
+          "method": "GET",
+          "path": "/api/goals/demo/evidence"
+        },
+        {
+          "method": "GET",
+          "path": "/api/goals/demo/progress"
+        },
+        {
+          "method": "GET",
+          "path": "/api/goals/demo/chat"
+        }
+      ],
+      "finishedAt": "2026-10-25T14:01:42.616Z"
+    },
+    "finalAnonymousLayout": {
+      "status": "PASS",
+      "origin": "http://127.0.0.1:5130",
+      "mode": "anonymous public homepage, no data writes",
+      "startedAt": "2026-10-25T14:03:40.626Z",
+      "checks": [
+        {
+          "name": "anonymous root explains all three directions without private API",
+          "status": "PASS"
+        },
+        {
+          "name": "local intention-action confirm-undo demo makes zero API requests",
+          "status": "PASS"
+        },
+        {
+          "name": "FAQ opens with keyboard and explains grounding",
+          "status": "PASS"
+        },
+        {
+          "name": "320/375/768/1440 layouts, touch targets and reduced motion",
+          "status": "PASS"
+        },
+        {
+          "name": "in-page navigation reaches explanation",
+          "status": "PASS"
+        },
+        {
+          "name": "public login CTA reaches ordinary account login",
+          "status": "PASS"
+        },
+        {
+          "name": "no import, model or unrestricted agent request",
+          "status": "PASS"
+        }
+      ],
+      "apiRequests": [
+        {
+          "method": "GET",
+          "path": "/api/config"
+        },
+        {
+          "method": "GET",
+          "path": "/api/config"
+        },
+        {
+          "method": "GET",
+          "path": "/api/auth/bootstrap-status"
+        },
+        {
+          "method": "GET",
+          "path": "/api/auth/bootstrap-status"
+        },
+        {
+          "method": "POST",
+          "path": "/api/auth/refresh"
+        }
+      ],
+      "finishedAt": "2026-10-25T14:03:42.707Z"
+    },
+    "finalMobile": {
+      "result": "PASS",
+      "geometry": {
+        "width": 375,
+        "scrollWidth": 375,
+        "fonts": {
+          ".rh-lead": "16px",
+          ".rh-usecase > p": "16px",
+          ".rh-usecase-example blockquote": "16px",
+          ".rh-steps p": "16px",
+          ".rh-feature p": "16px",
+          ".rh-chat-grid > div:first-child > p": "16px",
+          ".rh-faq summary": "16px",
+          ".rh-faq details p": "16px"
+        }
+      },
+      "api": [],
+      "captures": [
+        "/private/tmp/ryadom-home-agent/mobile375-final-hero.png",
+        "/private/tmp/ryadom-home-agent/mobile375-final-directions.png",
+        "/private/tmp/ryadom-home-agent/mobile375-final-example.png",
+        "/private/tmp/ryadom-home-agent/mobile375-final-faq.png"
+      ],
+      "sourceSHA256": {
+        "HomePage.tsx": "3c150f0f4bcb4ddd8208df74dc6f5688ee9e5273c92368204b30b0db1fcf5d0a",
+        "home.css": "bcddacb4ffc66cb3209fac0a3b0be0ea6e9d284dcf9f10d04e89cd01f62c5119",
+        "HomePage.test.tsx": "b6212b240a83def790d3464aeff51874aaf52f58e6c1d67dfc14564bd492bcf9"
+      },
+      "earlierFourViewportReport": "/private/tmp/ryadom-home-agent/results.json"
+    }
+  },
+  "sourceFingerprints": {
+    "app/builds/typescript/client_web/src/App.tsx": "fcc416e4f4928191010c3bb11253aa035d20298d7a5bef64f5f4f46662e7583d",
+    "app/builds/typescript/client_web/src/components/auth/AuthFlow.tsx": "e5e2685f3f8bc3ef3763c26d09e8d509e0d5d85a1ef6d3e58aa8248a38f19d5b",
+    "app/builds/typescript/client_web/src/features/home/HomePage.test.tsx": "b6212b240a83def790d3464aeff51874aaf52f58e6c1d67dfc14564bd492bcf9",
+    "app/builds/typescript/client_web/src/features/home/HomePage.tsx": "3c150f0f4bcb4ddd8208df74dc6f5688ee9e5273c92368204b30b0db1fcf5d0a",
+    "app/builds/typescript/client_web/src/features/home/home.css": "bcddacb4ffc66cb3209fac0a3b0be0ea6e9d284dcf9f10d04e89cd01f62c5119"
+  },
+  "firstHarnessFailure": "/private/tmp/ryadom-home-local/results.json; startup splash second h1; before signup, fixed only runner wait"
+}

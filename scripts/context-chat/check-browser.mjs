@@ -45,7 +45,7 @@ try {
     return result;
   };
   stage = 'ordinary-signup';
-  await page.goto(target.origin);
+  await page.goto(`${target.origin}/app`);
   await expect(page.locator('#username')).toBeVisible();
   await page.locator('#username').fill('context-chat-synthetic');
   await page.locator('#new-password').fill('Synthetic-Context-Chat-2026!');

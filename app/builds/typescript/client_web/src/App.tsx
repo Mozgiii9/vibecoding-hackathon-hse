@@ -7,6 +7,7 @@ import AuthFlow from "@/components/auth/AuthFlow";
 import GoalsPage from "@/features/goals/GoalsPage";
 import ContextChatPage from "@/features/context-chat/ContextChatPage";
 import { emptyChatDraft } from "@/features/context-chat/useContextChat";
+import HomePage from "@/features/home/HomePage";
 
 const GoalDesignPreview = import.meta.env.DEV
   ? lazy(() => import("@/features/goals/GoalDesignPreview"))
@@ -15,9 +16,11 @@ const GoalDesignPreview = import.meta.env.DEV
 type AppScreen = "loading" | "auth" | "main";
 
 export default function App() {
+  const location = useLocation();
   if (GoalDesignPreview && new URLSearchParams(window.location.search).get("preview") === "goals") {
     return <Suspense fallback={<p>Готовим демо-макет…</p>}><GoalDesignPreview /></Suspense>;
   }
+  if (location.pathname === "/") return <HomePage />;
   return <AuthenticatedApp />;
 }
 
@@ -63,6 +66,9 @@ function AuthenticatedApp() {
       <AuthFlow mode={deploymentMode} onAuthenticated={() => {
         setChatDraft(emptyChatDraft());
         setScreen("main");
+        if (location.pathname === "/login" || location.pathname === "/signup") {
+          navigate("/app", { replace: true });
+        }
       }} />
     );
   }
@@ -76,7 +82,7 @@ function AuthenticatedApp() {
       if (deploymentMode === "managed") {
         window.location.href = "/api/gateway/auth/logout";
       } else {
-        navigate("/", { replace: true });
+        navigate("/login", { replace: true });
         setScreen("auth");
       }
     });
@@ -86,5 +92,5 @@ function AuthenticatedApp() {
     return <GoalsPage onLogout={handleLogout} onOpenAssistant={() => navigate("/chat")} />;
   }
 
-  return <ContextChatPage goalId="demo" draft={chatDraft} onDraftChange={setChatDraft} onBack={() => navigate("/")} onLogout={handleLogout} />;
+  return <ContextChatPage goalId="demo" draft={chatDraft} onDraftChange={setChatDraft} onBack={() => navigate("/app")} onLogout={handleLogout} />;
 }

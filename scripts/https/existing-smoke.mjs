@@ -117,7 +117,7 @@ try {
       return reply.body;
     };
     stage = 'ordinary-login';
-    await page.goto(target.origin, { waitUntil: 'domcontentloaded' });
+    await page.goto(`${target.origin}/app`, { waitUntil: 'domcontentloaded' });
     requireCondition(new URL(page.url()).origin === target.origin, 'CROSS_ORIGIN_LOGIN_FORBIDDEN');
     await page.locator('#identifier').fill(username);
     await page.locator('#password[type="password"]').fill(password);

@@ -11,7 +11,7 @@ test(`${mode.toUpperCase()} restart resume: ordinary login and identical persist
   const expected = JSON.parse(await readFile(process.env.RELEASE_STATE_FILE ?? `/private/tmp/ryadom-release-browser-state-${mode}.json`, "utf8"));
   const loaded = ["/goals/demo", "/goals/demo/evidence", "/goals/demo/progress"].map((suffix) =>
     page.waitForResponse((response) => response.url().endsWith(suffix) && response.request().method() === "GET" && response.ok()));
-  await page.goto("/");
+  await page.goto("/app");
   await expect(page.locator("#identifier")).toBeVisible();
   await expect(page.locator("#username")).toHaveCount(0);
   await page.locator("#identifier").fill(process.env.RELEASE_USERNAME ?? "release-synthetic-owner");

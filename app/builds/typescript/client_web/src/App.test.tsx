@@ -26,7 +26,7 @@ function renderApp() {
 
 describe("App", () => {
   beforeEach(() => {
-    window.history.replaceState({}, "", "/");
+    window.history.replaceState({}, "", "/app");
     restoreSessionOnLoad = false;
     __resetAuthAdapterForTests();
     vi.stubGlobal(
@@ -107,6 +107,55 @@ describe("App", () => {
     vi.restoreAllMocks();
   });
 
+  it("shows the public home without requesting private configuration or a session", async () => {
+    window.history.replaceState({}, "", "/");
+    renderApp();
+    expect(screen.getByRole("main")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Войти" })).toHaveAttribute("href", "/login");
+    expect(screen.queryByLabelText("Пароль")).not.toBeInTheDocument();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("opens the protected workspace from the public home", async () => {
+    restoreSessionOnLoad = true;
+    window.history.replaceState({}, "", "/");
+    const user = userEvent.setup();
+    renderApp();
+    const links = screen.getAllByRole("link").filter((link) => link.getAttribute("href") === "/app");
+    expect(links.length).toBeGreaterThan(0);
+    await user.click(links[0]);
+    expect(await screen.findByText("Goal workspace")).toBeInTheDocument();
+    expect(window.location.pathname).toBe("/app");
+  });
+
+  it("returns from the login route to the workspace after ordinary sign-in", async () => {
+    window.history.replaceState({}, "", "/login");
+    const user = userEvent.setup();
+    renderApp();
+    await user.type(await screen.findByLabelText("Имя пользователя"), "testuser");
+    await user.type(screen.getByLabelText("Пароль"), "password123");
+    await user.click(screen.getByRole("button", { name: "Войти" }));
+    expect(await screen.findByText("Goal workspace")).toBeInTheDocument();
+    expect(window.location.pathname).toBe("/app");
+  });
+
+  it("keeps password recovery inside auth routes after the public home is introduced", async () => {
+    const user = userEvent.setup();
+    renderApp();
+    await user.click(await screen.findByRole("button", { name: "Забыли пароль?" }));
+    expect(await screen.findByRole("heading", { name: "Восстановление доступа" })).toBeVisible();
+    expect(window.location.pathname).toBe("/login");
+    await user.click(screen.getByRole("button", { name: "Вернуться ко входу" }));
+    expect(await screen.findByLabelText("Имя пользователя")).toBeVisible();
+  });
+
+  it("redirects initialized signup to protected login rather than the public home", async () => {
+    window.history.replaceState({}, "", "/signup");
+    renderApp();
+    expect(await screen.findByLabelText("Имя пользователя")).toBeVisible();
+    expect(window.location.pathname).toBe("/login");
+  });
+
   it("shows login screen on first load", async () => {
     renderApp();
 
@@ -138,6 +187,7 @@ describe("App", () => {
     await waitFor(() => expect(field).toBeEnabled());
     await user.type(field, "Мой неотправленный вопрос");
     await user.click(screen.getByRole("button", { name: "К моей цели" }));
+    expect(window.location.pathname).toBe("/app");
     await user.click(screen.getByRole("button", { name: "Чат с агентом" }));
     expect(screen.getByRole("textbox")).toHaveValue("Мой неотправленный вопрос");
     expect(screen.queryByPlaceholderText("Message your BrainDrive...")).not.toBeInTheDocument();

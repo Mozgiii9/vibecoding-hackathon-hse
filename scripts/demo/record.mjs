@@ -137,7 +137,7 @@ async function record(config) {
     video = page.video();
     page.setDefaultTimeout(Math.min(config.timeout, 20000));
     stage = 'login';
-    await page.goto(config.url, { waitUntil: 'domcontentloaded' });
+    await page.goto(new URL("/app", config.url).href, { waitUntil: 'domcontentloaded' });
     requireCondition(new URL(page.url()).origin === config.origin, 'CROSS_ORIGIN_LOGIN_FORBIDDEN');
     await uniqueVisible(page.locator('#identifier'), 'LOGIN_IDENTIFIER_AMBIGUOUS');
     await uniqueVisible(page.locator('#password[type="password"]'), 'LOGIN_PASSWORD_AMBIGUOUS');

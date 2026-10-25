@@ -23,7 +23,7 @@ function recordMode(info: TestInfo) {
 }
 
 async function authenticate(page: Page, allowSignup = false) {
-  await page.goto("/");
+  await page.goto("/app");
   await expect(page.locator("#username, #identifier")).toBeVisible();
   if (await page.locator("#username").isVisible()) {
     expect(allowSignup, "Signup must only happen on the first clean-runtime scenario").toBe(true);

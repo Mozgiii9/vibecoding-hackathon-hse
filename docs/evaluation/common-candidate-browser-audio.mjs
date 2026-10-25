@@ -110,7 +110,7 @@ try {
   });
   stage = 'ordinary-ui-auth';
   const bootstrapReply = page.waitForResponse(responseIs('GET', '/api/auth/bootstrap-status'), { timeout });
-  await page.goto(target.origin, { waitUntil: 'domcontentloaded' });
+  await page.goto(`${target.origin}/app`, { waitUntil: 'domcontentloaded' });
   const bootstrap = await jsonResponse(await bootstrapReply);
   assert.equal(bootstrap.mode, 'local', 'Acceptance requires ordinary local signup/login, not local-owner or managed bypass.');
   if (loginOnly) {
