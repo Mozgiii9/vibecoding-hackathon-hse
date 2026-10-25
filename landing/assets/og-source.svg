@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+<rect width="1200" height="630" fill="#24211f"/>
+<g font-family="Arial, sans-serif">
+<rect x="66" y="55" width="44" height="44" rx="13" fill="#e5b68d"/>
+<path d="m79 85 19-18M84 67h14v14" fill="none" stroke="#2b2521" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+<text x="125" y="88" fill="#eee8de" font-size="38" font-weight="bold" letter-spacing="-2">рядом</text>
+<text x="66" y="167" fill="#bbb0a5" font-size="20">Личный второй мозг. У каждого шага есть основание.</text>
+<text x="62" y="257" fill="#eee8de" font-size="72" letter-spacing="-3">Замечайте,</text>
+<text x="62" y="337" fill="#eee8de" font-size="72" letter-spacing="-3">что приближает</text>
+<text x="62" y="417" fill="#e5b68d" font-size="72" letter-spacing="-3">вас к цели.</text>
+<rect x="762" y="210" width="370" height="190" rx="12" fill="#dcd3c4"/>
+<text x="791" y="253" fill="#574b40" font-size="16">Точная цитата из записи</text>
+<rect x="785" y="281" width="322" height="36" rx="3" fill="#d7b18a"/>
+<text x="792" y="307" fill="#302922" font-size="23">Сегодня отправил резюме</text>
+<text x="792" y="350" fill="#574b40" font-size="17">на ML-стажировку.</text>
+<circle cx="790" cy="450" r="16" fill="none" stroke="#bdc9a6" stroke-width="2"/>
+<path d="m782 450 6 6 11-13" fill="none" stroke="#bdc9a6" stroke-width="2"/>
+<text x="818" y="456" fill="#bdc9a6" font-size="20">Вы подтвердили. Шаг учтён.</text>
+<path d="M66 521H1134" stroke="#575047"/>
+<text x="66" y="566" fill="#bbb0a5" font-size="19">Запись → цитата → ваше подтверждение</text>
+<text x="1134" y="566" text-anchor="end" fill="#bbb0a5" font-size="17">Хакатонный MVP · 2026</text>
+</g></svg>
