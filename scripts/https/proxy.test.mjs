@@ -6,6 +6,7 @@ import { mkdtemp, mkdir, writeFile, readFile, realpath, symlink, rm } from 'node
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
+import { runInNewContext } from 'node:vm';
 import { createProxy, readConfig } from './proxy.mjs';
 
 let root, tls;
@@ -148,4 +149,76 @@ test('TLS-only mode creates no HTTP listener; challenge mode cannot disable HTTP
     assert.equal(servers.httpServer, null);
     assert.equal((await request(await listen(servers.httpsServer), '/', { secure: true })).text, 'tls-only-upstream');
   } finally { await close(servers?.httpsServer, upstream); }
+});
+
+async function withLanding(callback, { enabled = true } = {}) {
+  const captures = [];
+  const makeUpstream = (name) => http.createServer((req, res) => {
+    captures.push({ name, path: req.url, method: req.method, headers: req.headers });
+    res.writeHead(200, { 'Content-Type': 'text/plain', 'Set-Cookie': 'synthetic-upstream=1; HttpOnly' });
+    res.end(name);
+  });
+  const ui = makeUpstream('ui'), api = makeUpstream('api'), landing = makeUpstream('landing');
+  let servers;
+  try {
+    servers = createProxy({ publicHost: '127.0.0.1', challengeRoot: root, tls, httpEnabled: false,
+      uiPort: await listen(ui), apiPort: await listen(api), landingPort: enabled ? await listen(landing) : null });
+    await callback({ port: await listen(servers.httpsServer), captures });
+  } finally { await close(servers?.httpsServer, ui, api, landing); }
+}
+
+test('landing routing preserves query, isolates auth/cookies and never reaches gateway', async () => {
+  await withLanding(async ({ port, captures }) => {
+    const headers = { Authorization: 'Bearer synthetic-app', Cookie: 'synthetic-app-session=1' };
+    const redirect = await request(port, '/landing?from=synthetic%20test', { secure: true, headers });
+    assert.equal(redirect.status, 308);
+    assert.equal(new URL(redirect.headers.location, 'https://127.0.0.1').href, 'https://127.0.0.1/landing/?from=synthetic%20test');
+    assert.equal(captures.length, 0);
+    for (const [url, stripped] of [['/landing/', '/'], ['/landing/assets/site.css?x=1', '/assets/site.css?x=1'], ['/landing/api/auth/login?x=1', '/api/auth/login?x=1']]) {
+      const response = await request(port, url, { secure: true, headers });
+      assert.equal(response.status, 200); assert.equal(response.text, 'landing');
+      assert.equal(response.headers['set-cookie'], undefined);
+      const entry = captures.at(-1);
+      assert.equal(entry.name, 'landing'); assert.equal(entry.path, stripped);
+      assert.equal(entry.headers.authorization, undefined); assert.equal(entry.headers.cookie, undefined);
+    }
+    await request(port, '/landing/../api/auth/login', { secure: true, headers });
+    assert.equal(captures.some((entry) => entry.name === 'api'), false);
+    assert.equal((await request(port, '/landing/', { secure: true, method: 'HEAD', headers })).text, '');
+    const ui = await request(port, '/landingish', { secure: true, headers });
+    assert.equal(ui.text, 'ui'); assert.equal(captures.at(-1).name, 'ui');
+    assert.equal(captures.at(-1).headers.authorization, 'Bearer synthetic-app');
+    assert.equal(captures.at(-1).headers.cookie, 'synthetic-app-session=1');
+    assert.ok(ui.headers['set-cookie']);
+    const api = await request(port, '/api/health', { secure: true, headers });
+    assert.equal(api.text, 'api'); assert.equal(captures.at(-1).path, '/health');
+  });
+});
+
+test('landing config is local static frozen appUrl only; landing methods are read-only', async () => {
+  await withLanding(async ({ port, captures }) => {
+    const response = await request(port, '/landing/config.js?cache=synthetic', { secure: true,
+      headers: { Host: 'attacker.example', Authorization: 'Bearer synthetic-app', Cookie: 'synthetic-app-session=1' } });
+    assert.equal(response.status, 200); assert.match(response.headers['content-type'], /(?:java|ecma)script/);
+    assert.equal(response.headers['set-cookie'], undefined); assert.equal(captures.length, 0);
+    const window = {};
+    runInNewContext(response.text, { window }, { timeout: 1000 });
+    assert.deepEqual(Object.keys(window), ['RYADOM_CONFIG']);
+    assert.deepEqual(Object.keys(window.RYADOM_CONFIG), ['appUrl']);
+    assert.equal(window.RYADOM_CONFIG.appUrl, 'https://127.0.0.1/');
+    assert.equal(Object.isFrozen(window.RYADOM_CONFIG), true);
+    const head = await request(port, '/landing/config.js', { secure: true, method: 'HEAD' });
+    assert.equal(head.status, 200); assert.equal(head.text, '');
+    for (const pathname of ['/landing', '/landing/', '/landing/config.js', '/landing/api/auth/login']) {
+      for (const method of ['POST', 'PUT', 'DELETE']) assert.equal((await request(port, pathname, { secure: true, method, body: 'synthetic' })).status, 405, `${method} ${pathname}`);
+    }
+    assert.equal(captures.length, 0);
+  });
+});
+
+test('landing is opt-in; omitted upstream preserves existing UI behavior', async () => {
+  await withLanding(async ({ port, captures }) => {
+    assert.equal((await request(port, '/landing/config.js', { secure: true })).text, 'ui');
+    assert.deepEqual(captures.map((entry) => entry.name), ['ui']);
+  }, { enabled: false });
 });

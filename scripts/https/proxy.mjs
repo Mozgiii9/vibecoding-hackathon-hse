@@ -16,25 +16,40 @@ function headersWithoutHop(headers) {
 function end(res, status) { if (!res.headersSent) { if (status === 413) res.shouldKeepAlive = false; res.writeHead(status, { 'Content-Type': 'text/plain', 'Cache-Control': 'no-store' }); } res.end(); }
 
 /** Creates listeners without binding ports; TLS is required for application traffic. */
-export function createProxy({ publicHost, challengeRoot, uiPort = 17073, apiPort = 18789, tls = null, httpEnabled = true, maxBodyBytes = 12 * 1024 * 1024 }) {
+export function createProxy({ publicHost, challengeRoot, uiPort = 17073, apiPort = 18789, landingPort = null, tls = null, httpEnabled = true, maxBodyBytes = 12 * 1024 * 1024 }) {
   if (!isIP(publicHost) || !Number.isSafeInteger(maxBodyBytes) || maxBodyBytes < 1) throw new Error('Invalid proxy configuration');
   if (typeof httpEnabled !== 'boolean' || (!httpEnabled && !tls)) throw new Error('Challenge phase requires HTTP');
+  if (landingPort !== null && (!Number.isInteger(landingPort) || landingPort < 1 || landingPort > 65535)) throw new Error('Invalid landing port');
   const authority = isIP(publicHost) === 6 ? `[${publicHost}]` : publicHost;
   const proxy = (req, res) => {
     if (!req.url?.startsWith('/') || req.url.startsWith('//') || req.url.includes('\\')) { end(res, 400); return; }
+    const pathname = req.url.split('?')[0];
+    const landing = landingPort !== null && (pathname === '/landing' || pathname.startsWith('/landing/'));
+    if (landing && !['GET', 'HEAD'].includes(req.method)) { res.setHeader('Allow', 'GET, HEAD'); end(res, 405); return; }
+    if (landing && pathname === '/landing') {
+      res.writeHead(308, { Location: `/landing/${req.url.slice(pathname.length)}`, 'Cache-Control': 'no-store' }); res.end(); return;
+    }
+    if (landing && pathname === '/landing/config.js') {
+      const body = `window.RYADOM_CONFIG = Object.freeze(${JSON.stringify({ appUrl: `https://${authority}/` })});\n`;
+      res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8', 'Content-Length': Buffer.byteLength(body), 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
+      res.end(req.method === 'HEAD' ? undefined : body); return;
+    }
     const length = req.headers['content-length'];
     if (length && (!/^\d+$/.test(length) || Number(length) > maxBodyBytes)) { end(res, 413); req.resume(); return; }
-    const api = /^\/api(?:\/|\?|$)/.test(req.url);
-    const stripped = api ? req.url.slice(4) : req.url;
+    const api = !landing && /^\/api(?:\/|\?|$)/.test(req.url);
+    const stripped = landing ? req.url.slice('/landing'.length) : api ? req.url.slice(4) : req.url;
     const headers = headersWithoutHop(req.headers);
+    if (landing) { delete headers.authorization; delete headers.cookie; }
     for (const key of Object.keys(headers)) if (/^(x-forwarded-|forwarded$|x-real-ip$)/i.test(key)) delete headers[key];
     Object.assign(headers, { host: authority, 'x-forwarded-host': authority, 'x-forwarded-proto': req.socket.encrypted ? 'https' : 'http',
       'x-forwarded-for': req.socket.remoteAddress, 'x-real-ip': req.socket.remoteAddress });
     let exceeded = false;
-    const upstream = http.request({ hostname: '127.0.0.1', port: api ? apiPort : uiPort, method: req.method,
+    const upstream = http.request({ hostname: '127.0.0.1', port: landing ? landingPort : api ? apiPort : uiPort, method: req.method,
       path: stripped.startsWith('?') ? `/${stripped}` : stripped || '/', headers }, (reply) => {
       if (exceeded) { reply.destroy(); return; }
-      res.writeHead(reply.statusCode || 502, headersWithoutHop(reply.headers));
+      const responseHeaders = headersWithoutHop(reply.headers);
+      if (landing) delete responseHeaders['set-cookie'];
+      res.writeHead(reply.statusCode || 502, responseHeaders);
       reply.on('error', () => res.destroy()); reply.pipe(res);
     });
     upstream.setTimeout(180_000, () => { upstream.destroy(); end(res, 504); });
@@ -80,7 +95,7 @@ export function readConfig(filename) {
   const privateFile = contained(realpathSync(filename));
   if (!statSync(privateFile).isFile() || (statSync(privateFile).mode & 0o077)) throw new Error('Private configuration requires mode 600');
   const values = {};
-  const allowed = new Set(['RUNTIME_DIR', 'PUBLIC_IP', 'BIND_HOST', 'HTTP_ENABLED', 'HTTP_PORT', 'TLS_PORT', 'UI_PORT', 'API_PORT', 'WEBROOT', 'FULLCHAIN', 'KEY', 'PIDFILE']);
+  const allowed = new Set(['RUNTIME_DIR', 'PUBLIC_IP', 'BIND_HOST', 'HTTP_ENABLED', 'HTTP_PORT', 'TLS_PORT', 'UI_PORT', 'API_PORT', 'LANDING_PORT', 'WEBROOT', 'FULLCHAIN', 'KEY', 'PIDFILE']);
   for (const line of readFileSync(privateFile, 'utf8').split(/\r?\n/)) {
     if (!line.trim() || line.trimStart().startsWith('#')) continue;
     const match = /^HACKATHON_HTTPS_([A-Z_]+)=(.*)$/.exec(line);
@@ -94,9 +109,11 @@ export function readConfig(filename) {
   const config = { publicHost: values.PUBLIC_IP || '77.239.111.64', bindHost: values.BIND_HOST || '0.0.0.0',
     httpEnabled: (values.HTTP_ENABLED ?? '1') === '1',
     httpPort: port('HTTP_PORT', 80), tlsPort: port('TLS_PORT', 443), uiPort: port('UI_PORT', 17073), apiPort: port('API_PORT', 18789),
+    landingPort: values.LANDING_PORT === undefined ? null : port('LANDING_PORT'),
     challengeRoot: localPath(values.WEBROOT || `${runtime}/acme`), certPath: localPath(values.FULLCHAIN || `${runtime}/fullchain.pem`),
     keyPath: localPath(values.KEY || `${runtime}/privkey.pem`), pidfile: localPath(values.PIDFILE || `${runtime}/proxy.pid`) };
   if (!isIP(config.publicHost) || !isIP(config.bindHost) || new Set([config.httpPort, config.tlsPort, config.uiPort, config.apiPort]).size !== 4) throw new Error('Invalid listener configuration');
+  if (config.landingPort !== null && [config.tlsPort, config.uiPort, config.apiPort, ...(config.httpEnabled ? [config.httpPort] : [])].includes(config.landingPort)) throw new Error('Landing upstream conflicts with proxy or application');
   if (realpathSync(runtime) !== runtime || realpathSync(path.dirname(config.pidfile)) !== path.dirname(config.pidfile)) throw new Error('Runtime symlinks are forbidden');
   return config;
 }
