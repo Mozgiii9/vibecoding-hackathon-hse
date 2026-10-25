@@ -1,0 +1,69 @@
+# All application images are built from this fork's full commit SHA, never pulled.
+services:
+  app:
+    image: ryadom-${HACKATHON_OWNER:?}/app:${HACKATHON_SOURCE_SHA:?}
+    pull_policy: never
+    restart: "no"
+    init: false
+    environment:
+      NODE_ENV: production
+      BRAINDRIVE_INSTALL_MODE: local
+      BRAINDRIVE_BIND_ADDRESS: 0.0.0.0
+      BRAINDRIVE_PORT: "8787"
+      BRAINDRIVE_TRUST_PROXY: "true"
+      BRAINDRIVE_CLIENT_GATEWAY_URL: /api
+      BRAINDRIVE_APP_VERSION: ryadom-${HACKATHON_SOURCE_SHA:?}
+      MCP_SERVERS_FILE: mcp/servers.full-mcp.json
+      PAA_MEMORY_ROOT: /data/memory
+      PAA_SECRETS_HOME: /run/paa-secrets
+      PAA_SECRETS_MASTER_KEY_B64: ${HACKATHON_SECRETS_MASTER_KEY_B64:?}
+      PAA_SECRETS_MASTER_KEY_ID: ryadom-owner-v1
+      PAA_AUTH_ALLOW_FIRST_SIGNUP_ANY_IP: "true"
+      PAA_AUDIT_FILE_SINK_ENABLED: "true"
+      HACKATHON_SOURCE_SHA: ${HACKATHON_SOURCE_SHA:?}
+      HACKATHON_LLM_PROTOCOL: ${HACKATHON_LLM_PROTOCOL:-}
+      HACKATHON_LLM_BASE_URL: ${HACKATHON_LLM_BASE_URL:-}
+      HACKATHON_LLM_MODEL: ${HACKATHON_LLM_MODEL:-}
+      HACKATHON_LLM_API_KEY: ${HACKATHON_LLM_API_KEY:-}
+      HACKATHON_LLM_TIMEOUT_MS: ${HACKATHON_LLM_TIMEOUT_MS:-60000}
+      HACKATHON_STT_BASE_URL: ${HACKATHON_STT_BASE_URL:-}
+      HACKATHON_STT_MODEL: ${HACKATHON_STT_MODEL:-}
+      HACKATHON_STT_API_KEY: ${HACKATHON_STT_API_KEY:-}
+      TZ: Europe/Moscow
+    ports:
+      - "127.0.0.1:${HACKATHON_GATEWAY_PORT:-18787}:8787"
+    volumes:
+      - memory:/data/memory
+      - secrets:/run/paa-secrets
+    networks: [runtime]
+    healthcheck:
+      test: ["CMD", "node", "/usr/local/lib/ryadom/healthcheck.mjs"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    security_opt: ["no-new-privileges:true"]
+  edge:
+    image: ryadom-${HACKATHON_OWNER:?}/edge:${HACKATHON_SOURCE_SHA:?}
+    pull_policy: never
+    restart: "no"
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${HACKATHON_UI_PORT:-15073}:80"
+    networks: [runtime]
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    security_opt: ["no-new-privileges:true"]
+volumes:
+  memory:
+    name: ${HACKATHON_INSTANCE_ID:?}_memory
+  secrets:
+    name: ${HACKATHON_INSTANCE_ID:?}_secrets
+networks:
+  runtime:
+    name: ${HACKATHON_INSTANCE_ID:?}_runtime

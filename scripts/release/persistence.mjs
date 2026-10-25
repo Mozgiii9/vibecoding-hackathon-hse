@@ -10,7 +10,7 @@ const inside = (parent, child) => child === parent || child.startsWith(`${parent
 function allowed(relative) {
   const parts = relative.split("/");
   return !parts.some((part) => [".git", "secrets", "vault.json", "master-key.json", ".synthetic-restore.json"].includes(part)
-    || part === ".env" || part.startsWith(".env."))
+    || part.startsWith(".env"))
     && !["exports", "system/updates/backups"].some((prefix) => relative === prefix || relative.startsWith(`${prefix}/`));
 }
 
@@ -20,6 +20,7 @@ async function treeIn(root, prefix = "") {
   for (const entry of await readdir(path.join(root, prefix), { withFileTypes: true })) {
     const relative = prefix ? `${prefix}/${entry.name}` : entry.name;
     if (!allowed(relative)) continue;
+    if (!safeRelative(relative)) throw new Error(`Refusing non-portable memory path: ${relative}`);
     const info = await lstat(path.join(root, relative));
     if (info.isSymbolicLink()) throw new Error(`Refusing symbolic link: ${relative}`);
     if (info.isDirectory()) {
