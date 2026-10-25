@@ -111,7 +111,7 @@ export async function createGoalsStore(options: { memoryRoot: string }): Promise
         const goal: Goal = {
           id, title: write.title, deadline: write.deadline, criteria: write.criteria,
           revision: previous.revision + 1,
-          confirmedAt: write.confirm ? previous.confirmedAt ?? new Date().toISOString() : null,
+          confirmedAt: write.confirm ? new Date().toISOString() : null,
         };
         next.goals[next.goals.indexOf(previous)] = goal;
         return { value: goal, changed: true };
@@ -142,13 +142,14 @@ export async function createGoalsStore(options: { memoryRoot: string }): Promise
     async commitImport(input) {
       const parsed = parseInput(importSchema, input, true);
       return mutate((next) => {
-        const goal = requireConfirmedGoal(next, parsed.goalId);
+        const goal = requireGoal(next, parsed.goalId);
         const existing = findExistingImport(next, goal.id, parsed.source.contentHash);
         // A repeat returns current review statuses, including when provider calls raced.
         if (existing) return { value: existing, changed: false };
         if (goal.revision !== parsed.expectedGoalRevision) {
           throw new FeatureError("goal_changed", 409, "Цель изменилась, повторите обработку");
         }
+        requireConfirmedGoal(next, goal.id);
         validateSource(parsed.source);
         const drafts = uniqueDrafts(goal, parsed.source, parsed.evidence);
         const createdAt = new Date().toISOString();

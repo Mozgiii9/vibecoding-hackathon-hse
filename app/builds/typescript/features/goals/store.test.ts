@@ -192,6 +192,42 @@ describe("goals store", () => {
     expect(await store.listEvidence("demo")).toEqual([]);
   });
 
+  it("revoking confirmation while extraction runs is a goal_changed conflict", async () => {
+    await store.saveGoal("demo", goalWrite());
+    const snapshot = await store.getConfirmedGoal("demo");
+    await store.saveGoal("demo", goalWrite({ confirm: false, expectedRevision: snapshot.revision }));
+    const source = sourceDraft();
+    await expect(store.commitImport({
+      goalId: "demo", expectedGoalRevision: snapshot.revision, source, evidence: [evidenceDraft(source)],
+    })).rejects.toMatchObject({ code: "goal_changed" });
+    expect(await store.findImport("demo", source.contentHash)).toBeNull();
+  });
+
+  it("goal edit and first import cannot both succeed from the same revision", async () => {
+    await store.saveGoal("demo", goalWrite());
+    const source = sourceDraft();
+    const results = await Promise.allSettled([
+      store.commitImport({ goalId: "demo", expectedGoalRevision: 1, source, evidence: [evidenceDraft(source)] }),
+      store.saveGoal("demo", goalWrite({ title: "Обновлённая", expectedRevision: 1 })),
+    ]);
+    expect(results[0].status).toBe("fulfilled");
+    expect(results[1]).toMatchObject({ status: "rejected", reason: { code: "goal_locked" } });
+    expect((await store.getGoal("demo"))!.revision).toBe(1);
+    expect(await store.listEvidence("demo")).toHaveLength(1);
+  });
+
+  it("parallel evidence reviews allow only one update from a given revision", async () => {
+    await store.saveGoal("demo", goalWrite());
+    const { evidence: [entry] } = await importText(store);
+    const results = await Promise.allSettled([
+      store.reviewEvidence(entry.id, { status: "confirmed", expectedRevision: 1 }),
+      store.reviewEvidence(entry.id, { status: "rejected", expectedRevision: 1 }),
+    ]);
+    expect(results[0].status).toBe("fulfilled");
+    expect(results[1]).toMatchObject({ status: "rejected", reason: { code: "revision_conflict" } });
+    expect((await store.listEvidence("demo"))[0]).toMatchObject({ status: "confirmed", revision: 2 });
+  });
+
   it("locks the entire goal after even an import with no evidence; identical PUT is a no-op", async () => {
     await store.saveGoal("demo", goalWrite());
     const source = sourceDraft();

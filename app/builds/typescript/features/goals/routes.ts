@@ -31,31 +31,45 @@ function parameter(request: FastifyRequest, name: string): string {
 
 export async function registerGoalsRoutes(app: FastifyInstance, deps: { store: GoalsStore }): Promise<void> {
   const { store } = deps;
-  app.put("/goals/:goalId", route(async (request) => ({
+  // Parsing happens before the handler; scope its error translation to our routes.
+  const options = {
+    errorHandler: (error: Error & { statusCode?: number }, request: FastifyRequest, reply: FastifyReply) => {
+      const code = error.statusCode;
+      if (code === 400 || code === 413 || code === 415) {
+        return reply.code(code).send({ error: {
+          code: code === 413 ? "file_too_large" : code === 415 ? "unsupported_media_type" : "invalid_request",
+          message: code === 413 ? "Превышен размер запроса" : code === 415 ? "Неподдерживаемый тип данных" : "Некорректный запрос",
+        } });
+      }
+      return app.errorHandler(error, request, reply);
+    },
+  };
+
+  app.put("/goals/:goalId", options, route(async (request) => ({
     goal: await store.saveGoal(parameter(request, "goalId"), request.body as Parameters<GoalsStore["saveGoal"]>[1]),
   })));
 
-  app.get("/goals/:goalId", route(async (request) => {
+  app.get("/goals/:goalId", options, route(async (request) => {
     const goal = await store.getGoal(parameter(request, "goalId"));
     if (!goal) throw new FeatureError("not_found", 404, "Цель не найдена");
     return { goal };
   }));
 
-  app.get("/goals/:goalId/evidence", route(async (request) => ({
+  app.get("/goals/:goalId/evidence", options, route(async (request) => ({
     evidence: await store.listEvidence(parameter(request, "goalId")),
   })));
 
-  app.get("/goals/:goalId/progress", route(async (request) => ({
+  app.get("/goals/:goalId/progress", options, route(async (request) => ({
     progress: await store.getProgress(parameter(request, "goalId")),
   })));
 
-  app.get("/sources/:sourceId", route(async (request) => {
+  app.get("/sources/:sourceId", options, route(async (request) => {
     const source = await store.getSource(parameter(request, "sourceId"));
     if (!source) throw new FeatureError("not_found", 404, "Источник не найден");
     return { source };
   }));
 
-  app.patch("/evidence/:evidenceId", route(async (request) => ({
+  app.patch("/evidence/:evidenceId", options, route(async (request) => ({
     evidence: await store.reviewEvidence(
       parameter(request, "evidenceId"), request.body as Parameters<GoalsStore["reviewEvidence"]>[1],
     ),
