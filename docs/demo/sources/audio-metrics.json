@@ -1,0 +1,12 @@
+{
+  "elapsedMs": 15641,
+  "inputBytes": 1620106,
+  "audioDurationSeconds": 50.626875,
+  "serverCpuCount": 1,
+  "serverRamMiB": 1967,
+  "model": "base",
+  "language": "ru",
+  "computeType": "int8",
+  "cpuThreads": 1,
+  "rawAudioSavedByService": false
+}

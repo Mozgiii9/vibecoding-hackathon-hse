@@ -4,8 +4,8 @@ import { FeatureError, type EvidenceDraft, type Goal, type SourceDraft, type Tra
 export const MAX_TEXT_UNITS = 50_000;
 export const MAX_AUDIO_BYTES = 10 * 1024 * 1024;
 const timestamp = z.string().datetime({ offset: true }).nullable().optional().default(null);
-const goalId = z.string().min(1).max(200);
-const title = z.string().max(200);
+const goalId = z.string().min(1).max(200).refine((value) => value.trim().length > 0);
+const title = z.string().min(1).max(200).refine((value) => value.trim().length > 0);
 export const textImportSchema = z.object({
   goalId, title, text: z.string().min(1).max(MAX_TEXT_UNITS).refine((text) => text.trim().length > 0),
   capturedAt: timestamp,
@@ -22,7 +22,8 @@ const transcriptSchema = z.object({
 const proposalSchema = z.object({
   criterionId: z.string().min(1),
   eventType: z.enum(["completed_action", "intention", "obstacle", "uncertain"]),
-  summary: z.string().min(1).max(2_000), quote: z.string().min(1).max(MAX_TEXT_UNITS),
+  summary: z.string().min(1).max(2_000).refine((value) => value.trim().length > 0),
+  quote: z.string().min(1).max(MAX_TEXT_UNITS).refine((value) => value.trim().length > 0),
   textStart: z.number().int().nonnegative().optional(), textEnd: z.number().int().positive().optional(),
   startMs: z.number().int().nonnegative().nullable().optional(),
   endMs: z.number().int().nonnegative().nullable().optional(),
@@ -40,7 +41,7 @@ export function validateTranscript(value: unknown): { text: string; segments: Tr
   for (const segment of parsed.data.segments) {
     if (segment.textStart < previousEnd || segment.textEnd <= segment.textStart ||
         segment.textEnd > parsed.data.text.length || segment.startMs < previousTime ||
-        segment.endMs < segment.startMs) return invalidProvider();
+        segment.endMs <= segment.startMs) return invalidProvider();
     previousEnd = segment.textEnd;
     previousTime = segment.startMs;
   }
@@ -55,7 +56,11 @@ function timeRange(source: SourceDraft, start: number, end: number): [number | n
   for (let i = 1; i < segments.length; i++) {
     if (source.text.slice(segments[i - 1].textEnd, segments[i].textStart).trim()) return [null, null];
   }
-  return [segments[0].startMs, Math.max(...segments.map((segment) => segment.endMs))];
+  // Core requires the end boundary of the segment containing the quote's end.
+  // Nested/nonmonotonic intervals have no safe complete range for this quote.
+  const endMs = segments.at(-1)!.endMs;
+  if (Math.max(...segments.map((segment) => segment.endMs)) !== endMs) return [null, null];
+  return [segments[0].startMs, endMs];
 }
 
 export function validateEvidence(value: unknown, goal: Goal, source: SourceDraft): EvidenceDraft[] {
