@@ -1,6 +1,8 @@
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
 import { existsSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
+import type { Evidence, Source } from "../../features/contracts.js";
+import { observeReleaseAudioResponses, readReleaseAudioResponse } from "../../../../../scripts/release/browser-audio-observer.mjs";
 
 const mode = process.env.RELEASE_MODE ?? "fake";
 const username = process.env.RELEASE_USERNAME ?? "release-synthetic-owner";
@@ -80,6 +82,50 @@ async function noOverflow(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), "Page must fit the mobile/desktop viewport").toBe(true);
 }
 
+function observeEvidenceReload(page: Page): Promise<Evidence[] | null> {
+  // Observe the UI's own real GET. No extra API request, route interception or mock.
+  return page.waitForResponse((response) => response.url().endsWith("/goals/demo/evidence") && response.request().method() === "GET" && response.ok())
+    .then(async (response) => (await response.json()).evidence as Evidence[])
+    .catch(() => null);
+}
+
+async function cardFromObservedOrder(page: Page, observed: Evidence[] | null, item: Evidence) {
+  expect(observed, "The UI must reload the real ordered evidence list after import").not.toBeNull();
+  const index = observed!.findIndex((entry) => entry.id === item.id);
+  expect(index, "Imported evidence ID must exist in the server's ordered list").toBeGreaterThanOrEqual(0);
+  expect(observed![index]).toMatchObject({ id: item.id, sourceId: item.sourceId, summary: item.summary, criterionId: item.criterionId, quote: item.quote });
+  await expect(page.locator(".gw-event")).toHaveCount(observed!.length);
+  const card = page.locator(".gw-event").nth(index);
+  await expect(card.getByRole("heading", { name: item.summary, exact: true })).toBeVisible();
+  const criterionIndex = ["cv", "mock", "feedback"].indexOf(item.criterionId);
+  expect(criterionIndex).toBeGreaterThanOrEqual(0);
+  await expect(card.locator(".gw-event-criterion")).toHaveText(criteria[criterionIndex]);
+  return card;
+}
+
+function checkAudioGrounding(source: Source, evidence: Evidence[], durationSeconds: number) {
+  for (const item of evidence) {
+    expect(item.sourceId).toBe(source.id);
+    expect(source.text.slice(item.textStart, item.textEnd)).toBe(item.quote);
+    if (!source.segments.length) {
+      expect(item.startMs).toBeNull();
+      expect(item.endMs).toBeNull();
+    } else if (item.startMs !== null) {
+      // Each displayed time boundary must belong to the real STT segment that
+      // contains that text boundary, rather than an estimated model timestamp.
+      expect(source.segments.some((segment) => segment.textStart <= item.textStart && segment.textEnd > item.textStart && segment.startMs === item.startMs)).toBe(true);
+      expect(source.segments.some((segment) => segment.textStart < item.textEnd && segment.textEnd >= item.textEnd && segment.endMs === item.endMs)).toBe(true);
+      expect(item.endMs).not.toBeNull();
+      expect(item.endMs!).toBeGreaterThanOrEqual(item.startMs);
+      expect(item.endMs!).toBeLessThanOrEqual(Math.ceil(durationSeconds * 1000) + 1000);
+    } else {
+      expect(item.endMs).toBeNull();
+    }
+  }
+}
+
+const timecode = (milliseconds: number) => `${Math.floor(milliseconds / 60000)}:${String(Math.floor(milliseconds / 1000) % 60).padStart(2, "0")}`;
+
 async function checkpointAfterReload(page: Page) {
   const paths = ["/goals/demo", "/goals/demo/evidence", "/goals/demo/progress"];
   const responses = paths.map((suffix) => page.waitForResponse((response) => response.url().endsWith(suffix) && response.request().method() === "GET" && response.ok()));
@@ -91,6 +137,7 @@ async function checkpointAfterReload(page: Page) {
 }
 
 test(`${mode.toUpperCase()} ordinary signup/login → three criteria → intention/action/quote/confirm → mobile duplicate/reject/reload`, async ({ page }, info) => {
+  test.setTimeout(mode === "live" ? 300_000 : 120_000);
   recordMode(info);
   test.skip(mode === "live" && process.env.RELEASE_ALLOW_LIVE_MUTATIONS !== "1", "NOT_RUN: live mutations need a dedicated clean runtime and explicit opt-in");
   await authenticate(page, true);
@@ -116,6 +163,7 @@ test(`${mode.toUpperCase()} ordinary signup/login → three criteria → intenti
   await expect(plan.getByRole("button", { name: "Подтвердить", exact: true })).toHaveCount(0);
   await progress(page, [0, 0, 0]);
 
+  const orderedAfterImport = observeEvidenceReload(page);
   const imported = await importText(page, "Синтетическое выполненное действие", completed);
   const payload = await imported.json();
   expect(imported.ok(), `Import status=${imported.status()} code=${payload.error?.code ?? "none"}`).toBe(true);
@@ -123,8 +171,7 @@ test(`${mode.toUpperCase()} ordinary signup/login → three criteria → intenti
   const action = payload.evidence.find((item: { eventType: string; criterionId: string }) => item.eventType === "completed_action" && item.criterionId === "cv");
   expect(action, "The model must classify the concrete CV action").toBeTruthy();
   expect(payload.source.text.slice(action.textStart, action.textEnd)).toBe(action.quote);
-  const card = page.locator(".gw-event").filter({ has: page.getByRole("heading", { name: action.summary, exact: true }) });
-  await expect(card).toHaveCount(1);
+  const card = await cardFromObservedOrder(page, await orderedAfterImport, action);
   await progress(page, [0, 0, 0]);
   await card.getByRole("button", { name: /Посмотреть источник|Источник открыт/ }).click();
   await expect(page.locator("#gw-source mark")).toHaveText(action.quote);
@@ -243,11 +290,14 @@ test("FAKE setup, unconfigured STT: upload reports error without transcript or p
 });
 
 test("LIVE audio: file → STT transcript → exact quote → confirm", async ({ page }, info) => {
+  test.setTimeout(300_000);
   recordMode(info);
   const audio = process.env.RELEASE_AUDIO_FILE;
   test.skip(mode !== "live" || !audio || !existsSync(audio), "NOT_RUN: requires live STT, an operator-supplied 20–60 second synthetic audio file, and live mode");
   test.skip(process.env.RELEASE_ALLOW_LIVE_MUTATIONS !== "1", "NOT_RUN: live mutations opt-in missing");
+  await page.addInitScript(observeReleaseAudioResponses);
   await authenticate(page);
+  await progress(page, [0, 0, 0]);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.getByRole("button", { name: "Добавить контекст", exact: true }).click();
   await page.getByRole("button", { name: "Аудио", exact: true }).click();
@@ -266,32 +316,51 @@ test("LIVE audio: file → STT transcript → exact quote → confirm", async ({
   });
   expect(duration, "Live acceptance requires a real 20–60 second synthetic recording").toBeGreaterThanOrEqual(20);
   expect(duration).toBeLessThanOrEqual(60);
+  const orderedAfterImport = observeEvidenceReload(page);
   const waiting = page.waitForResponse((item) => item.url().includes("/context/audio?") && item.request().method() === "POST");
   await page.getByRole("button", { name: "Найти события", exact: true }).click();
   const response = await waiting;
-  expect(response.ok(), "Real STT must succeed; stt_unconfigured is not a pass").toBe(true);
-  const payload = await response.json();
+  info.annotations.push({ type: "audio-http", description: `Real audio import HTTP status=${response.status()}` });
+  expect(response.ok(), `Real STT must succeed: status=${response.status()}; stt_unconfigured/provider errors are not a pass`).toBe(true);
+  const captured = await readReleaseAudioResponse(page);
+  expect(captured.status).toBe(response.status());
+  expect(captured.invalidJson, "The real UI response clone must contain JSON").toBe(false);
+  const payload = captured.body;
+  expect(payload.duplicate, "Fresh synthetic audio must invoke STT; duplicates do not prove it").toBe(false);
   expect(payload.source.kind).toBe("audio");
   expect(payload.source.text.trim().length).toBeGreaterThan(10);
   const action = payload.evidence.find((item: { eventType: string }) => item.eventType === "completed_action");
   expect(action, "Synthetic audio must contain a completed goal action").toBeTruthy();
-  const card = page.locator(".gw-event").filter({ has: page.getByRole("heading", { name: action.summary, exact: true }) });
+  checkAudioGrounding(payload.source, payload.evidence, duration);
+  const card = await cardFromObservedOrder(page, await orderedAfterImport, action);
   await card.getByRole("button", { name: /Посмотреть источник|Источник открыт/ }).click();
   await expect(page.locator("#gw-source .gw-source-kind")).toHaveText("Расшифровка");
   await expect(page.locator("#gw-source mark")).toHaveText(action.quote);
-  expect(payload.source.text.slice(action.textStart, action.textEnd)).toBe(action.quote);
-  if (payload.source.segments.length === 0) {
-    expect(action.startMs).toBeNull();
-    expect(action.endMs).toBeNull();
+  if (action.startMs === null) {
     await expect(page.locator("#gw-source .gw-source-timecode")).toHaveCount(0);
+  } else {
+    await expect(page.locator("#gw-source .gw-source-timecode")).toHaveText(`Фрагмент ${timecode(action.startMs)} – ${timecode(action.endMs)}`);
   }
-  const bar = page.getByRole("progressbar", { name: criteria[["cv", "mock", "feedback"].indexOf(action.criterionId)], exact: true });
-  const before = Number(await bar.getAttribute("aria-valuenow"));
+  const criterionIndex = ["cv", "mock", "feedback"].indexOf(action.criterionId);
+  const bar = page.getByRole("progressbar", { name: criteria[criterionIndex], exact: true });
+  const numericCount = page.locator(".gw-criteria > li").nth(criterionIndex).locator(".gw-criterion-count strong");
+  const before = Number(await numericCount.textContent());
+  const target = Number(await bar.getAttribute("aria-valuemax"));
+  const reviewed = page.waitForResponse((item) => item.url().endsWith(`/evidence/${action.id}`) && item.request().method() === "PATCH");
   await card.getByRole("button", { name: "Подтвердить", exact: true }).click();
+  const reviewResponse = await reviewed;
+  expect(reviewResponse.ok()).toBe(true);
+  const confirmed = (await reviewResponse.json()).evidence;
+  expect(confirmed).toMatchObject({ id: action.id, sourceId: payload.source.id, status: "confirmed", revision: action.revision + 1 });
   await expect(card.getByText("Подтверждено", { exact: true })).toBeVisible();
-  await expect(bar).toHaveAttribute("aria-valuenow", String(before + 1));
-  await checkpointAfterReload(page);
+  await expect(numericCount).toHaveText(String(before + 1));
+  await expect(bar).toHaveAttribute("aria-valuenow", String(Math.min(before + 1, target)));
+  const persisted = await checkpointAfterReload(page);
+  expect(persisted.evidence.find((item: Evidence) => item.id === action.id)).toEqual(confirmed);
+  expect(persisted.progress.criteria.find((item: { criterionId: string }) => item.criterionId === action.criterionId).confirmedCount).toBe(before + 1);
   await expect(card.getByText("Подтверждено", { exact: true })).toBeVisible();
-  await expect(bar).toHaveAttribute("aria-valuenow", String(before + 1));
+  await expect(numericCount).toHaveText(String(before + 1));
+  await expect(bar).toHaveAttribute("aria-valuenow", String(Math.min(before + 1, target)));
   await noOverflow(page);
+  info.annotations.push({ type: "audio", description: `Real WAV duration=${duration}s; duplicate=${payload.duplicate}; transcript=${payload.source.text.length} UTF-16 units; STT segments=${payload.source.segments.length}; grounded evidence=${payload.evidence.length}; sourceId=${payload.source.id}; confirmedEvidenceId=${action.id}; confirmedCount=${before + 1}` });
 });
