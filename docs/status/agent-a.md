@@ -1,11 +1,15 @@
 # Статус A второй итерации
 
-- Состояние: PLANNED, цель не активирована.
-- Следующая задача: A1 приёмка.
-- Планируемая ветка: codex/qa-release, этим планированием не создана.
-- Кодовая база: 35b093b; при старте записать полный SHA опубликованной integration-ui с планом.
-- Ready SHA: нет.
-- Проверки второй итерации: не выполнялись.
-- Зависимости: для live сценария нужна модель; запуск/упаковку можно проверять независимо.
-- Следующая независимая задача: A2 source-build и A3 сохранность/runbook.
-- Обновляет только A после команды владельца на старт.
+- Состояние: RUNNING, A1/A2/A3; поручение владельца активировано 25 октября 2026, около 14:04 МСК.
+- Ветка: codex/qa-release, создана без изменения старых веток; исходное рабочее дерево было чистым.
+- Base SHA: 484c396e71b3fbfe2ff65c04f6260e1899aa6bd1, origin/codex/integration-ui; содержит 92cb8bc.
+- Ready SHA: пока нет, первый проверенный срез готовится.
+- PASS: backend build, MCP build; focused goals/context 209/209; отдельные goals+memory backup 62/62.
+- PASS A3: реальный GoalsStore reload/отдельный процесс, backup включает hackathon/state.json, restore в новую synthetic копию, проверки checksum/path/symlink/overlap; детали готовятся в docs/release/ACCEPTANCE.md.
+- FAIL baseline: полный backend suite 411 PASS / 3 FAIL из 414; starter-pack lint (19 нарушений шаблонов), два desktop bridge теста первоначально заблокированы sandbox loopback EPERM. Отдельный desktop bridge rerun вне sandbox PASS 20/20; baseline lint остаётся открытым.
+- PASS: MCP suite 6/6.
+- Сервер осмотрен: 1 CPU, 1967 МБ RAM, около 24 ГБ свободно; Node/Docker глобально отсутствуют; чужая среда B сохраняется. В A установлен scoped Node v22.21.1 с проверкой checksum под общим flock.
+- Порты A: UI 127.0.0.1:15073, gateway 127.0.0.1:18787; на момент первичного осмотра свободны. MCP планируются только loopback, отдельные 18911–18913.
+- Gemini: конфигурация получена приватно, вне Git. Живой UI ещё не принят.
+- Blocker: STT пока не передан B; финальный интегрированный кандидат C ещё не принят. Docker route NOT_RUN, готовится source launcher без Docker.
+- Следующее: браузерная приёмка live Gemini, source-build зафиксированного SHA, server health/auth smoke, restart; отдельно audio после передачи B/C.

@@ -1,0 +1,16 @@
+# syntax=docker/dockerfile:1.7
+ARG NODE_IMAGE
+ARG EDGE_IMAGE
+FROM ${NODE_IMAGE} AS web-build
+WORKDIR /src/builds/typescript/client_web
+COPY builds/typescript/client_web/package.json builds/typescript/client_web/package-lock.json ./
+RUN npm ci
+COPY builds/typescript/client_web/ ./
+RUN npm run typecheck && npm run build
+
+FROM ${EDGE_IMAGE}
+ARG SOURCE_SHA
+LABEL org.opencontainers.image.title="Рядом web" org.opencontainers.image.revision=${SOURCE_SHA}
+COPY --from=web-build /src/builds/typescript/client_web/dist /usr/share/caddy
+COPY installer/hackathon/Caddyfile /etc/caddy/Caddyfile
+RUN printf '{"source_sha":"%s"}\n' "$SOURCE_SHA" > /usr/share/caddy/release.json
