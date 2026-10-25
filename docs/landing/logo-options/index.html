@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <title>Рядом — три направления логотипа</title>
+  <style>
+    :root { --bg:#24211f; --panel:#2d2926; --ink:#f4eadf; --muted:#c4b8ad; --line:#514940; --apricot:#e5b68d; --sage:#b8c5a5; color-scheme:dark; font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; color:var(--ink); background:var(--bg); }
+    * { box-sizing:border-box; }
+    body { margin:0; }
+    main { max-width:1280px; margin:auto; padding:56px 40px 40px; }
+    .eyebrow { color:var(--apricot); font-size:12px; letter-spacing:.15em; text-transform:uppercase; margin:0 0 20px; }
+    header { display:flex; justify-content:space-between; align-items:flex-end; gap:32px; margin-bottom:40px; }
+    h1 { font-size:clamp(36px,5vw,64px); font-weight:500; letter-spacing:-.055em; line-height:1.03; margin:0; max-width:760px; }
+    header p:last-child { color:var(--muted); font-size:15px; line-height:1.6; max-width:290px; margin:0; }
+    .grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; }
+    article { background:var(--panel); border:1px solid var(--line); border-radius:20px; overflow:hidden; }
+    .card-top { padding:20px 22px 0; display:flex; justify-content:space-between; align-items:center; gap:10px; font-size:12px; color:var(--muted); }
+    .recommended { color:var(--sage); }
+    .large { min-height:232px; display:grid; place-items:center; color:var(--apricot); }
+    .large svg { width:144px; height:144px; }
+    .lockup { display:flex; justify-content:center; align-items:center; gap:10px; color:var(--ink); padding-bottom:28px; }
+    .lockup svg { width:30px; height:30px; }
+    .word { font-size:29px; font-weight:600; letter-spacing:-.05em; }
+    .description { border-top:1px solid var(--line); padding:24px 22px; min-height:168px; }
+    h2 { font-size:21px; font-weight:500; letter-spacing:-.025em; margin:0 0 12px; }
+    .description p { color:var(--muted); font-size:14px; line-height:1.6; margin:0; }
+    .tests { padding:0 22px 22px; }
+    .size-row { display:flex; align-items:center; gap:24px; padding-bottom:20px; }
+    .size { display:grid; justify-items:center; gap:10px; color:var(--ink); }
+    .size span { font-size:11px; color:var(--muted); }
+    .mono-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+    .mono { min-height:92px; display:flex; align-items:center; justify-content:center; gap:12px; border-radius:10px; font-size:12px; }
+    .mono svg { width:36px; height:36px; }
+    .black { background:#f4eadf; color:#24211f; }
+    .white { background:#171615; color:#f4eadf; }
+    a { color:var(--apricot); text-underline-offset:4px; }
+    .download { display:block; margin:20px 0 0; font-size:12px; }
+    a:focus-visible { outline:3px solid var(--sage); outline-offset:5px; }
+    .note { display:flex; justify-content:space-between; gap:32px; border-top:1px solid var(--line); margin-top:32px; padding-top:22px; }
+    .note p { max-width:560px; font-size:13px; line-height:1.65; color:var(--muted); margin:0; }
+    .note strong { color:var(--ink); font-weight:500; }
+    footer { margin-top:32px; color:var(--muted); font-size:11px; line-height:1.6; }
+    .defs { position:absolute; width:0; height:0; overflow:hidden; }
+    @media(max-width:900px) { main { padding:36px 22px; } header { display:block; } header p:last-child { max-width:500px; margin-top:24px; } .grid { grid-template-columns:1fr; max-width:560px; margin:auto; } .large { min-height:200px; } .description { min-height:0; } .note { display:block; } .note p+p { margin-top:18px; } }
+    @media(prefers-reduced-motion:reduce) { *,*::before,*::after { scroll-behavior:auto!important; } }
+  </style>
+</head>
+<body>
+  <svg class="defs" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <defs>
+      <symbol id="sputnik" viewBox="0 0 256 256"><path fill="currentColor" d="M128 24A104 104 0 1 0 232 128H184A56 56 0 1 1 128 72Z"/><circle fill="currentColor" cx="196" cy="60" r="28"/></symbol>
+      <symbol id="nit" viewBox="0 0 256 256"><path fill="currentColor" d="M48 228A20 20 0 0 1 48 188H92V144A20 20 0 0 1 112 124H156V80A20 20 0 0 1 196 80V144A20 20 0 0 1 176 164H132V208A20 20 0 0 1 112 228Z"/><circle fill="currentColor" cx="208" cy="32" r="20"/></symbol>
+      <symbol id="monogram" viewBox="0 0 256 256"><path fill="currentColor" fill-rule="evenodd" d="M40 232V24H136A72 72 0 0 1 136 168H88V232ZM88 72V120H136A24 24 0 0 0 136 72Z"/><circle fill="currentColor" cx="196" cy="208" r="24"/></symbol>
+    </defs>
+  </svg>
+  <main>
+    <header>
+      <div><p class="eyebrow">Рядом / выбор знака / 25.10.2026</p><h1>Три способа<br>быть рядом.</h1></div>
+      <p>Тёплый помощник, который замечает небольшие подтверждённые шаги. Три векторных направления для выбора.</p>
+    </header>
+    <section class="grid" aria-label="Варианты логотипа">
+      <article>
+        <div class="card-top"><span>A / абстрактный знак</span><span class="recommended">Рекомендуем</span></div>
+        <div class="large"><svg role="img" aria-label="Спутник: открытая дуга и отдельная точка"><use href="#sputnik"/></svg></div>
+        <div class="lockup"><svg aria-hidden="true"><use href="#sputnik"/></svg><span class="word">Рядом</span></div>
+        <div class="description"><h2>Спутник</h2><p>Мягкая дуга остаётся рядом с точкой света. Спокойное присутствие и личное пространство — без образа контроля.</p></div>
+        <div class="tests">
+          <div class="size-row"><div class="size"><svg width="64" height="64" aria-hidden="true"><use href="#sputnik"/></svg><span>64 px</span></div><div class="size"><svg width="32" height="32" aria-hidden="true"><use href="#sputnik"/></svg><span>32 px</span></div><div class="size"><svg width="16" height="16" aria-hidden="true"><use href="#sputnik"/></svg><span>16 px</span></div></div>
+          <div class="mono-row"><div class="mono black"><svg aria-hidden="true"><use href="#sputnik"/></svg><span>Один цвет</span></div><div class="mono white"><svg aria-hidden="true"><use href="#sputnik"/></svg><span>Инверсия</span></div></div>
+          <a class="download" href="01-sputnik.svg" download>Скачать SVG →</a>
+        </div>
+      </article>
+      <article>
+        <div class="card-top"><span>B / графический маршрут</span><span>Движение</span></div>
+        <div class="large"><svg role="img" aria-label="Нить шагов: мягкая ступенчатая линия и точка впереди"><use href="#nit"/></svg></div>
+        <div class="lockup"><svg aria-hidden="true"><use href="#nit"/></svg><span class="word">Рядом</span></div>
+        <div class="description"><h2>Нить шагов</h2><p>Один непрерывный путь складывается из небольших шагов. Отдельная точка оставляет место для следующего действия.</p></div>
+        <div class="tests">
+          <div class="size-row"><div class="size"><svg width="64" height="64" aria-hidden="true"><use href="#nit"/></svg><span>64 px</span></div><div class="size"><svg width="32" height="32" aria-hidden="true"><use href="#nit"/></svg><span>32 px</span></div><div class="size"><svg width="16" height="16" aria-hidden="true"><use href="#nit"/></svg><span>16 px</span></div></div>
+          <div class="mono-row"><div class="mono black"><svg aria-hidden="true"><use href="#nit"/></svg><span>Один цвет</span></div><div class="mono white"><svg aria-hidden="true"><use href="#nit"/></svg><span>Инверсия</span></div></div>
+          <a class="download" href="02-nit.svg" download>Скачать SVG →</a>
+        </div>
+      </article>
+      <article>
+        <div class="card-top"><span>C / монограмма</span><span>Имя</span></div>
+        <div class="large"><svg role="img" aria-label="Монограмма: буква Р с отдельной точкой"><use href="#monogram"/></svg></div>
+        <div class="lockup"><svg aria-hidden="true"><use href="#monogram"/></svg><span class="word">Рядом</span></div>
+        <div class="description"><h2>Р.</h2><p>Первая буква имени и точка завершённого действия. Прямой, собранный знак с округлой чашей и устойчивой опорой.</p></div>
+        <div class="tests">
+          <div class="size-row"><div class="size"><svg width="64" height="64" aria-hidden="true"><use href="#monogram"/></svg><span>64 px</span></div><div class="size"><svg width="32" height="32" aria-hidden="true"><use href="#monogram"/></svg><span>32 px</span></div><div class="size"><svg width="16" height="16" aria-hidden="true"><use href="#monogram"/></svg><span>16 px</span></div></div>
+          <div class="mono-row"><div class="mono black"><svg aria-hidden="true"><use href="#monogram"/></svg><span>Один цвет</span></div><div class="mono white"><svg aria-hidden="true"><use href="#monogram"/></svg><span>Инверсия</span></div></div>
+          <a class="download" href="03-monogram.svg" download>Скачать SVG →</a>
+        </div>
+      </article>
+    </section>
+    <div class="note"><p><strong>Рекомендация — «Спутник».</strong> Самый тёплый и спокойный образ, который поддержит светлячка, не повторяя персонажа. «Нить» сильнее подчёркивает путь, «Р.» быстрее связывается с названием.</p><p><strong>Сейчас выбираем направление.</strong> На сайте ничего не заменено. Надпись «Рядом» здесь — пример сочетания с системным шрифтом; сами скачиваемые знаки состоят только из векторной геометрии.</p></div>
+    <footer>Концепты выполнены по процессу <a href="https://github.com/kaankiziltug/logo-design-skill/blob/main/skills/logo-design/SKILL.md">logo-design skill</a>. SVG: currentColor, прозрачный фон, без встроенного растра. <a href="README.md">Метод и результаты проверки</a>.</footer>
+  </main>
+</body>
+</html>

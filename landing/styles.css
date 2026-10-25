@@ -1119,6 +1119,224 @@ summary:hover {
     font-size: 12px !important;
   }
 }
+.hero-scene {
+  margin-top: 74px;
+}
+.hero-mascot {
+  position: absolute;
+  top: -106px;
+  right: 14px;
+  width: 150px;
+  height: 126px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+.scene-top {
+  padding-bottom: 14px;
+}
+.case-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+.case-choice {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+  border-radius: 7px;
+  min-height: 44px;
+  padding: 8px 11px;
+  font-size: 12px;
+}
+.case-choice[aria-pressed="true"] {
+  background: var(--apricot);
+  color: var(--bg);
+  border-color: var(--apricot);
+}
+.case-choice:hover {
+  border-color: var(--apricot);
+}
+.scene-goal p {
+  min-height: 3.6em;
+  display: flex;
+  align-items: center;
+}
+.source-note > p {
+  font-size: clamp(17px, 1.6vw, 22px);
+  min-height: 5.1em;
+}
+.scene-result strong #case-count-value {
+  font-size: 28px;
+  color: var(--sage);
+}
+.case-detail {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+  min-height: 3.2em;
+  margin-top: 5px;
+}
+.case-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  margin-top: 14px;
+  padding-top: 8px;
+}
+#case-pause {
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 10px 0;
+  border: 0;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  min-height: 44px;
+}
+.case-synthetic {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: right;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.vision-section {
+  background: oklch(23% 0.018 68);
+  border-block: 1px solid var(--line);
+}
+.vision-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 66px;
+  align-items: center;
+}
+.vision-label {
+  color: var(--apricot);
+}
+.vision-intro {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.85;
+  max-width: 520px;
+  margin-top: 22px;
+}
+.vision-art img {
+  width: 100%;
+  height: auto;
+}
+.vision-art figcaption {
+  margin-top: -8px;
+}
+.vision-flow {
+  list-style: none;
+  margin: 52px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 36px;
+}
+.vision-flow li {
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+}
+.vision-flow li > span {
+  color: var(--apricot);
+  font-size: 12px;
+}
+.vision-flow h3 {
+  font-size: 21px;
+  margin-top: 12px;
+}
+.vision-flow p {
+  font-size: 14px;
+  color: var(--muted);
+  margin-top: 10px;
+  max-width: 340px;
+}
+.vision-limit {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.8;
+  max-width: 950px;
+  margin-top: 32px;
+}
+.vision-limit strong {
+  color: var(--text);
+  font-weight: 550;
+}
+@media (max-width: 760px) {
+  .hero-scene {
+    margin-top: 96px;
+  }
+  .hero-mascot {
+    top: -92px;
+    right: 8px;
+    width: 124px;
+    height: 105px;
+  }
+  .case-choices {
+    gap: 5px;
+  }
+  .case-choice {
+    padding-inline: 8px;
+    font-size: 12px;
+  }
+  .scene-goal p {
+    font-size: 24px;
+  }
+  .source-note > p {
+    font-size: 17px;
+  }
+  .case-footer {
+    align-items: flex-start;
+  }
+  .case-synthetic {
+    max-width: 110px;
+    padding-top: 10px;
+  }
+  .vision-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .vision-intro {
+    font-size: 14px;
+  }
+  .vision-art {
+    max-width: 470px;
+    margin-inline: auto;
+  }
+  .vision-flow {
+    grid-template-columns: 1fr;
+    gap: 22px;
+    margin-top: 34px;
+  }
+  .vision-flow li {
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: 0 14px;
+  }
+  .vision-flow h3 {
+    margin-top: 0;
+  }
+  .vision-flow p {
+    grid-column: 2;
+    max-width: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   :root {
     scroll-behavior: auto;

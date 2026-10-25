@@ -111,10 +111,14 @@ export async function checkLanding(page, { baseUrl, outputDir }) {
   );
   await page.locator("body").click({ position: { x: 5, y: 5 } });
   await page.goto(baseUrl);
+  await page.locator(".vision-art img").scrollIntoViewIfNeeded();
+  await page.locator(".vision-art img").evaluate((image) => image.decode());
+  await page.locator(".product-figure img").scrollIntoViewIfNeeded();
   await page.locator(".product-figure img").evaluate(async (image) => {
     await image.decode();
     if (image.naturalWidth !== 1440 || image.naturalHeight !== 1100) throw new Error("Unexpected verified product screenshot");
   });
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
   await page.screenshot({
     path: join(outputDir, "desktop.png"),
     fullPage: true,

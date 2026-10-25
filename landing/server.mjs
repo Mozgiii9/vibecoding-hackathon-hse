@@ -11,6 +11,12 @@ const files = new Map([
   ["/styles.css", ["styles.css", "text/css; charset=utf-8"]],
   ["/config.js", ["config.js", "text/javascript; charset=utf-8"]],
   ["/app.js", ["app.js", "text/javascript; charset=utf-8"]],
+  ["/slideshow.js", ["slideshow.js", "text/javascript; charset=utf-8"]],
+  ["/assets/firefly-pixel.png", ["assets/firefly-pixel.png", "image/png"]],
+  [
+    "/assets/context-recorder-3d.png",
+    ["assets/context-recorder-3d.png", "image/png"],
+  ],
   ["/assets/favicon.svg", ["assets/favicon.svg", "image/svg+xml"]],
   ["/assets/og-image.png", ["assets/og-image.png", "image/png"]],
   [

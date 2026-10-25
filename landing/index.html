@@ -33,6 +33,7 @@
     <link rel="stylesheet" href="styles.css" />
     <script src="config.js" defer></script>
     <script src="app.js" defer></script>
+    <script src="slideshow.js" defer></script>
   </head>
   <body>
     <a class="skip-link" href="#main">Перейти к содержанию</a>
@@ -75,38 +76,96 @@
           </p>
         </div>
         <figure class="hero-scene" aria-labelledby="scene-caption">
+          <img
+            class="hero-mascot"
+            src="assets/firefly-pixel.png"
+            alt="Пиксельный светлячок, тёплый помощник Рядом"
+            width="1374"
+            height="1145"
+            decoding="async"
+          />
           <div class="scene-top">
-            <span class="small-label">Один маленький шаг</span
-            ><span class="scene-date">из обычного дня</span>
+            <span class="small-label">Разные цели. Один принцип.</span>
           </div>
-          <div class="scene-goal">
-            <span class="orbit-mark" aria-hidden="true">↗</span>
-            <div>
-              <span class="small-label">Ваша цель</span>
-              <p>Попасть на<br />ML-стажировку</p>
+          <div
+            class="case-choices"
+            role="group"
+            aria-label="Выберите пример цели"
+          >
+            <button
+              type="button"
+              class="case-choice"
+              data-case="0"
+              aria-pressed="true" disabled
+            >
+              ML-стажировка
+            </button>
+            <button
+              type="button"
+              class="case-choice"
+              data-case="1"
+              aria-pressed="false" disabled
+            >
+              300 000 ₽
+            </button>
+            <button
+              type="button"
+              class="case-choice"
+              data-case="2"
+              aria-pressed="false" disabled
+            >
+              Повышение
+            </button>
+          </div>
+          <div id="case-live" aria-live="off" aria-atomic="true">
+            <div class="scene-goal">
+              <span class="orbit-mark" aria-hidden="true">↗</span>
+              <div>
+                <span class="small-label">Ваша цель</span>
+                <p id="case-goal">Попасть на ML-стажировку</p>
+              </div>
             </div>
-          </div>
-          <div class="scene-thread" aria-hidden="true">
-            <span></span><i></i><span></span>
-          </div>
-          <div class="source-note">
-            <div class="note-heading">
-              <span aria-hidden="true">≡</span> Запись за сегодня
+            <div class="scene-thread" aria-hidden="true">
+              <span></span><i></i><span></span>
             </div>
-            <p>
-              Немного волновался.<br /><mark>Сегодня отправил резюме</mark
-              ><br />на ML-стажировку.
+            <div class="source-note">
+              <div class="note-heading">
+                <span aria-hidden="true">≡</span> Запись за сегодня
+              </div>
+              <p>
+                <span id="case-note-intro">Немного волновался.</span><br /><mark
+                  id="case-quote"
+                  >Сегодня отправил резюме</mark
+                ><br /><span id="case-note-tail">на ML-стажировку.</span>
+              </p>
+              <span class="note-tag">Точная цитата из записи</span>
+            </div>
+            <div class="scene-result">
+              <span class="check-circle" aria-hidden="true">✓</span>
+              <div>
+                <p id="case-outcome">Один отклик уже есть</p>
+                <span>После вашего подтверждения</span>
+              </div>
+              <strong
+                ><span id="case-count-value">1</span
+                ><span id="case-count-target"> / 3</span></strong
+              >
+            </div>
+            <p id="case-detail" class="case-detail">
+              Считаем подтверждённые отклики по выбранному критерию.
             </p>
-            <span class="note-tag">Точная цитата из записи</span>
           </div>
-          <div class="scene-result">
-            <span class="check-circle" aria-hidden="true">✓</span>
-            <div>
-              <p>Один отклик уже есть</p>
-              <span>После вашего подтверждения</span>
-            </div>
-            <strong>1<span> / 3</span></strong>
+          <div class="case-footer">
+            <button id="case-pause" type="button" hidden>
+              Остановить слайдшоу</button
+            ><span class="case-synthetic">Синтетические данные</span>
           </div>
+          <p
+            id="case-status"
+            class="visually-hidden"
+            role="status"
+            aria-live="polite"
+          ></p>
           <figcaption id="scene-caption">
             Иллюстрация сценария на синтетических данных
           </figcaption>
@@ -137,6 +196,78 @@
           <p>
             Рядом помогает связать выбранные записи с конкретной целью. И
             вернуться к словам, из которых получился каждый шаг.
+          </p>
+        </div>
+      </section>
+
+      <section
+        id="day-context"
+        class="vision-section section"
+        aria-labelledby="vision-title"
+      >
+        <div class="wrap">
+          <div class="vision-grid">
+            <div>
+              <p class="eyebrow vision-label">
+                Следующий этап · концепция развития
+              </p>
+              <h2 id="vision-title">
+                Не пересказывать день.<br /><span>Сохранить его смысл.</span>
+              </h2>
+              <p class="vision-intro">
+                Агенту нужен контекст. Но постоянно дописывать его вручную
+                становится отдельной работой. Мы хотим убрать это ограничение:
+                вместо десятка заметок о дне использовать запись с диктофона на
+                ваших устройствах.
+              </p>
+              <p class="vision-intro">
+                Вы включаете запись, а после её остановки система готовит
+                краткое резюме, собирает события по темам и связывает важное с
+                вашей целью. Проверка и подтверждение действий остаются за вами.
+              </p>
+            </div>
+            <figure class="vision-art">
+              <img
+                src="assets/context-recorder-3d.png"
+                width="1536"
+                height="1024"
+                alt="Предметная 3D-иллюстрация: диктофон рядом с организованными карточками контекста"
+                loading="lazy"
+                decoding="async"
+              />
+              <figcaption>Иллюстрация будущего сценария</figcaption>
+            </figure>
+          </div>
+          <ol class="vision-flow">
+            <li>
+              <span>01</span>
+              <h3>День в аудио</h3>
+              <p>
+                Вы сами включаете диктофон на телефоне или другом своём
+                устройстве.
+              </p>
+            </li>
+            <li>
+              <span>02</span>
+              <h3>Короткое резюме</h3>
+              <p>
+                Суммаризация выделяет решения, договорённости и важные события
+                из записи.
+              </p>
+            </li>
+            <li>
+              <span>03</span>
+              <h3>Контекст у цели</h3>
+              <p>
+                События компонуются по темам. Предложенные шаги проверяете и
+                подтверждаете вы.
+              </p>
+            </li>
+          </ol>
+          <p class="vision-limit">
+            <strong>Что есть сейчас:</strong> ручной импорт выбранного текста и
+            короткого аудио. Запись дня с устройств, её фоновая обработка и
+            суммаризация дня пока являются концепцией следующей версии.
           </p>
         </div>
       </section>
@@ -465,16 +596,6 @@
         ></a
       >
       <p>Личный второй мозг · Хакатон, 2026</p>
-      <p class="attribution">
-        На открытой основе
-        <a
-          href="https://github.com/BrainDriveAI/BrainDrive"
-          target="_blank"
-          rel="noopener noreferrer"
-          >BrainDrive</a
-        >
-        (MIT). Самостоятельный проект, без официального партнёрства.
-      </p>
     </footer>
   </body>
 </html>

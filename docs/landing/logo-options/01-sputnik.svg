@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" color="#24211f" role="img" aria-labelledby="title">
+  <title id="title">Рядом — Спутник</title>
+  <path fill="currentColor" d="M128 24A104 104 0 1 0 232 128H184A56 56 0 1 1 128 72Z"/>
+  <circle fill="currentColor" cx="196" cy="60" r="28"/>
+</svg>

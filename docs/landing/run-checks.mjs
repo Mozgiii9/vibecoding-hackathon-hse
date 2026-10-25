@@ -1,7 +1,9 @@
 import { pathToFileURL } from "node:url";
 import { resolve } from "node:path";
+import { writeFile } from "node:fs/promises";
 import { checkLanding } from "./check-browser.mjs";
 import { checkConfig } from "./check-config.mjs";
+import { checkSlideshow } from "./check-slideshow.mjs";
 
 // Reuse an installed Playwright module; no landing dependency installation.
 const moduleUrl = process.env.PLAYWRIGHT_MODULE
@@ -18,7 +20,11 @@ try {
   const report = await checkLanding(page, options);
   await page.close();
   const config = await checkConfig(browser, options);
-  console.log(JSON.stringify({ ...report, config }, null, 2));
+  const slideshowPage = await browser.newPage();
+  const slideshow = await checkSlideshow(slideshowPage, options);
+  await writeFile(`${options.outputDir}/slideshow-report.json`, `${JSON.stringify(slideshow, null, 2)}\n`);
+  await slideshowPage.close();
+  console.log(JSON.stringify({ ...report, config, slideshow }, null, 2));
 } finally {
   await browser.close();
 }
