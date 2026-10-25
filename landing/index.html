@@ -96,7 +96,8 @@
               type="button"
               class="case-choice"
               data-case="0"
-              aria-pressed="true" disabled
+              aria-pressed="true"
+              disabled
             >
               ML-стажировка
             </button>
@@ -104,7 +105,8 @@
               type="button"
               class="case-choice"
               data-case="1"
-              aria-pressed="false" disabled
+              aria-pressed="false"
+              disabled
             >
               300 000 ₽
             </button>
@@ -112,7 +114,8 @@
               type="button"
               class="case-choice"
               data-case="2"
-              aria-pressed="false" disabled
+              aria-pressed="false"
+              disabled
             >
               Повышение
             </button>
@@ -156,6 +159,44 @@
             </p>
           </div>
           <div class="case-footer">
+            <div
+              class="case-arrows"
+              role="group"
+              aria-label="Перелистывание сценариев"
+            >
+              <button
+                class="case-arrow"
+                id="case-prev"
+                type="button"
+                aria-label="Предыдущий сценарий"
+                disabled
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  width="22"
+                  height="22"
+                  aria-hidden="true"
+                >
+                  <path d="m14 5-7 7 7 7" />
+                </svg>
+              </button>
+              <button
+                class="case-arrow"
+                id="case-next"
+                type="button"
+                aria-label="Следующий сценарий"
+                disabled
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  width="22"
+                  height="22"
+                  aria-hidden="true"
+                >
+                  <path d="m10 5 7 7-7 7" />
+                </svg>
+              </button>
+            </div>
             <button id="case-pause" type="button" hidden>
               Остановить слайдшоу</button
             ><span class="case-synthetic">Синтетические данные</span>
@@ -228,10 +269,10 @@
             </div>
             <figure class="vision-art">
               <img
-                src="assets/context-recorder-3d.png"
+                src="assets/context-devices-3d.png"
                 width="1536"
                 height="1024"
-                alt="Предметная 3D-иллюстрация: диктофон рядом с организованными карточками контекста"
+                alt="Предметная 3D-иллюстрация: диктофон, телефон и смарт-часы рядом с карточками контекста"
                 loading="lazy"
                 decoding="async"
               />
@@ -243,8 +284,8 @@
               <span>01</span>
               <h3>День в аудио</h3>
               <p>
-                Вы сами включаете диктофон на телефоне или другом своём
-                устройстве.
+                Вы сами выбираете устройство: диктофон, телефон или смарт-часы —
+                и включаете запись.
               </p>
             </li>
             <li>
@@ -293,13 +334,70 @@
             <span aria-hidden="true">◉</span> Демонстрация на синтетических
             данных. Без запроса к AI и без ввода ваших данных.
           </p>
+          <div class="demo-toolbar">
+            <div
+              class="demo-case-choices"
+              role="group"
+              aria-label="Сценарий демонстрации"
+            >
+              <button
+                class="demo-case-choice"
+                data-demo-case="0"
+                aria-pressed="true"
+                type="button"
+                disabled
+              >
+                ML-стажировка
+              </button>
+              <button
+                class="demo-case-choice"
+                data-demo-case="1"
+                aria-pressed="false"
+                type="button"
+                disabled
+              >
+                300 000 ₽
+              </button>
+              <button
+                class="demo-case-choice"
+                data-demo-case="2"
+                aria-pressed="false"
+                type="button"
+                disabled
+              >
+                Повышение
+              </button>
+            </div>
+            <div
+              class="demo-view-choices"
+              role="group"
+              aria-label="Режим просмотра цели"
+            >
+              <button
+                id="demo-view-process"
+                type="button"
+                aria-pressed="true"
+                disabled
+              >
+                Шаг за шагом
+              </button>
+              <button
+                id="demo-view-complete"
+                type="button"
+                aria-pressed="false"
+                disabled
+              >
+                Цель достигнута <span aria-hidden="true">✓</span>
+              </button>
+            </div>
+          </div>
           <div class="demo-workspace">
             <aside class="demo-goal" aria-label="Цель демонстрации">
               <p class="small-label">Цель и три критерия</p>
-              <h3>Подготовиться к собеседованию на ML-стажировку</h3>
+              <h3 id="demo-goal-title">Получить предложение ML-стажировки</h3>
               <ol class="criteria">
                 <li class="active-criterion">
-                  <span>Отправить 3 отклика</span
+                  <span id="criterion-label-0">Отправить 3 отклика</span
                   ><strong id="criterion-count">0 из 3</strong>
                   <div
                     class="progress-track"
@@ -314,14 +412,43 @@
                   </div>
                 </li>
                 <li>
-                  <span>Решить 5 задач по ML</span><strong>0 из 5</strong>
+                  <span id="criterion-label-1">Решить 5 задач по ML</span
+                  ><strong id="criterion-count-1">0 из 5</strong>
+                  <div
+                    class="progress-track"
+                    id="criterion-progress-1"
+                    role="progressbar"
+                    aria-label="Решённые задачи по ML"
+                    aria-valuemin="0"
+                    aria-valuemax="5"
+                    aria-valuenow="0"
+                  >
+                    <span></span>
+                  </div>
                 </li>
                 <li>
-                  <span>Пройти пробное интервью</span><strong>0 из 1</strong>
+                  <span id="criterion-label-2"
+                    >Получить предложение стажировки</span
+                  ><strong id="criterion-count-2">0 из 1</strong>
+                  <div
+                    class="progress-track"
+                    id="criterion-progress-2"
+                    role="progressbar"
+                    aria-label="Предложение стажировки"
+                    aria-valuemin="0"
+                    aria-valuemax="1"
+                    aria-valuenow="0"
+                  >
+                    <span></span>
+                  </div>
                 </li>
               </ol>
               <p class="goal-footnote">
                 Это счётчик действий по критерию, а не оценка вас.
+              </p>
+              <p id="demo-case-note" class="demo-case-note">
+                Все примеры синтетические. Подтверждённый шаг и достигнутая цель
+                показаны отдельно.
               </p>
             </aside>
             <div class="demo-main">
@@ -345,6 +472,12 @@
                   критерию. Счётчик по-прежнему на нуле.
                 </p>
               </div>
+              <ul
+                class="demo-achievements"
+                id="demo-achievements"
+                aria-label="Основания достигнутой цели"
+                hidden
+              ></ul>
               <div class="demo-controls" id="demo-controls" hidden>
                 <button
                   class="button button-primary"

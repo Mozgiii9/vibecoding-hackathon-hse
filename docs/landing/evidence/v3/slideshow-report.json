@@ -1,0 +1,9 @@
+{
+  "cases": "ML / 300 000 ₽ / повышение PASS",
+  "keyboard": "Native Enter / Space PASS",
+  "arrows": "Mouse / Enter / Space; forward / backward wrap; focus / announcement / manual pause PASS",
+  "autoplay": "8 seconds; offscreen / hover / focus / manual pause PASS",
+  "reducedMotion": "Starts paused; explicit opt-in PASS",
+  "independentDemo": "0 → 0 → 1 PASS",
+  "errors": []
+}

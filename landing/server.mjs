@@ -24,6 +24,10 @@ const files = new Map([
     ["assets/product-audio-verified.png", "image/png"],
   ],
 ]);
+files.set("/assets/context-devices-3d.png", [
+  "assets/context-devices-3d.png",
+  "image/png",
+]);
 const port = Number(process.env.PORT || 4178);
 const host = process.env.HOST || "127.0.0.1";
 if (!Number.isInteger(port) || port < 1 || port > 65535)

@@ -105,7 +105,7 @@ export async function checkLanding(page, { baseUrl, outputDir }) {
   );
   assert.equal(
     await page
-      .locator(".progress-track span")
+      .locator("#criterion-progress span")
       .evaluate((element) => getComputedStyle(element).transitionDuration),
     "0s",
   );

@@ -1,0 +1,59 @@
+{
+  "checkedAt": "2026-10-25T13:23:12.073Z",
+  "results": [
+    {
+      "width": 320,
+      "index": 0,
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "width": 320,
+      "index": 1,
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "width": 320,
+      "index": 2,
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "width": 390,
+      "index": 0,
+      "viewport": 390,
+      "document": 390
+    },
+    {
+      "width": 390,
+      "index": 1,
+      "viewport": 390,
+      "document": 390
+    },
+    {
+      "width": 390,
+      "index": 2,
+      "viewport": 390,
+      "document": 390
+    },
+    {
+      "width": 1440,
+      "index": 0,
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "width": 1440,
+      "index": 1,
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "width": 1440,
+      "index": 2,
+      "viewport": 1440,
+      "document": 1440
+    }
+  ]
+}

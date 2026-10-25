@@ -7,6 +7,8 @@
   const choices = [...scene.querySelectorAll(".case-choice[data-case]")];
   const byId = (id) => scene.querySelector(`#${id}`);
   const pause = byId("case-pause");
+  const previous = byId("case-prev");
+  const next = byId("case-next");
   const live = byId("case-live");
   const status = byId("case-status");
   const fields = {
@@ -22,6 +24,8 @@
   if (
     choices.length !== 3 ||
     !pause ||
+    !previous ||
+    !next ||
     !live ||
     !status ||
     Object.entries(fields).some(([key, node]) => key !== "detail" && !node)
@@ -80,13 +84,13 @@
   }
 
   function canAdvance() {
-    return autoplay && !hovering && !focused && !document.hidden && inViewport();
+    return (
+      autoplay && !hovering && !focused && !document.hidden && inViewport()
+    );
   }
 
   function updateControl() {
-    pause.textContent = autoplay
-      ? "Остановить слайдшоу"
-      : "Запустить слайдшоу";
+    pause.textContent = autoplay ? "Остановить слайдшоу" : "Запустить слайдшоу";
     live.setAttribute("aria-live", autoplay ? "off" : "polite");
   }
 
@@ -97,7 +101,13 @@
       if (node) node.textContent = example[key];
     }
     if (!motion.matches && typeof live.animate === "function") {
-      live.animate([{ opacity: 0.25, transform: "translateY(4px)" }, { opacity: 1, transform: "translateY(0)" }], { duration: 220, easing: "cubic-bezier(.16,1,.3,1)" });
+      live.animate(
+        [
+          { opacity: 0.25, transform: "translateY(4px)" },
+          { opacity: 1, transform: "translateY(0)" },
+        ],
+        { duration: 220, easing: "cubic-bezier(.16,1,.3,1)" },
+      );
     }
     choices.forEach((button) => {
       button.setAttribute(
@@ -126,16 +136,27 @@
     }, 8000);
   }
 
+  function select(index) {
+    autoplay = false;
+    current = index;
+    render(true);
+    schedule();
+  }
+
   choices.forEach((button) => {
-    button.disabled = false;
     button.addEventListener("click", () => {
       const index = Number(button.dataset.case);
       if (!Number.isInteger(index) || !cases[index]) return;
-      autoplay = false;
-      current = index;
-      render(true);
-      schedule();
+      select(index);
     });
+  });
+  previous.setAttribute("aria-label", "Предыдущий сценарий");
+  next.setAttribute("aria-label", "Следующий сценарий");
+  previous.addEventListener("click", () => {
+    select((current + cases.length - 1) % cases.length);
+  });
+  next.addEventListener("click", () => {
+    select((current + 1) % cases.length);
   });
   pause.addEventListener("click", () => {
     autoplay = !autoplay;
@@ -176,5 +197,8 @@
   }
   pause.hidden = false;
   render();
+  [...choices, previous, next].forEach((button) => {
+    button.disabled = false;
+  });
   schedule();
 })();
