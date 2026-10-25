@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-25T13:18:55.935Z",
+  "updatedAt": "2026-10-25T13:23:10.333Z",
   "origin": "https://77.239.111.64",
   "physicalDevice": {
     "tlsAndLoginScreen": "CONFIRMED_BY_OWNER",
@@ -17,9 +17,71 @@
     "credentialsAndTokensExcluded": true
   },
   "hypothesis": {
-    "identifierAutoCapitalization": "POSSIBLE_NOT_CONFIRMED",
-    "basis": "Login identifier text input has no explicit autoCapitalize/autoCorrect override; entered iPhone value was not observed"
+    "identifierAutoCapitalization": "NOT_SUPPORTED_BY_OBSERVED_FAILURES",
+    "basis": "Recent failed logins passed identifier comparison and failed password verification."
   },
-  "nextStep": "Paste exact case-sensitive synthetic credentials on physical device; report result. No password reset, auth bypass or application restart performed.",
-  "status": "DEVICE_LOGIN_PENDING_RECHECK"
+  "nextStep": "Owner confirms whether subsequent successful login at 16:19 MSK was the physical iPhone, then tests text/audio. No password reset, auth bypass or app restart.",
+  "status": "DEVICE_LOGIN_PENDING_RECHECK",
+  "audit": {
+    "source": "Own restored C memory diagnostics/audit",
+    "retainedFieldsOnly": [
+      "timestamp",
+      "event",
+      "reason"
+    ],
+    "recentLoginEvents": [
+      {
+        "timestamp": "2026-10-25T13:12:19.063Z",
+        "event": "auth.login.failure",
+        "reason": "password_mismatch"
+      },
+      {
+        "timestamp": "2026-10-25T13:12:34.019Z",
+        "event": "auth.login.failure",
+        "reason": "password_mismatch"
+      },
+      {
+        "timestamp": "2026-10-25T13:13:09.196Z",
+        "event": "auth.login.failure",
+        "reason": "password_mismatch"
+      },
+      {
+        "timestamp": "2026-10-25T13:15:03.919Z",
+        "event": "auth.login.failure",
+        "reason": "password_mismatch"
+      },
+      {
+        "timestamp": "2026-10-25T13:15:18.381Z",
+        "event": "auth.login.failure",
+        "reason": "password_mismatch"
+      },
+      {
+        "timestamp": "2026-10-25T13:16:43.821Z",
+        "event": "auth.login.success",
+        "provenance": "Integrator fresh public Chrome UI"
+      },
+      {
+        "timestamp": "2026-10-25T13:17:01.204Z",
+        "event": "auth.login.failure",
+        "reason": "password_mismatch"
+      },
+      {
+        "timestamp": "2026-10-25T13:18:33.947Z",
+        "event": "auth.login.failure",
+        "reason": "password_mismatch"
+      },
+      {
+        "timestamp": "2026-10-25T13:18:52.990Z",
+        "event": "auth.login.failure",
+        "reason": "password_mismatch"
+      },
+      {
+        "timestamp": "2026-10-25T13:19:19.147Z",
+        "event": "auth.login.success",
+        "provenance": "Device/operator not observed; owner confirmation pending"
+      }
+    ],
+    "observedFailureReason": "password_mismatch",
+    "specificDeviceCorrelation": "NOT_OBSERVED"
+  }
 }
