@@ -41,11 +41,16 @@ Base SHA: `484c396e71b3fbfe2ff65c04f6260e1899aa6bd1` из `origin/codex/integrat
 | Реальный audio upload/STT/evidence/confirm | NOT_RUN | B ещё не передал реальный adapter в проверенную ветку |
 | Fixed SHA source-build и чистый запуск | PASS f93536d, первый FAIL сохранён | Linux/x64 Node22.21.1, git archive SHA256 ea04f24d0e26817c1218c94737f7bfeff611e11071572dfc818c95b21a5c3aa5; backend/MCP/web ci/build и web typecheck exit0; build manifest 11:20:01 UTC |
 | Серверный health/auth smoke нашего SHA | PASS f93536d | Изолированный A source launcher без Docker; built React entrypoint, release SHA, direct/proxyhealth200, auth bootstrap200, анонимные goals401; один gateway+3 MCP, все5портов loopback |
-| HTTP restart с сохранённой UI-целью | NOT_RUN | Отдельно от PASS unit/process persistence |
+| Production live Gemini UI f93536d | PASS | 14:21:11–14:21:54 МСК, external production static edge→gateway→реальная модель; main1PASS/6skipped, точные source/evidence IDs, counts/revisions и desktop/mobile390 |
+| HTTP restart с сохранённой UI-целью | PASS f93536d | Supervisor81963 реально остановлен, тот же instance перезапущен PID82436; smokePASS, 14:23:24 resume1/1PASS: ordinary login, полный goal/evidence/progress checkpoint и все source quotes на desktop/mobile |
+| Backup/restore настоящей synthetic UI-памяти | PASS f93536d | Остановленный собственный gateway; backup49файлов, новая restored memory и отдельная приватная копия своих synthetic secrets. State SHA256 0522b2dbed62784e7fabffcdd21766ccb669b4d1f743388eda0a2a45808388a6 совпадает |
+| HTTP/UI на восстановленной копии | PASS f93536d | Отдельный instance restored-f935, supervisor82655; smokePASS, 14:24:55 resume1/1PASS с тем же pre-restart checkpoint, IDs/revisions/status/counts/quotes полностью совпали. Исходная память сохранена |
 | Приёмка финального общего SHA C | NOT_RUN | SHA/кандидат C ещё не передан |
 | Проверка резервного трёхминутного видео | NOT_RUN | Комплект защиты C ещё не передан |
 
 Локальный live прогон использовал исходники реализации base и отдельный временный runtime без MCP; он не подменяет production acceptance нашего source-built SHA. На первом live прогоне выполненное действие вернуло `provider_failed`, UI показал ошибку, прогресс не вырос. Точная причина ответа модели тогда не снималась; не приписываем сбой конкретной валидации. Повтор прошёл без смены провайдера/fallback. Traces, screenshots и video выключены, provider diagnostics сохраняют только форму ответа.
+
+Production доказательства: [source-f935-summary.json](evidence/source-f935-summary.json). Полные приватные browser отчёты на машине проверки: `/private/tmp/ryadom-source-f935-main.json`, `-restart.json`, `-restore.json`, synthetic checkpoint `/private/tmp/ryadom-source-f935-state.json`. Это PASS текстового production кандидата A, а не audio/full MVP и не приёмка более нового общего SHA C.
 
 ## Точная область A3
 
