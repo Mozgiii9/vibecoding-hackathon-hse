@@ -1,0 +1,42 @@
+{
+  "checkedAt": "2026-10-25T13:30:08.483Z",
+  "sourceSha": "016380af5b7f952f6addd26bb0320808d32d5ed9",
+  "baseUrl": "http://77.239.111.64/",
+  "files": [
+    {
+      "path": "index.html",
+      "bytes": 32164,
+      "sha256": "ee4cc19c14d931e7b21b1a7ef4872befe0f430cebe862e00ca0fbaa3df2d7ce8"
+    },
+    {
+      "path": "styles.css",
+      "bytes": 25653,
+      "sha256": "647e3165efb9501451877fd5974aed7cfb0f885e9ea077b973b07332f73160b1"
+    },
+    {
+      "path": "app.js",
+      "bytes": 19880,
+      "sha256": "2ff060c97038955fafb598d3d68f9b4236eb98834e57a78b0fc7ec5851c25f2c"
+    },
+    {
+      "path": "slideshow.js",
+      "bytes": 6449,
+      "sha256": "7d693a51c081fade517a2a9bcefea3a94fa6f6f72bbce7ef0c6c81deef7ef51d"
+    },
+    {
+      "path": "config.js",
+      "bytes": 194,
+      "sha256": "60e22c01626671c1ac5044e63bb2b0fb2adf23d8b9bec88c2cf5727f3daaefb5"
+    },
+    {
+      "path": "assets/context-devices-3d.png",
+      "bytes": 2013463,
+      "sha256": "218f1138b3c8abc87519988e91161ec1c37b34446802dd7bc56443efdd537a77"
+    },
+    {
+      "path": "assets/firefly-pixel.png",
+      "bytes": 654498,
+      "sha256": "8f48d53def8bc4b2b687132456eaaa3ab867f2abb3e4008d1993d8a182daa1ee"
+    }
+  ]
+}

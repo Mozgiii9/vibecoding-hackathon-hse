@@ -95,3 +95,13 @@ Pre-commit: настроен `.githooks/pre-commit`; должен запуска
 - 3D-правка: телефон и смарт-часы добавлены как альтернативы к диктофону, цвет/материалы сохранены; новая PNG context-devices-3d.png, исходник прежнего ассета оставлен. Промпт devices-v3-prompt.txt.
 - Headless Chrome16:20: 6ширин, клавиатура, visible focus, anchors/reducedmotion, 17ошибочныхURL и noJS PASS; все3flows и completed3×3criteria/evidence PASS; ошибок0, API-запросов0. Отчёты evidence/v3/.
 - Кнопка MVP по прежнему решению владельца остаётся «Ссылка на демо готовится». Новые логотипы не ставились. Backend/среды команды не менялись.
+
+### Публикация v3 и итог
+
+- http://77.239.111.64/; deployed SHA `016380af5b7f952f6addd26bb0320808d32d5ed9`. Архив SHA256 `fb1bd10f96380081e7c121b8431ca80074c207ea58d4bd61da25824c7bd0d67b`. Собственный current указывает на этот release, service active; прошлые выпуски сохранены.
+- HTTP20016:29МСК. Внешний headless16:30МСК: 6ширин безoverflow, zero errors/resources/external calls; prev/next mouse/Enter/Space/wrap/focus/manualpause PASS; 3processflows и3completed goals, по3цитаты PASS. КонфигурацияURL иnoJS PASS.
+- Файлы снаружи побайтно равны исходникам: evidence/v3/public-manifest.json. Публичные отчёты public-browser/config/slideshow/demo-cases-report.json в той же директории.
+- Отдельно всеcompleted cases проверены на320/390/1440 безoverflow, desktop/mobile screenshots просмотрены; completed-layout.json и completed-*.png.
+- Первичный прогон теста требовал уточнить старый locator progress-track после добавления ещё двух критериев. Исправлен только тестовый selector, затем общий локальный и публичный прогоны PASS.
+- Первый SSH-вход закрылся до создания сессии; повторный вход сразу завершён, передано то же проверенное содержимое. Shared среды не трогались.
+- Последний коммит содержит только эти доказательства и не меняет опубликованные файлы.
