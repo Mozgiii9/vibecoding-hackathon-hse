@@ -76,7 +76,7 @@ async function signIn() {
   await page.locator('#identifier').fill(username);
   await page.locator('#password').fill(password);
   const response = page.waitForResponse(responseIs('POST', '/api/auth/login'), { timeout });
-  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+  await page.getByRole('button', { name: /^(Войти|Sign in)$/, exact: true }).click();
   assert((await response).ok(), 'Ordinary UI login failed');
   await expect(page.getByRole('button', { name: 'Выйти', exact: true })).toBeVisible();
 }
@@ -123,7 +123,7 @@ try {
     await page.locator('#new-password').fill(password);
     await page.locator('#confirm-password').fill(password);
     const signup = page.waitForResponse(responseIs('POST', '/api/auth/signup'), { timeout });
-    await page.getByRole('button', { name: 'Create account', exact: true }).click();
+    await page.getByRole('button', { name: /^(Создать аккаунт|Create account)$/, exact: true }).click();
     assert((await signup).ok(), 'Ordinary UI signup failed');
     await expect(page.getByRole('button', { name: 'Выйти', exact: true })).toBeVisible();
     check('ordinary-ui-clean-signup');
