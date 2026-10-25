@@ -4,6 +4,8 @@
 
 Зависимости берутся из установленного `app/builds/typescript/client_web/node_modules/@playwright/test`. Chromium должен быть установлен отдельно. Runner не устанавливает браузеры и зависимости.
 
+При несовпадении bundled revision укажите уже установленный браузер через `AUDIO_SMOKE_EXECUTABLE`. На машине B установлен Chromium1243, тогда как текущая зависимость ожидает1228. Для audio payload runner пассивно читает clone настоящего fetch response внутри страницы: CDP `response.json()` на этом сочетании версий ошибался после фактического успешного ответа сервера. Никакой ответ не заменяется, original fetch/response возвращается приложению неизменным; auth responses и headers не наблюдаются.
+
 Из корня репозитория, после готовности сервисов:
 
 ```powershell

@@ -42,6 +42,15 @@ async function jsonResponse(response) {
   assert(response.ok(), `HTTP ${response.status()} at ${new URL(response.url()).pathname}`);
   return response.json();
 }
+async function observedAudioResult(index) {
+  // Read the real browser-consumed response, avoiding a CDP response-body failure
+  // with the locally available Chromium revision. No request/response is replaced.
+  await page.waitForFunction((index) => globalThis.__ryadomAudioResults?.length > index, index, { timeout });
+  const observed = await page.evaluate((index) => globalThis.__ryadomAudioResults[index], index);
+  assert.equal(observed.status, 200, 'Real audio HTTP response failed');
+  assert(!observed.invalidJson, 'Real audio response was not valid JSON');
+  return observed.body;
+}
 async function screenshot(name) {
   await page.screenshot({ path: path.join(out, name), fullPage: true });
   result.screenshots.push(name);
@@ -82,6 +91,24 @@ try {
   const context = await browser.newContext({ viewport: { width: 1440, height: 1100 }, locale: 'ru-RU' });
   page = await context.newPage();
   page.setDefaultTimeout(20000);
+  await page.addInitScript(() => {
+    globalThis.__ryadomAudioResults = [];
+    const originalFetch = globalThis.fetch.bind(globalThis);
+    globalThis.fetch = async (...args) => {
+      const response = await originalFetch(...args);
+      const input = args[0];
+      const url = new URL(input instanceof Request ? input.url : String(input), location.href);
+      const method = args[1]?.method ?? (input instanceof Request ? input.method : 'GET');
+      if (method.toUpperCase() === 'POST' && url.pathname === '/api/context/audio') {
+        response.clone().json().then((body) => {
+          globalThis.__ryadomAudioResults.push({ status: response.status, body });
+        }).catch(() => {
+          globalThis.__ryadomAudioResults.push({ status: response.status, invalidJson: true });
+        });
+      }
+      return response;
+    };
+  });
   stage = 'ordinary-ui-auth';
   const bootstrapReply = page.waitForResponse(responseIs('GET', '/api/auth/bootstrap-status'), { timeout });
   await page.goto(target.origin, { waitUntil: 'domcontentloaded' });
@@ -125,8 +152,12 @@ try {
   await page.getByLabel('Название источника', { exact: true }).fill('Синтетическая аудиопроверка ML');
   await page.getByLabel('Аудиофайл', { exact: true }).setInputFiles(audio);
   const importedResponse = page.waitForResponse(responseIs('POST', '/api/context/audio'), { timeout });
+  stage = 'audio-submit';
   await page.getByRole('button', { name: 'Найти события', exact: true }).click();
-  const imported = await jsonResponse(await importedResponse);
+  stage = 'audio-response-body';
+  assert((await importedResponse).ok(), 'Real audio upload HTTP status failed');
+  const imported = await observedAudioResult(0);
+  stage = 'audio-result-validation';
   assert.equal(imported.duplicate, false);
   assert.equal(imported.source.kind, 'audio');
   assert(imported.source.text.trim().length > 0, 'Real STT must return a transcript');
@@ -136,6 +167,7 @@ try {
     assert.equal(imported.source.text.slice(event.textStart, event.textEnd), event.quote, 'Evidence quote must be an exact transcript slice');
     if (event.startMs !== null) assert(imported.source.segments.some((segment) => segment.startMs <= event.startMs && segment.endMs >= event.startMs), 'Timestamp must be grounded in STT segments');
   }
+  stage = 'audio-ui-idle';
   await waitIdle();
   const { progress: proposed } = await serverRead('/api/goals/demo/progress');
   assert.deepEqual(counts(proposed), counts(before), 'Model proposals must not increase progress');
@@ -169,7 +201,8 @@ try {
   await page.getByLabel('Название источника', { exact: true }).fill('Та же аудиозапись, другое название');
   const repeatedResponse = page.waitForResponse(responseIs('POST', '/api/context/audio'), { timeout });
   await page.getByRole('button', { name: 'Найти события', exact: true }).click();
-  const repeated = await jsonResponse(await repeatedResponse);
+  assert((await repeatedResponse).ok(), 'Real duplicate upload HTTP status failed');
+  const repeated = await observedAudioResult(1);
   assert.equal(repeated.duplicate, true);
   assert.equal(repeated.source.id, imported.source.id);
   assert.equal(repeated.source.contentHash, imported.source.contentHash);
@@ -195,6 +228,12 @@ try {
   result.status = 'FAIL';
   // Raw Playwright errors can contain entered values; do not serialize them or auth bodies.
   result.failure = { stage, type: error instanceof assert.AssertionError ? 'ASSERTION_FAILED' : 'BROWSER_OR_RUNTIME_FAILED' };
+  if (authenticated && error instanceof Error) {
+    const operation = /^([a-zA-Z.]+):/.exec(error.message)?.[1];
+    if (operation) result.failure.operation = operation;
+    // Only the operation prefix is retained; raw exceptions can contain entered values.
+    if (operation) console.error(`Operation: ${operation}`);
+  }
   console.error(`FAIL ${stage}; inspect the isolated runtime and safe result JSON.`);
   if (authenticated && page) {
     try { await screenshot('failure-after-auth.png'); } catch { /* browser may have exited */ }
