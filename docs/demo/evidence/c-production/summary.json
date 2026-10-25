@@ -1,0 +1,72 @@
+{
+  "checkedAt": "2026-10-25T12:08:25.108Z",
+  "targetSourceSha": "eba453caec424c47a31c8f8947a83ed9389dc8a3",
+  "runnerCheckoutSha": "f875d3df976688cf9aafe23612fcaa3f459dcdc3",
+  "runnerCheckoutShaIsNotDeploymentSha": true,
+  "sourceBuild": "PASS",
+  "productionHttpSmoke": "PASS",
+  "audioUiChecks": {
+    "status": "PASS",
+    "count": 7,
+    "resultFile": "audio-results.json"
+  },
+  "textRecording": {
+    "status": "COMPLETED_TEXT",
+    "duplicate": false,
+    "confirmationPerformed": true,
+    "file": "../../defense/recordings/production-eba453c/completed-text/demo.webm"
+  },
+  "observedWithPlaywrightMcp": {
+    "ordinaryLogin": true,
+    "textIntentionDoesNotIncreaseCounts": true,
+    "audioActionRejectCounts": [
+      0,
+      1,
+      0
+    ],
+    "audioActionReconfirmCounts": [
+      1,
+      1,
+      0
+    ],
+    "browserAfterRestore": {
+      "goal": "Подготовиться к ML-собеседованию",
+      "evidenceCount": 6,
+      "counts": [
+        1,
+        1,
+        0
+      ],
+      "sessionRestored": true,
+      "quote": "Сегодня я отправил резюме на стажировку.",
+      "timecode": "0:04–0:09",
+      "keyboardSourceFocus": "gw-source"
+    },
+    "mobileAfterRestore": {
+      "width": 390,
+      "documentWidth": 390,
+      "minTextPx": 12,
+      "counts": [
+        1,
+        1,
+        0
+      ]
+    }
+  },
+  "restoreProofFile": "restore-proof.json",
+  "initialHarnessFailure": {
+    "stage": "ordinary-ui-auth",
+    "cause": "Outdated English button selector in runner, before signup",
+    "preservedLocally": true,
+    "productFailure": false
+  },
+  "independentFinalA": "PENDING",
+  "humanRehearsals": "NOT_RUN",
+  "physicalProjector": "NOT_RUN",
+  "limitations": [
+    "Goal form is manual; nextStep is a deterministic rule.",
+    "STT sidecar is retained in agent-b isolated environment; source delivery includes service and lockfile.",
+    "Text WebM records a real text path; audio is proven separately by UI evidence.",
+    "Existing upstream starter-pack lint baseline remains documented by A; complete backend suite is not claimed green."
+  ]
+}

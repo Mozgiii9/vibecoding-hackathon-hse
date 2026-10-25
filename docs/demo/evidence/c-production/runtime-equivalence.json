@@ -1,0 +1,38 @@
+{
+  "aVerifiedCandidate": "ef360ae0627e35ddfe615143b5409690ac222ed8",
+  "cDeployedCandidate": "eba453caec424c47a31c8f8947a83ed9389dc8a3",
+  "checks": [
+    {
+      "path": "app/builds/typescript",
+      "atA": "c07136b7c08590e8da7aa78ced4b63ce21166b12",
+      "atC": "c07136b7c08590e8da7aa78ced4b63ce21166b12",
+      "identical": true
+    },
+    {
+      "path": "app/builds/mcp_release",
+      "atA": "56231d749269bc4ca5c61c8c6dccb2e8f9c993e9",
+      "atC": "56231d749269bc4ca5c61c8c6dccb2e8f9c993e9",
+      "identical": true
+    },
+    {
+      "path": "services/stt",
+      "atA": "279419bd3948c43cd8b0cd980104148c154a9090",
+      "atC": "279419bd3948c43cd8b0cd980104148c154a9090",
+      "identical": true
+    },
+    {
+      "path": "app/installer/hackathon/source-runtime.mjs",
+      "atA": "17354615fefd88c275a48806326d5ab6119a8b06",
+      "atC": "17354615fefd88c275a48806326d5ab6119a8b06",
+      "identical": true
+    },
+    {
+      "path": "app/installer/hackathon/source-edge.mjs",
+      "atA": "7dad4edc68a1b16d4c6872116be8ef3d8210a2bc",
+      "atC": "7dad4edc68a1b16d4c6872116be8ef3d8210a2bc",
+      "identical": true
+    }
+  ],
+  "allRuntimeSourcesIdentical": true,
+  "limitation": "A execution uses ef360ae; C full production tests use eba453c. This proves equality of listed Git source trees, not that A executed the exact C deployment SHA."
+}

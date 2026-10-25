@@ -1,40 +1,51 @@
-# Второй мозг для достижения целей
+# Рядом
 
-**Текущее планирование:** [вторая итерация до защиты](docs/agents/ITERATION_2.md), [готовые /goal для участников](docs/agents/GOAL_PROMPTS.md). Первая волна объединена; новые роли — A приёмка/выпуск, B аудио/качество, C самостоятельный дизайн/интеграция. Stitch исключён. Пока подготовлены только планы, новые цели не активированы.
+Второй мозг, который связывает события из заметок и коротких разговоров с личной целью. Модель предлагает события и точные цитаты; человек проверяет их, а сервер считает подтверждённый прогресс.
 
-Хакатонный MVP на основе BrainDrive: согласованная цель, импорт текстового контекста, извлечённые события, проверка цитат, подтверждение действий и серверный прогресс. Модули участников объединены в `codex/integration-ui`; для живого извлечения нужна серверная конфигурация LLM. Аудиомаршрут готов к подключению отдельного STT, но реальное распознавание ещё не настроено.
+Хакатонный MVP: одна цель и три критерия, текст и короткое аудио, источник каждого события, подтверждение/пересмотр, дубли без повторного роста и постоянная память. Намерения не считаются выполненными действиями. Цель задаётся формой, следующий шаг выбирает правило. LLM-интервью, continuous recording и OAuth не реализованы.
 
-**Участникам начать с [распределения работы](docs/agents/START_HERE.md).** Этот документ уточняет роли из первоначального [роадмапа](HACKATHON_ROADMAP.md): два внешних агента делают backend и импорт, текущий Codex отвечает за интеграцию и UI, владелец проекта ведёт дизайн в Stitch.
+## Рабочая версия и показ
 
-- [Агент A: приёмка и выпуск](docs/agents/AGENT_A_RELEASE.md).
-- [Агент B: аудио и качество](docs/agents/AGENT_B_AUDIO_QUALITY.md).
-- [Наш Codex: интеграция и UI](docs/agents/AGENT_C_INTEGRATION_UI.md).
-- [Общий API v1](docs/contracts/API_V1.md).
-- [Контракт TypeScript](app/builds/typescript/features/contracts.ts).
-- [Самостоятельный дизайн и подтверждённый бриф](docs/design/GOALS_BRIEF.md).
-- [Происхождение исходников и лицензия](UPSTREAM.md).
+Готовая разработка находится в ветке **codex/integration-ui**. Source-кандидат сервера — **eba453caec424c47a31c8f8947a83ed9389dc8a3**; последующие коммиты могут содержать отчёты и материалы. Проверять фактический deployment через `/release.json`.
 
-Репозиторий: https://github.com/Mozgiii9/vibecoding-hackathon-hse. Дедлайн: 25 октября 2026, 17:30 МСК.
+- [Открыть приложение, запуск и восстановление](docs/demo/OPERATIONS.md).
+- [Текущее доказательство production-проверок](docs/demo/evidence/c-production/summary.json) и [handoff C](docs/handoffs/agent-c-wave2.md).
+- [Четыре автономных экрана защиты](docs/demo/defense/index.html), [сценарий на три минуты](docs/demo/DEMO_SCRIPT.md), [реальные резервные видео](docs/demo/defense/recordings/README.md).
+- [Общий контракт](docs/contracts/API_V1.md), [граница и приёмка MVP](docs/agents/MVP_ACCEPTANCE.md), [план команды](docs/agents/ITERATION_2.md).
 
-Установка и запуск локально, из корня репозитория:
+Доступ к серверному UI настроен через SSH tunnel, а не публичный hosting. Техническая приёмка C выполнена; финальная независимая A4 и человеческие репетиции отмечаются отдельно по факту.
+
+## Локальная разработка
+
+Нужен Node22.12+ и npm. Клонировать рабочую ветку, установить зависимости трёх частей из lockfiles:
 
 ```bash
-# Установить зафиксированные зависимости backend, MCP и web.
+# Получить текущую реализацию команды.
+git clone --branch codex/integration-ui https://github.com/Mozgiii9/vibecoding-hackathon-hse.git
+# Перейти в корень полученного проекта.
+cd vibecoding-hackathon-hse
 npm --prefix app/builds/typescript ci
 npm --prefix app/builds/mcp_release ci
 npm --prefix app/builds/typescript/client_web ci
-
-# Подключить общий pre-commit hook для проверки staged diff.
+# Включить общий pre-commit hook для своего clone.
 git config core.hooksPath .githooks
+# Собрать MCP, необходимые локальному launcher.
+npm --prefix app/builds/mcp_release run build
+```
 
-# Запустить MCP, gateway и Vite с тестовыми данными внутри проекта.
+Создать приватный `app/builds/typescript/.env.hackathon` по соседнему `.env.hackathon.example`, mode600, заполнить выбранный OpenAI-compatible Gemini endpoint/model/key. STT настраивается отдельно; без работающего transcribe-сервиса аудио недоступно. Ключи не передавать в frontend, Git и командные аргументы.
+
+```bash
+# Запустить свои gateway/MCP/Vite; память и secrets останутся в ignored .runtime/.
 npm --prefix app/builds/typescript run dev:hackathon
 ```
 
-Gateway: http://127.0.0.1:8787, web: http://localhost:5073. Первую авторизацию и модель необходимо настроить отдельно. Запуск без модели не доказывает работоспособность AI-сценария. Не используйте личные записи и секреты в коммитах или демонстрационных fixture.
+UI: http://localhost:5073/. После обычного входа создать цель и добавить источник. `?preview=goals` — только development-макет с synthetic данными, не live-приёмка.
 
-Для живого сценария создайте локальный `app/builds/typescript/.env.hackathon` по примеру `.env.hackathon.example`. Node загрузит environment-файл, память и хранилище секретов по умолчанию останутся внутри корневого `.runtime/`. Переданные значения подключены к extraction-модулю; без ключа импорт возвращает понятную ошибку и не создаёт частичный результат. Провайдер из handoff участника B проверен как OpenAI-compatible chat completions, модель `gemini-3.8-flash`; ключ остаётся только в environment.
+Production source packaging без Vite и Docker описан в [инструкции выпуска](app/installer/hackathon/README.md). Python/STT использует scoped uv, проектную `.venv` и `uv.lock`, см. [services/stt](services/stt/README.md). Изолированные серверные среды и heavy lock обязательны для команды.
 
-Вход в рабочий интерфейс проходит через авторизацию BrainDrive. Для отдельного просмотра дизайна без пользовательских данных откройте http://localhost:5073/?preview=goals: это development-only макет с синтетическими источниками, без сетевых запросов к модели и без сохранения подтверждений. В production-сборку макет не включается.
+## Основа
 
-Проверки интеграции и ограничения записаны в [handoff нашей ветки](docs/handoffs/agent-c.md). Дизайн экрана: [подтверждённый бриф](docs/design/GOALS_BRIEF.md).
+Форк [BrainDrive](https://github.com/BrainDriveAI/BrainDrive), лицензия MIT. Оригинальные исходники, LICENSE и TRADEMARK сохранены в `app/`, [происхождение и импорт](UPSTREAM.md) зафиксированы отдельно. Собственный вклад команды: доменная модель целей/evidence, text/audio extraction и проверка цитат, вычисляемый прогресс, review UI, интеграция и source release. Название «Рядом» рабочее; торговая марка BrainDrive не присваивается.
+
+Распределение команды: [A — выпуск](docs/agents/AGENT_A_RELEASE.md), [B — аудио/качество](docs/agents/AGENT_B_AUDIO_QUALITY.md), [C — интеграция/UI](docs/agents/AGENT_C_INTEGRATION_UI.md). [Контракт TypeScript](app/builds/typescript/features/contracts.ts) и [подтверждённый дизайн-бриф](docs/design/GOALS_BRIEF.md). Жёсткий дедлайн хакатона: 25 октября2026,17:30МСК.

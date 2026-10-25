@@ -1,0 +1,15 @@
+{
+  "source_sha": "eba453caec424c47a31c8f8947a83ed9389dc8a3",
+  "git_archive_sha256": "390289255c7cfa91b0c9da336584b51579ddea1e39de8427836e7af54d1b5bf7",
+  "export_paths": [
+    "app",
+    "scripts/release",
+    "docs/contracts",
+    "services/stt",
+    "docs/demo/sources",
+    "docs/evaluation"
+  ],
+  "node": "v22.21.1",
+  "platform": "linux/x64",
+  "built_at": "2026-10-25T11:42:49.904Z"
+}

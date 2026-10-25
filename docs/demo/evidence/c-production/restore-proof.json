@@ -1,0 +1,12 @@
+{
+  "sourceSha": "eba453caec424c47a31c8f8947a83ed9389dc8a3",
+  "checkedAt": "2026-10-25T11:59:47.987Z",
+  "oldSupervisor": 85093,
+  "originalPreserved": true,
+  "backupFileCount": 49,
+  "domainStateSha256": "b93e8554a1e8f580389064113b854012cb7730e091e4b41b90c3bcf4b32d41af",
+  "restoredDomainStateSha256": "b93e8554a1e8f580389064113b854012cb7730e091e4b41b90c3bcf4b32d41af",
+  "equal": true,
+  "restoredInstance": "/srv/ryadom-hackathon/integration/instances/restored-eba453c",
+  "secretsCopiedPrivately": true
+}
