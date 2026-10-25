@@ -39,8 +39,8 @@ Base SHA: `484c396e71b3fbfe2ff65c04f6260e1899aa6bd1` из `origin/codex/integrat
 | Узкий мобильный экран | PASS локально | Тот же live сценарий на 390×844, нет горизонтального overflow |
 | Таймаут/ошибка без ложного успеха | PASS protocol-fake | 6 passed / 1 skipped, 14:14:37–14:14:46 МСК: timeout, HTTP503, invalid JSON, реальный revision conflict, stt_unconfigured; `/private/tmp/ryadom-release-browser-fake.json`; live outage не имитируется как live quality |
 | Реальный audio upload/STT/evidence/confirm | NOT_RUN | B ещё не передал реальный adapter в проверенную ветку |
-| Fixed SHA source-build и чистый запуск | FAIL первого, новый RUNNING | Серверный clean build f0b849b: backend/MCP PASS, frontend fixture отсутствовал. Исправление f93536d опубликовано; новый чистый кандидат строится отдельно под heavy.lock, PID81226 |
-| Серверный health/auth smoke нашего SHA | NOT_RUN | Изолированный A source launcher, Docker отсутствует |
+| Fixed SHA source-build и чистый запуск | PASS f93536d, первый FAIL сохранён | Linux/x64 Node22.21.1, git archive SHA256 ea04f24d0e26817c1218c94737f7bfeff611e11071572dfc818c95b21a5c3aa5; backend/MCP/web ci/build и web typecheck exit0; build manifest 11:20:01 UTC |
+| Серверный health/auth smoke нашего SHA | PASS f93536d | Изолированный A source launcher без Docker; built React entrypoint, release SHA, direct/proxyhealth200, auth bootstrap200, анонимные goals401; один gateway+3 MCP, все5портов loopback |
 | HTTP restart с сохранённой UI-целью | NOT_RUN | Отдельно от PASS unit/process persistence |
 | Приёмка финального общего SHA C | NOT_RUN | SHA/кандидат C ещё не передан |
 | Проверка резервного трёхминутного видео | NOT_RUN | Комплект защиты C ещё не передан |

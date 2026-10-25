@@ -12,7 +12,8 @@
 - Порты A: UI 127.0.0.1:15073, gateway 127.0.0.1:18787; на момент первичного осмотра свободны. MCP планируются только loopback, отдельные 18911–18913.
 - Gemini: локальный live UI clean проход PASS с desktop→390px mobile, intention/action/quote/confirm/duplicate/reject/reload; один предыдущий provider_failed честно показан UI и сохранён в KNOWN_ISSUES. Production source SHA ещё проверяется.
 - PASS: backend/MCP/web build; frontend suite 215/215; packaging static/proxy/env tests 3/3 и независимый read-only review.
-- Серверный source-build f0b849b завершился FAIL frontend fixture. Исправление exporter/Docker context опубликовано `f93536d`, regression2/2 PASS. Новый clean build f93536d RUNNING, PID81226, log agent-a/logs/build-f93536d.log и отдельный exit marker. Старый release не патчится.
+- Серверный clean source-build `f93536d` PASS exit0, Linux/x64 Node22.21.1, backend/MCP/frontend/typecheck. Первый f0b849b FAIL сохранён без патча; exporter/Docker context исправлены, regression2/2 PASS.
+- Production runtime A запущен: собственный instance demo-f935, supervisor81963, gateway82006, три MCP; loopback15073/18787/18911–13. PASS health/auth401/proxy/React/release SHA smoke. Все актуальные PID читать из instance/runtime.json после restart.
 - PASS browser protocol-fake: 6 сценариев, 1 audio skipped; timeout/503/invalid JSON, revision conflict, stt_unconfigured не дают ложного прогресса. Evidence summary: docs/release/evidence/local-browser-summary.json.
 - Blocker: STT пока не передан B; финальный интегрированный кандидат C ещё не принят. Docker route NOT_RUN, готовится source launcher без Docker.
-- Следующее: браузерная приёмка live Gemini, source-build зафиксированного SHA, server health/auth smoke, restart; отдельно audio после передачи B/C.
+- Следующее: production live Gemini browser main→restart/resume, backup настоящей synthetic UI-памяти в новую копию; отдельно audio после передачи B/C. Source packaging/A3 готовы для обычного merge C, handoff docs/handoffs/agent-a-wave2.md.
