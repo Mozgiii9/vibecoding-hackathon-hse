@@ -10,11 +10,13 @@ Private env создать из `app/installer/hackathon/.env.example` вне Gi
 
 Текущий сервер не имеет глобального Node/Docker. Node v22.21.1 распакован внутри `agent-a/tools/` из официального архива после проверки SHA256. Добавить его `bin` в PATH текущего shell. Не ставить глобальные пакеты, не менять firewall/Docker и не останавливать B/C.
 
+Проверяемый общий кандидат: `ef360ae0627e35ddfe615143b5409690ac222ed8`. Готовая папка A — `releases/ef360ae`. После приёмки работает новая synthetic копия `instances/restored-ef`, private env `release-restored-ef.env`; исходный `instances/full-ef` и его `release-ef.env` сохранены, instance остановлен. Перед любой командой управления прочитать актуальный runtime.json именно выбранного instance: исторический PID из отчёта использовать нельзя. Старые `demo-f935`, `restored-f935` и `common-4ac` сохранены и остановлены. Зафиксированный rollback baseline — `f93536db9091f10236221aba5901fbbdd0486f59`, папка `releases/f93536d`.
+
 ## Сборка фиксированного нашего SHA без Docker
 
 `FULL_SHA`, `RELEASE`, `PRIVATE_ENV` и `INSTANCE` ниже — обозначения реальных путей/полного SHA, не буквальные значения для запуска.
 
-1. Получить опубликованную ветку A или интегрированный кандидат C. Записать полный SHA, проверить чистоту checkout. Packaging должно присутствовать именно в выбранном коммите.
+1. Получить опубликованную ветку A или интегрированный кандидат C. Записать полный SHA, проверить чистоту checkout. Packaging должно присутствовать в выбранном коммите. Для export нужен driver A `7f79d255b175432685e9f1cf099489ceda0cb091` или новее: ранняя версия f0 пропускала docs/contracts, а новый driver включает переданные optional STT/corpus/evaluation. Export не изменяет файлы выбранного кандидата. C f875 уже содержит driver7f79d25. Последующие A acceptance/specs/docs передать обычным merge qa-release.
 2. Export берёт только tracked исходники указанного SHA, не рабочие изменения:
 
 ```bash
@@ -44,6 +46,16 @@ node RELEASE/scripts/release/smoke-hackathon.mjs PRIVATE_ENV FULL_SHA
 ```
 
 Smoke проверяет direct/proxied health, auth bootstrap, отказ анонимному goals API, React HTML и `/release.json` с нужным SHA; пользовательские данные не меняет. Он не заменяет login/live LLM/STT приёмку.
+
+Smoke запускать после READY/доступного health. Ошибка соединения сразу после старта не доказывает crash: сначала проверить собственный PID, lock и логи готовности. Не запускать второй supervisor из-за таймаута наблюдения SSH.
+
+## Переданный STT
+
+В ef360ae включены `services/stt` с `uv.lock`, synthetic WAV и evaluation corpus. Это отдельный вспомогательный процесс faster-whisper base/ru CPU/int8; Node gateway остаётся backend приложения. Текущая A приёмка использует переданный B localhost19000 с теми же public source/lock fingerprints, не перезапускает его. Token подключён только через отдельный private env; копировать другие private поля B нельзя.
+
+Для независимого запуска в своей среде следовать `services/stt/README.md`: Python3.11–3.13, scoped uv, `uv sync --frozen --no-dev` создаёт project `.venv`, затем `uv run --frozen --no-dev ryadom-stt`. Не добавлять глобальные Python packages/FFmpeg. Собственные STT port/model cache/env согласовать отдельно: порт19000 занят B. Установка и первый download/start под общим heavy.lock; при inference lock берёт сам сервис через `STT_HEAVY_LOCK`, поэтому HTTP caller нельзя оборачивать в тот же flock. При busy/ошибке нет synthetic fallback.
+
+Gateway env: `HACKATHON_STT_BASE_URL` без `/transcribe`, `HACKATHON_STT_MODEL=base`, `HACKATHON_STT_API_KEY` из private файла; `HACKATHON_LLM_TIMEOUT_MS=120000` для каждой bounded provider stage. Перед показом health STT должен вернуть ready/base/ru. Реальная расшифровка50с WAV на слабом CPU занимает время; UI не должен сообщать успех до результата.
 
 ## Restart и возврат предыдущего кандидата
 
@@ -85,4 +97,19 @@ Docker runtime пока NOT_RUN: daemon отсутствует в провере
 
 Release Playwright runner находится в `scripts/release/playwright.release.config.mjs`, specs — `app/builds/typescript/client_web/e2e/release-acceptance.spec.ts`. Для внешней собственной среды задаётся `RELEASE_BASE_URL`; runner не запускает второй сервер. Указывать live/fake режим явно; live mutations разрешены только для своей synthetic среды. Traces/video/screenshots с ключами не создавать.
 
-Порядок: signup/login → три критерия → intention (0) → action → точная цитата → confirm (1) → duplicate (1) → reject (0) → reload/restart → mobile. Реальное аудио проверяется отдельно после передачи STT B/C. Отсутствующий STT является открытым пунктом, не успешной аудиоприёмкой.
+Порядок: signup/login → три критерия → intention (0) → action → точная цитата → confirm (1) → duplicate (1) → reject (0) → mobile. Затем свежий synthetic WAV → настоящий STT/Gemini → transcript/точная цитата/реальные сегментные таймкоды → confirm/числовой server count → reload/restart. У audio payload должен быть duplicate=false: dedup не доказывает новый STT. Приёмочный WAV из Git50.626875с, SHA256 `889c89021c3a64f384a6056a7307b32faae3394dbae44882d5109561359b1577`.
+
+На existing synthetic goal запускать audio отдельно с `--grep 'LIVE audio:'`; main создаёт цель и повторно на существующей памяти не запускается. После успешного audio checkpoint обновляется в `RELEASE_STATE_FILE`. Затем реальный stop/restart, smoke и `RELEASE_RESUME=1` с тем же checkpoint: точное состояние API, source IDs/quotes/status/timecodes и desktop/mobile. Встроенных retries нет; первый FAIL сохранять, диагностический повтор именовать отдельно.
+
+## Проверенное состояние после приёмки
+
+На ef360ae после audio confirm выполнены stop/start original full-ef, backup49files в `backups/ui-ef`, restore в новый `instances/restored-ef/memory`, запуск с `release-restored-ef.env` и обычный UI resume desktop/mobile. Domain state до и после UI имеет SHA256 `37e63c830b1672d40b4a97197a575adcc48d4870b4de255472611fb53ecb4bfb`:3sources/5events,1confirmed,counts1/0/0. Original full-ef сохранён и остановлен. Исторический active restored PID86778 приведён только для evidence; перед управлением читать runtime.json.
+
+Для smoke уже работающей восстановленной среды из A каталога:
+
+```sh
+export PATH=/srv/ryadom-hackathon/agent-a/tools/node-v22.21.1-linux-x64/bin:$PATH
+node releases/ef360ae/scripts/release/smoke-hackathon.mjs release-restored-ef.env ef360ae0627e35ddfe615143b5409690ac222ed8
+```
+
+Не повторять main/audio на этой памяти ради «чистого» прохода: main создаёт goal, audio уже сохранено и даст dedup. Для нового полного gate создать новый собственный INSTANCE и отдельный private instance ID, остановив только свою текущую среду и сохранив её память. После smoke выполнить main с `--grep 'ordinary signup/login'`, затем audio с `--grep 'LIVE audio:'`; оба с отдельными reports и одним RELEASE_STATE_FILE. Текущий composite audio результат и два ранних FAIL описаны в ACCEPTANCE; future native fetch observer имеет local regression PASS, новый live gate с ним ещё NOT_RUN.

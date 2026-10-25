@@ -1,60 +1,45 @@
-# A, вторая волна — выпуск и приёмка
+# A — проверенный выпуск и приёмка
 
-Состояние: READY_FOR_INTEGRATION упаковка/сохранность; A1/A4 продолжаются. 25 октября 2026, около 14:22 МСК. Полный MVP пока не принят, реальное аудио остаётся открытым.
+25 октября 2026 около 15:15 МСК. **Поручение A выполнено** на общем C `ef360ae0627e35ddfe615143b5409690ac222ed8`: clean source-build, реальный text/audio, desktop/mobile, restart, backup и новая synthetic restore. Audio принят с **DIAGNOSTIC_RECOVERY_PASS**, оба первоначальных FAIL сохранены. Полный журнал: [ACCEPTANCE](../release/ACCEPTANCE.md).
 
-## Ветка и исходники
+## Что передаётся
 
-- Ветка: `codex/qa-release`, обычные scoped commits, без force/reset и изменения чужих веток.
-- Base: `484c396e71b3fbfe2ff65c04f6260e1899aa6bd1` из `origin/codex/integration-ui`.
-- A3: `83108ad3f7d42b08c089ad79043163baeba7a26d`.
-- Source release с исправленным архивом: `f93536db9091f10236221aba5901fbbdd0486f59`.
-- Изменения только в A путях: packaging, release scripts/specs и собственные release/status/handoff docs. Goal core правок не потребовал. UI, gateway, context, shared contracts/manifests не менялись.
+- Ветка `codex/qa-release`, base `484c396e71b3fbfe2ff65c04f6260e1899aa6bd1` integration-ui с 92cb8bc; обычные scoped commits, без force/reset/чужих веток.
+- Ready driver `7f79d255b175432685e9f1cf099489ceda0cb091`; frozen harness `59041cc9cf71d3ac3e5d3ab0e2e89725eb26d2f0`. C f875 уже содержит driver A7f; следующие specs/evidence/docs передать обычным merge qa-release.
+- Packaging под `app/installer/hackathon`, builders/launchers/backup/restore и отдельный release Playwright runner под `scripts/release`, два release specs, acceptance/runbook/limitations/evidence. Goals-core изменений не потребовал.
+- UI/gateway/context/contracts/manifests не менялись. Brand output и чужая память сохранены. Пароли/ключи/private env/runtime memory/node_modules не включаются в Git.
 
-## Проверенный source запуск без Docker
+## Проверенный runtime
 
-Сервер не имел Node/Docker. Scoped официальный Node v22.21.1 установлен только под `agent-a/tools`, archive проверен SHASUMS256. System packages и чужие процессы не менялись.
+Source release `/srv/ryadom-hackathon/agent-a/releases/ef360ae`. Архив SHA256 `436ae171af5f5b3d400c18f2c83d6b462282f5262252f289a08a34eef034fa47`; build manifest11:47:10UTC, Linux/x64 официальный scoped Node22.21.1. Git objects проверены hashes, app source не патчился. В export включены STT source+uv.lock, synthetic corpus и evaluation. Backend/MCP/frontend ci/build/typecheck exit0.
 
-Сборка выполнена из `git archive` полного SHA в новой папке под heavy.lock. Последовательно `npm ci/build` backend/MCP/web и frontend typecheck — PASS, build exit 0. Фактический manifest:
+Сейчас работает отдельная restored копия `instances/restored-ef`, env `release-restored-ef.env` mode600. Historical PID86778 только для evidence; перед управлением читать runtime.json. Original full-ef сохранён/остановлен. Один gateway+три MCP, static frontend edge, без Vite/upstream app images/auto-update. UI127.0.0.1:15073, gateway127.0.0.1:18787, MCPloopback18911–18913. Health/auth/release smoke PASS. B/C не перезапускались.
 
-```json
-{
-  "source_sha": "f93536db9091f10236221aba5901fbbdd0486f59",
-  "git_archive_sha256": "ea04f24d0e26817c1218c94737f7bfeff611e11071572dfc818c95b21a5c3aa5",
-  "node": "v22.21.1",
-  "platform": "linux/x64",
-  "built_at": "2026-10-25T11:20:01.400Z"
-}
-```
+STT B localhost19000 ready/base/ru, deployed public source/uv.lock совпали с C. Передан только STT_AUTH_TOKEN в private A с прямого разрешения пользователя. Отдельное разрешение на synthetic WAV→UI→STT B→Gemini/confirm получено; автоматически отклонённые команды до этого не запускались.
 
-- Release: `/srv/ryadom-hackathon/agent-a/releases/f93536d`.
-- Собственная память/secrets: `/srv/ryadom-hackathon/agent-a/instances/demo-f935/{memory,secrets}`.
-- Private env A: `/srv/ryadom-hackathon/agent-a/release-f935.env`, mode600, не передаётся в Git.
-- Запущен supervisor PID81963; в момент проверки один gateway PID82006 и три MCP children. Для будущего управления читать актуальный `INSTANCE/runtime.json`, PID может измениться после restart.
-- Только loopback: UI15073, gateway18787, MCP18911/18912/18913; чужие среды не затронуты.
-- PASS smoke: built React entrypoint, `/release.json` с нужным SHA, direct/proxied health, auth bootstrap200, анонимный goals401.
-- Никаких upstream application images, Vite dev server или auto-update при production запуске.
-
-Команды builder/launcher/smoke и restart/rollback описаны в [RUNBOOK.md](../release/RUNBOOK.md) и `app/installer/hackathon/README.md`. Для C использовать собственные owner/instance/порты, не перезапускать A/B.
+Latest C f875d3df976688cf9aafe23612fcaa3f459dcdc3 при read-only API compare содержит A7f и не меняет ef product/runtime/STT code. Он добавляет docs/evaluation/harness/demo и export driver; принятый runtime SHA остаётся ef, запуск f875 не заявляется.
 
 ## Приёмка и сохранность
 
-- PASS локально: backend/MCP/web builds; 209 goals/context tests, 215 frontend tests, 6 MCP tests; packaging edge/env3 и export/frontend dependencies2.
-- Полный backend suite не зелёный: baseline starter-pack lint19 нарушений; два sandbox loopback EPERM исчезли в focused разрешённом bridge rerun20/20.
-- PASS A3: настоящий store reload/отдельный процесс; source/evidence/review/revisions/progress; existing export включает state; новый backup/restore в synthetic copy; checksum/inventory/path guards; clean demo без удаления памяти.
-- PASS локальный browser protocol-fake6: обычная авторизация, точные server counts/IDs/revisions, timeout/503/invalid JSON, conflict, unconfigured STT. Не live LLM/STT.
-- PASS локальный live Gemini desktop/mobile390: intention0 → action/quote → confirm1 → duplicate1 → reject0 → reload. Один первоначальный provider_failed сохранён как известная нестабильность; повтор без fallback успешен.
-- Production live browser f93536d PASS main1/6skipped (14:21 МСК), реальные Gemini вызовы, точные counts/IDs/revisions, desktop/mobile390. После реального stop/restart того же instance resume1/1PASS (14:23). Backup49файлов, новая restored memory и отдельная приватная копия собственных synthetic secrets; SHA256 state совпал. Restored-instance UI resume1/1PASS (14:24), те же IDs/revisions/status/counts/quotes. Evidence: `docs/release/evidence/source-f935-summary.json`.
-- Сейчас работает отдельный restored-f935 supervisor82655; original demo-f935 остановлен/сохранён. PID в handoff исторический, для управления читать runtime.json соответствующего instance.
+- Live text main PASS1/1: обычная русская авторизация, три критерия, намерение 0, действие/exactquote, confirm1, duplicate1, reject0, reload,1440/390px.
+- Audio first FAIL не создал partial state; единственный retry получил HTTP200 и свежий audio source, но inspector body cache прервал harness. Сохранены оба FAIL. Audit source/hash/createdAt/new IDs/9real segments подтвердил свежесть; отдельное UI-продолжение без upload открыло все 3quotes/timecodes, подтвердило cv action revision1→2 и progress1/0/0, затем reload PASS. Итог DIAGNOSTIC_RECOVERY_PASS; чистый audio E2E задним числом не заявлен.
+- Real post-audio restart PASS1/1 UI resume: точный checkpoint5events/3sources/1confirmed/counts1/0/0, все source IDs/quotes/status/timecodes на desktop/mobile.
+- Backup49files включает hackathon/state.json; restore только в новый synthetic root. State SHA256 `37e63c830b1672d40b4a97197a575adcc48d4870b4de255472611fb53ecb4bfb`, байты совпали до/после restored UI resume PASS1/1. Own synthetic secrets подключены отдельной приватной копией, не memory backup.
+- Предыдущий f935 production text/restart/restore PASS. C4ac initial text FAIL502/provider_failed сохранён отдельно от recovery. Реальный rollback C4ac→f935→C4ac на той же A памяти health/identity/checkpoint PASS.
+- Future native fetch observer исправляет inspector dependence, local1.6MiB WAV HTTP regression/typecheck PASS. Никаких новых live uploads ради повторения зелёного harness; fresh live test с новым reader NOT_RUN.
 
-## Ошибка первого candidate и исправление
+## Проверки и ограничения
 
-`f0b849b` clean build FAIL: exporter не включал корневой docs/contracts fixture, используемый frontend preview. Старый failed release сохранён без патча. В `f93536d` исправлены exporter и Docker context/file dependency; regression typechecks2/2 PASS. Docker Engine отсутствует: build/Compose runtime NOT_RUN, source runtime реально PASS.
+- PASS ef focused backend327/327 в 12 файлах. Неизменённый frontend unit scope имеет C4ac226/226 PASS; новый полный unit run ef не заявлен.
+- PASS protocol-fake6/audio1skip: timeout/503/invalidJSON/conflict/STTunconfigured без ложного success/progress. Не live provider quality. PASS MCP6, packaging3/export2/optional1, store/export/backup/path/checksum guards и независимый review.
+- Исторический full backend411PASS/3FAIL: baseline starter-pack lint19issues, два sandbox loopbackEPERM; отдельный bridge20PASS. Полный suite не назван зелёным.
+- Docker Engine отсутствует, Docker runtime/STT topology NOT_RUN. Рабочий выпуск — source runtime. Bundle warning>500kB. Реальный provider иногда ошибается; первоначальные FAIL сохранены, automatic fallback отсутствует. При занятом heavy.lock STT возвращает busy.
+- C имеет 4 слайда/сценарий и опубликованный 38 с text WebM с metadata COMPLETED_TEXT. Полный просмотр A, трёхминутный text+audio backup и человеческие репетиции NOT_RUN; этот остаток комплекта защиты остаётся C.
 
-## Что требуется C/B
+## Действия интегратора
 
-1. C4ac9740 уже объединил раннюю A packaging f0. Для clean source build также взять исправление f93536d и последующие release specs/status обычным merge qa-release. Новые русские auth/draft changes C670ec69 ещё не входят в принятую A text f93536d. Release specs поддерживают точные English/Russian auth labels. Нужен конкретный общий SHA с B audio для A4.
-2. B передаёт рабочую STT реализацию/service source и synthetic audio; пока её отдельный health/adapter не означает audio UI PASS. Сначала source runtime→loopback STT, затем audio upload/transcript/quote/confirm/restart на общем SHA.
-3. После передачи STT включить services/stt в source package и описать scoped запуск. Docker topology STT отдельно не проверена; container loopback не достигает host STT.
-4. Финальный общий кандидат, четыре слайда и реальное резервное видео C ещё требуют проверки A. Полная цель остаётся активной.
+1. Объединить финальную опубликованную qa-release обычным merge; source/runtime baseline ef принят в изоляции A. Использовать свои instance/порты/private env/master key, не A/B каталоги.
+2. Следовать [RUNBOOK](../release/RUNBOOK.md): fixed SHA export/build/launch/smoke, restart/rollback, clean demo в новом root, backup/restore только в отдельную копию. Не использовать upstream общие braindrive_* volumes/backup.
+3. Завершить и проверить комплект защиты. Не переименовывать C text-only WebM в полное трёхминутное audio demo.
 
-Подробные PASS/FAIL/NOT_RUN: [ACCEPTANCE.md](../release/ACCEPTANCE.md), ограничения: [KNOWN_ISSUES.md](../release/KNOWN_ISSUES.md). Ключи, токены, пароль SSH, raw provider responses и личные записи в handoff не включены.
+Безопасные доказательства: [common-c-summary.json](../release/evidence/common-c-summary.json), [source-f935-summary.json](../release/evidence/source-f935-summary.json). Полные synthetic reports/checkpoints остаются в private/tmp; release trace/screenshots/video отключены. [KNOWN_ISSUES](../release/KNOWN_ISSUES.md) содержит ограничения и все существенные FAIL.

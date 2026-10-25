@@ -1,59 +1,64 @@
 # Приёмка выпуска «Рядом»
 
-Дата: 25 октября 2026, МСК. Ответственный A, ветка `codex/qa-release`.
+25 октября 2026, около 15:12 МСК. A, ветка `codex/qa-release`.
 
-Base SHA: `484c396e71b3fbfe2ff65c04f6260e1899aa6bd1` из `origin/codex/integration-ui`, включает `92cb8bc`. Проверенный первый срез сохранности: `83108ad3f7d42b08c089ad79043163baeba7a26d`.
+**Приёмка A выполнена на общем кандидате `ef360ae0627e35ddfe615143b5409690ac222ed8`.** Source-build, настоящий текст, аудио, desktop/mobile, restart и отдельный restore проверены. Аудио принято по последовательной цепочке доказательств с меткой **DIAGNOSTIC_RECOVERY_PASS**: два первоначальных FAIL сохранены, чистый audio E2E PASS задним числом не заявляется.
 
-Это журнал доказательств. Полный MVP пока **не принят**: реальное аудио, production restart и общий релизный кандидат ещё проверяются. Тестовый provider и синтетические audio SourceDraft не являются живой моделью или STT.
+Base A: `484c396e71b3fbfe2ff65c04f6260e1899aa6bd1` integration-ui с 92cb8bc. Packaging export driver A `7f79d255b175432685e9f1cf099489ceda0cb091`. Latest C на момент сверки — `f875d3df976688cf9aafe23612fcaa3f459dcdc3`, содержит A7f; сравнение GitHub ef→f875 не меняет product backend/frontend/STT/source runtime, добавляет docs/evaluation/demo/packaging driver. Запущенный и принятый runtime SHA — именно ef360ae.
 
-## Выполненные проверки
+## Общий кандидат и сервер
 
-Команды приведены из корня репозитория, кроме явно указанного cwd. Нужны Node и npm в PATH; на локальной машине использовались Node v24.22.1 и npm 10.9.4 во временном toolchain.
-
-| Пункт | Статус | Команда / доказательство |
+| Проверка | Результат | Доказательство |
 |---|---|---|
-| Backend compilation | PASS | `npm --prefix app/builds/typescript run build` |
-| MCP compilation | PASS | `npm --prefix app/builds/mcp_release run build` |
-| Frontend production build | PASS | `npm --prefix app/builds/typescript/client_web run build`; предупреждение JS chunk >500 kB |
-| Goals + context | PASS | cwd `app/builds/typescript`: `npm test -- features/goals features/context features/integration`; 8 файлов, 209 тестов; отдельной папки features/integration нет |
-| Frontend unit suite | PASS | `npm --prefix app/builds/typescript/client_web test`; 20 файлов, 215 тестов |
-| MCP suite | PASS | `npm --prefix app/builds/mcp_release test`; 2 файла, 6 тестов |
-| Полный backend suite | FAIL | `npm --prefix app/builds/typescript test`: 411 PASS, 3 FAIL из 414; один baseline starter-pack lint и два запрета loopback sandbox |
-| Desktop bridge повторно с loopback | PASS | cwd backend: `npm test -- desktop/bridge.test.ts` вне filesystem sandbox; 20/20. Это не повторный зелёный полный suite |
-| Сохранность, restart отдельного Node-процесса | PASS | `node --import ./app/builds/typescript/node_modules/tsx/dist/loader.mjs scripts/release/persistence-check.mts` |
-| Existing migration export | PASS | Та же проверка: экспорт содержит `memory/hackathon/state.json`; fake secrets paths отсутствуют, vault/master-key не включены |
-| Новый backup/restore | PASS | Та же проверка: SHA256/bytes inventory, точное состояние в новом synthetic root, пустые директории сохранены |
-| Защиты восстановления | PASS | Отказ существующему root, пересечению путей, symlink parent в исходную память, повреждённому checksum и path traversal |
-| Новый чистый demo root | PASS | Отдельный пустой synthetic root не меняет исходную память |
-| Осмотр тестового сервера | PASS | SSH read-only: 1 CPU, 1967 МБ RAM, около 24 ГБ свободно; Node/Docker глобально отсутствовали, чужая среда B сохранена |
-| Scoped Node сервера | PASS | `/srv/ryadom-hackathon/agent-a/tools/node-v22.21.1-linux-x64`, официальный archive проверен SHASUMS256; установка под общим flock |
-| Export dependencies regression | PASS | `node --test scripts/release/smoke-source-export.test.mjs`; 2/2: настоящий frontend typecheck из git archive, материализация Docker edge COPY и проверка file:.. dependency |
+| Clean source-build ef360ae | PASS | Backend/MCP/frontend npm ci/build и web typecheck, exit0; Linux/x64, официальный scoped Node22.21.1; manifest `2026-10-25T11:47:10.783Z` |
+| Точная идентичность source | PASS | Git commit/tree/blob hashes проверены; archive SHA256 `436ae171af5f5b3d400c18f2c83d6b462282f5262252f289a08a34eef034fa47`; export включает app/scripts/contracts/STT source+uv.lock/corpus/evaluation |
+| Production запуск | PASS | Отдельный A instance, один gateway и три MCP подтверждены по children; static frontend, без Vite/upstream app images/auto-update |
+| Health/auth/source smoke | PASS | React entrypoint, release.json с ef SHA, direct+proxy health200, bootstrap200, anonymous goals401 |
+| Live text UI | PASS | 14:52 МСК, `/private/tmp/ryadom-source-ef-text.json`,1/1: русский signup/logout/wrong-password/login, три критерия, Gemini intention/action, exact quote, confirm1, duplicate1, reject0, reload,1440/390px |
+| Реальное аудио через UI | DIAGNOSTIC_RECOVERY_PASS | Actual upload HTTP200, новый audio source/hash/createdAt, настоящий transcript503UTF16/9segments,3 события; отдельное продолжение UI без upload проверило все quotes/timecodes и confirm. Оба ранних FAIL сохранены; подробности ниже |
+| Restart после audio confirm | PASS | Реальный stop85650→start86652 того же instance/master key; smoke и обычный UI login,1/1 resume, точное состояние 5events/3sources/counts1/0/0 на desktop/mobile |
+| Backup включает state.json | PASS | Остановленный собственный gateway;49files, `hackathon/state.json`, inventory/checksums, secrets store исключён |
+| Restore в новую synthetic копию | PASS | Новый `instances/restored-ef/memory`; state SHA256 `37e63c830b1672d40b4a97197a575adcc48d4870b4de255472611fb53ecb4bfb`, байты совпали до и после UI проверки; original memory сохранена |
+| UI восстановленной копии | PASS |1/1 resume: ordinary login, IDs/revisions/status/counts/quotes/source kinds/timecodes совпали на 1440/390px; provider calls/reviews/uploads не выполнялись |
+| STT source/health | PASS | B localhost19000 ready/base/ru; STT source+uv.lock совпали с C source. B service не менялся |
+| Секреты в frontend assets | PASS |13 built assets,0 совпадений с actual LLM/STT/master values; значения env в evidence не включены |
 
-## Очередь интегрированной приёмки
+Release: `/srv/ryadom-hackathon/agent-a/releases/ef360ae`. Сейчас работает отдельный восстановленный instance `/srv/ryadom-hackathon/agent-a/instances/restored-ef`, env `release-restored-ef.env`, historical supervisor86778. Актуальный PID читать из runtime.json. Original `full-ef` остановлен и сохранён. UI127.0.0.1:15073, gateway127.0.0.1:18787, MCP18911–18913 только loopback. B/C процессы не перезапускались.
 
-| Требование | Статус | Что ещё нужно |
+## Цепочка аудиодоказательств
+
+Synthetic Git WAV: Windows Irina TTS,50.626875 с,mono16kHz PCM16, SHA256 `889c89021c3a64f384a6056a7307b32faae3394dbae44882d5109561359b1577`; микрофон/личные записи не использовались. Пользователь отдельно разрешил token B→A и WAV через A UI→B STT, transcript→Gemini и test confirm. Автоматические отклонения до разрешения не запускали команды.
+
+1. `/private/tmp/ryadom-source-ef-audio.json` — **FAIL**. UI показал ошибку, Chrome inspector потерял response body. Сервер сохранил только 2text sources/2events/counts0/0/0, partial audio commit отсутствует. Точная причина исходного provider/UI сбоя не установлена. Отчёт не переименован в успешный.
+2. Отдельная **non-mutating** диагностика теми же ef providers: STT200 за 10.37 с,503UTF16/9segments; Gemini200,4grounded events; domain state unchanged. Это диагностика стадий, не UI gate и не provider fallback.
+3. `/private/tmp/ryadom-source-ef-audio-retry.json` — **FAIL harness**, хотя actual audio POST получил HTTP200. Inspector снова потерял body; duplicate=false/PATCH тогда не проверялись, confirm не выполнялся. Это единственный bounded upload retry.
+4. Read-only own-state audit: ровно новый audio source `0074bcea-8532-455b-8641-da1420cc9cc9`, createdAt `2026-10-25T12:03:49.647Z` внутри retry window, hash совпал с WAV,9segments/3new events, все quotes grounded. До этого источника в памяти не было. По ef ingestion source коммитится только после настоящих transcribe→extract→validate; ранний dedup возвращает старый source/createdAt. Свежесть доказана этим audit, а не неисполненным duplicate assertion.
+5. `/private/tmp/ryadom-source-ef-audio-recovery.json` — **DIAGNOSTIC_RECOVERY_PASS**,12:06:18–28UTC. Обычный вход,0audioPOST, все 3source quotes/times на desktop/mobile: cv action4980–9220 мс, mock action13720–19320 мс, feedback intention32380–38380 мс. Подтверждён только cv action, actual PATCH exactID/revision1→2, server progress1/0/0, reload сохранил состояние.
+6. `/private/tmp/ryadom-source-ef-restart.json` и `-restore.json` — **PASS1/1** каждый. Один и тот же checkpoint5events, включая подтверждённое audio evidence, проверен после настоящего restart и на новой restored памяти.
+
+Inspector cache defect в future harness исправлен пассивным `fetch().clone()` observer: original request/response не изменяются, headers/auth не наблюдаются. Локальный HTTP regression с generated silent WAV1,600,044bytes PASS; typecheck PASS. Свежий live audio gate с новым reader **NOT_RUN**; функциональная приёмка выше основана на сохранённой цепочке реальных действий, без нового upload ради зелёного теста.
+
+## Автоматические и отрицательные проверки
+
+| Область | Результат | Область доказательства |
 |---|---|---|
-| Обычная авторизация и цель через desktop UI | PASS локально | Настоящий buildServer/JWT, clean signup201, logout, wrong password401, login200; dev UI, ещё не production candidate |
-| Live Gemini intention/action и точная цитата | PASS локально, один предшествующий FAIL | Повторный clean прогон 14:11:52–14:12:22 МСК; 1 passed / 6 skipped, `/private/tmp/ryadom-release-browser-live.json`; реальная модель, без response mocks |
-| UI confirm/progress/duplicate/reject/reload | PASS локально | Live intention0 → action proposed0 → quote → confirm1 → duplicate1 → reject0 → reload0, подтверждён API ответами |
-| Узкий мобильный экран | PASS локально | Тот же live сценарий на 390×844, нет горизонтального overflow |
-| Таймаут/ошибка без ложного успеха | PASS protocol-fake | 6 passed / 1 skipped, 14:14:37–14:14:46 МСК: timeout, HTTP503, invalid JSON, реальный revision conflict, stt_unconfigured; `/private/tmp/ryadom-release-browser-fake.json`; live outage не имитируется как live quality |
-| Реальный audio upload/STT/evidence/confirm | NOT_RUN | B ещё не передал реальный adapter в проверенную ветку |
-| Fixed SHA source-build и чистый запуск | PASS f93536d, первый FAIL сохранён | Linux/x64 Node22.21.1, git archive SHA256 ea04f24d0e26817c1218c94737f7bfeff611e11071572dfc818c95b21a5c3aa5; backend/MCP/web ci/build и web typecheck exit0; build manifest 11:20:01 UTC |
-| Серверный health/auth smoke нашего SHA | PASS f93536d | Изолированный A source launcher без Docker; built React entrypoint, release SHA, direct/proxyhealth200, auth bootstrap200, анонимные goals401; один gateway+3 MCP, все5портов loopback |
-| Production live Gemini UI f93536d | PASS | 14:21:11–14:21:54 МСК, external production static edge→gateway→реальная модель; main1PASS/6skipped, точные source/evidence IDs, counts/revisions и desktop/mobile390 |
-| HTTP restart с сохранённой UI-целью | PASS f93536d | Supervisor81963 реально остановлен, тот же instance перезапущен PID82436; smokePASS, 14:23:24 resume1/1PASS: ordinary login, полный goal/evidence/progress checkpoint и все source quotes на desktop/mobile |
-| Backup/restore настоящей synthetic UI-памяти | PASS f93536d | Остановленный собственный gateway; backup49файлов, новая restored memory и отдельная приватная копия своих synthetic secrets. State SHA256 0522b2dbed62784e7fabffcdd21766ccb669b4d1f743388eda0a2a45808388a6 совпадает |
-| HTTP/UI на восстановленной копии | PASS f93536d | Отдельный instance restored-f935, supervisor82655; smokePASS, 14:24:55 resume1/1PASS с тем же pre-restart checkpoint, IDs/revisions/status/counts/quotes полностью совпали. Исходная память сохранена |
-| Приёмка финального общего SHA C | NOT_RUN | SHA/кандидат C ещё не передан |
-| Проверка резервного трёхминутного видео | NOT_RUN | Комплект защиты C ещё не передан |
+| Общий ef backend | PASS327/327,12files | Goals/context/STT/auth/config/integration, test providers. Source550files неизменны, dependency manifest/lock совпали |
+| Frontend unit | PASS226/226 на C4ac | Runtime/unit/config/dependencies ef идентичны C4ac; отличаются только release E2E specs. Новый полный unit run ef не заявлен |
+| MCP | PASS6/6 | Исходная A база, отдельный suite |
+| Persistence guards | PASS | Real GoalsStore, reload/new Node process, statuses confirmed/rejected/proposed, revisions/progress; existing export содержит state; checksum/path/traversal/symlink/overlap/overwrite guards; clean demo в новом root |
+| Packaging regressions | PASS3+2+1 | Static edge/env/auth isolation, real exported frontend typecheck/Docker COPY dependencies, optional STT paths |
+| Browser protocol-fake | PASS6/audio1skip | Последний `/private/tmp/ryadom-release-browser-fake-final.json`: timeout/503/invalid JSON/conflict/stt_unconfigured без ложного success/progress; настоящий gateway/JWT/store, тестовый provider |
+| Audio observer regression | PASS | `/private/tmp/ryadom-audio-observer-regression.json`: local HTTP only, payload>1MiB, original JSON/header unchanged, auth GET не captured; не STT/Gemini |
+| Полный исторический backend suite | FAIL411PASS/3FAIL из 414 | Baseline starter-pack lint19issues и два sandbox loopbackEPERM. Отдельный разрешённый bridge rerun20PASS; полный suite зелёным не объявлен |
+| Docker runtime/STT topology | NOT_RUN | Docker Engine отсутствует локально/на сервере. Реально принят source runtime |
 
-Локальный live прогон использовал исходники реализации base и отдельный временный runtime без MCP; он не подменяет production acceptance нашего source-built SHA. На первом live прогоне выполненное действие вернуло `provider_failed`, UI показал ошибку, прогресс не вырос. Точная причина ответа модели тогда не снималась; не приписываем сбой конкретной валидации. Повтор прошёл без смены провайдера/fallback. Traces, screenshots и video выключены, provider diagnostics сохраняют только форму ответа.
+## История и ограничения
 
-Production доказательства: [source-f935-summary.json](evidence/source-f935-summary.json). Полные приватные browser отчёты на машине проверки: `/private/tmp/ryadom-source-f935-main.json`, `-restart.json`, `-restore.json`, synthetic checkpoint `/private/tmp/ryadom-source-f935-state.json`. Это PASS текстового production кандидата A, а не audio/full MVP и не приёмка более нового общего SHA C.
+- `f0b849b` clean source-build FAIL: exporter пропустил root docs/contracts fixture. Failed release сохранён; f93536d исправил export/Docker context/file dependency, regression2PASS. Новый C собирался отдельно без патча source files.
+- `f93536d` production text/restart/backup49/isolated restore/UI PASS — предыдущий проверенный rollback baseline. Его результаты не подменяют ef.
+- C4ac source-build PASS, initial main FAIL502/provider_failed; один UI retry сохранён как DIAGNOSTIC_RECOVERY_PASS. Реальный rollback C4ac→f935 и forward→C4ac на той же A памяти PASS health/identity/UI/checkpoint. Первый слишком ранний smoke при forward не подключился; после READY повтор PASS, дополнительного restart не было.
+- Реальный provider иногда ошибается; исходные FAIL сохранены, автоматического fallback нет. STT сериализует inference и возвращает busy при занятом heavy.lock. Ошибки не создают partial source/progress.
+- Frontend build имеет warning bundle>500kB. Git SSH intermittent; точные C объекты читались через GitHub API с проверкой hashes.
+- Комплект защиты C:4HTML-слайда/сценарий прочитаны, MIT/OSS указан. Опубликован text WebM с metadata COMPLETED_TEXT38 с на ef; полный просмотр A, трёхминутный audio/text backup и человеческие репетиции **NOT_RUN**. Приёмка A не объявляет эти материалы проверенными.
 
-## Точная область A3
-
-Проверка создаёт только временную синтетическую память и удаляет только её. Три источника (два text, один заранее заданный audio SourceDraft) дают review `confirmed/rejected/proposed`, revisions `2/3/1` и progress `[1,0,0]`. Объект store и новый Node-процесс возвращают те же цели, source, evidence, revisions и progress. Проверяется duplicate lookup. Backup/restore сохраняет байты state.json и загружается новым GoalsStore.
-
-Это доказывает файловую сохранность доменного состояния, но не заменяет реальную расшифровку, UI reload, полный gateway restart или серверный запуск.
+Безопасная сводка: [common-c-summary.json](evidence/common-c-summary.json), историческая [source-f935-summary.json](evidence/source-f935-summary.json). Полные отчёты и synthetic checkpoints вне Git; trace/screenshots/video release-тестов отключены. Команды export/build/launch/smoke/restart/rollback/backup/restore: [RUNBOOK](RUNBOOK.md); browser runner: [browser-README](../../scripts/release/browser-README.md). Memory backup исключает secret store/master key/env; собственные synthetic secrets подключались отдельно приватной копией.
