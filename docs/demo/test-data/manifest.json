@@ -1,0 +1,377 @@
+{
+  "schemaVersion": 1,
+  "status": "PREPARED_NOT_LIVE_EVALUATED",
+  "synthetic": true,
+  "goalFile": "goal.json",
+  "offsets": "UTF-16 code units; exclusive end",
+  "notes": [
+    "Reference events are test expectations, not provider responses. Exact event wording/count and quote span may vary; actual quotes must match actual source slices.",
+    "Audio scripts are TTS inputs, not STT transcripts. No reference timecodes are invented.",
+    "Only exact byte repetition guarantees source deduplication. New wording, silence or re-encoding changes hashes; this does not prove a distinct real-world action.",
+    "TTS bytes can vary between operating-system and voice versions. Manifest hashes describe these prepared files."
+  ],
+  "inputs": [
+    {
+      "id": "01-intention",
+      "file": "text/01-intention.txt",
+      "kind": "text",
+      "sha256": "20be75eef2a63d1cc5ac15f440f12cee206c7d18f5ee1687152fb135ba8d11a5",
+      "contentHash": "083bb39cd113cb1abdb09da8f7171e45b2d5da082a7cc8e32f9ab46063cde40a",
+      "referenceEvents": [
+        {
+          "criterionId": "cv",
+          "eventType": "intention",
+          "quoteAnchor": "Завтра планирую отправить резюме на учебную стажировку в вымышленную лабораторию «Кварц».",
+          "textStart": 0,
+          "textEnd": 89
+        }
+      ],
+      "noCompletedActionsExpected": true,
+      "importProgressDelta": {
+        "cv": 0,
+        "mock": 0,
+        "feedback": 0
+      },
+      "referenceIsActualModelOutput": false
+    },
+    {
+      "id": "02-cv-sent",
+      "file": "text/02-cv-sent.txt",
+      "kind": "text",
+      "sha256": "e9a5c06c348f94c0a28964c3a0a39b1c78f5b42733bb0dcde0b93b7bdb998f69",
+      "contentHash": "113671e46dc96e60419417fdfa2755b2bea2a652eda02b50297cf89eeda27864",
+      "referenceEvents": [
+        {
+          "criterionId": "cv",
+          "eventType": "completed_action",
+          "quoteAnchor": "Сегодня отправил резюме на учебную стажировку в вымышленную лабораторию «Кварц».",
+          "textStart": 0,
+          "textEnd": 80
+        }
+      ],
+      "noCompletedActionsExpected": false,
+      "importProgressDelta": {
+        "cv": 0,
+        "mock": 0,
+        "feedback": 0
+      },
+      "referenceIsActualModelOutput": false
+    },
+    {
+      "id": "03-interview-python",
+      "file": "text/03-interview-python.txt",
+      "kind": "text",
+      "sha256": "8c6b0a5aea9ed68ab2fde3faa487dfdc70edfa70557e11e76e526ad6edbaee83",
+      "contentHash": "c6c66479ccf9e271ede1970021c0cc9c910226b486222b43dcb4a5d65a1644ac",
+      "referenceEvents": [
+        {
+          "criterionId": "mock",
+          "eventType": "completed_action",
+          "quoteAnchor": "Провели первое пробное интервью по Python с вымышленным наставником Никитой.",
+          "textStart": 0,
+          "textEnd": 76
+        }
+      ],
+      "noCompletedActionsExpected": false,
+      "importProgressDelta": {
+        "cv": 0,
+        "mock": 0,
+        "feedback": 0
+      },
+      "referenceIsActualModelOutput": false
+    },
+    {
+      "id": "04-interview-ml",
+      "file": "text/04-interview-ml.txt",
+      "kind": "text",
+      "sha256": "d180c2026cebecf32ec68cb9ed6cdf53afc3e216f3c00ca937e671d3e021dad7",
+      "contentHash": "00649fbba1c9d7914c8410c30d5e582301f0b8b7fde70e95c4b0cd627a64da5b",
+      "referenceEvents": [
+        {
+          "criterionId": "mock",
+          "eventType": "completed_action",
+          "quoteAnchor": "Провели второе пробное ML-интервью с вымышленной наставницей Верой.",
+          "textStart": 0,
+          "textEnd": 67
+        }
+      ],
+      "noCompletedActionsExpected": false,
+      "importProgressDelta": {
+        "cv": 0,
+        "mock": 0,
+        "feedback": 0
+      },
+      "referenceIsActualModelOutput": false
+    },
+    {
+      "id": "05-feedback-done",
+      "file": "text/05-feedback-done.txt",
+      "kind": "text",
+      "sha256": "5799f5a0430f5c57e33803f145c004e326cd79d9385de9b6c2e18b8a8d708a8e",
+      "contentHash": "4147f2521c33decd9a99830c1d5a5a786e7a996341050dd4a8e84d9ea1b2a0e6",
+      "referenceEvents": [
+        {
+          "criterionId": "feedback",
+          "eventType": "completed_action",
+          "quoteAnchor": "По обратной связи вымышленного наставника исправил описание учебного проекта в резюме.",
+          "textStart": 0,
+          "textEnd": 86
+        }
+      ],
+      "noCompletedActionsExpected": false,
+      "importProgressDelta": {
+        "cv": 0,
+        "mock": 0,
+        "feedback": 0
+      },
+      "referenceIsActualModelOutput": false
+    },
+    {
+      "id": "06-obstacle",
+      "file": "text/06-obstacle.txt",
+      "kind": "text",
+      "sha256": "969bb6aa5818e90f40c374492e0840f2715d9b77953a1f6d7a86845300231e20",
+      "contentHash": "b11329d7c11d4b266ce382f1ee513f0798685bb054c09df7d84ad6e140eba8e5",
+      "referenceEvents": [
+        {
+          "criterionId": "mock",
+          "eventType": "obstacle",
+          "quoteAnchor": "Не могу провести третье пробное интервью: вымышленный партнёр заболел и попросил перенести встречу.",
+          "textStart": 0,
+          "textEnd": 99
+        }
+      ],
+      "noCompletedActionsExpected": true,
+      "importProgressDelta": {
+        "cv": 0,
+        "mock": 0,
+        "feedback": 0
+      },
+      "referenceIsActualModelOutput": false
+    },
+    {
+      "id": "07-negation",
+      "file": "text/07-negation.txt",
+      "kind": "text",
+      "sha256": "3ab47c74ab9f2ff3dc99e4abca79ed9664015302739abd21ae87ad2633d4c810",
+      "contentHash": "493587092e723f6bef8068c451f6b5fe3c3d8c54db9c3a490a274861f15c1188",
+      "referenceEvents": [],
+      "noCompletedActionsExpected": true,
+      "importProgressDelta": {
+        "cv": 0,
+        "mock": 0,
+        "feedback": 0
+      },
+      "referenceIsActualModelOutput": false
+    },
+    {
+      "id": "08-uncertain",
+      "file": "text/08-uncertain.txt",
+      "kind": "text",
+      "sha256": "69cdc84b61528dda956ac9de7a94e3673a8649e7201604bf9dbc728292ec01c0",
+      "contentHash": "83eba9d911388a6f5a1a7e0814bec82dd4cd76466d213cef6b0e027764b55749",
+      "referenceEvents": [
+        {
+          "criterionId": "cv",
+          "eventType": "uncertain",
+          "quoteAnchor": "Не уверен, отправил ли резюме в вымышленную лабораторию «Кварц»: подтверждения отправки у меня нет.",
+          "textStart": 0,
+          "textEnd": 99
+        }
+      ],
+      "noCompletedActionsExpected": true,
+      "importProgressDelta": {
+        "cv": 0,
+        "mock": 0,
+        "feedback": 0
+      },
+      "referenceIsActualModelOutput": false
+    },
+    {
+      "id": "09-mixed",
+      "file": "text/09-mixed.txt",
+      "kind": "text",
+      "sha256": "784a8394aee1882d859a2f0b66de2dc61b8ef19eb745c1ad6c60fbb44b14760a",
+      "contentHash": "131dab9d60ce2c1fb3a279638c21c522d492940e91aa70faa06e4ece901d74b9",
+      "referenceEvents": [
+        {
+          "criterionId": "mock",
+          "eventType": "completed_action",
+          "quoteAnchor": "Сегодня завершил пробное интервью по SQL с вымышленным коллегой.",
+          "textStart": 0,
+          "textEnd": 64
+        },
+        {
+          "criterionId": "feedback",
+          "eventType": "intention",
+          "quoteAnchor": "Завтра планирую внести правки по его обратной связи.",
+          "textStart": 65,
+          "textEnd": 117
+        }
+      ],
+      "noCompletedActionsExpected": false,
+      "importProgressDelta": {
+        "cv": 0,
+        "mock": 0,
+        "feedback": 0
+      },
+      "referenceIsActualModelOutput": false
+    },
+    {
+      "id": "10-unicode",
+      "file": "text/10-unicode.txt",
+      "kind": "text",
+      "sha256": "390963aacb8be57a5a734c312123c2c3207b611129582b1949b3cd0f24f392af",
+      "contentHash": "62f316a72813eb40609d006f4526e93c520eb7d0291e9c5b681625e710a50128",
+      "referenceEvents": [
+        {
+          "criterionId": "feedback",
+          "eventType": "completed_action",
+          "quoteAnchor": "По обратной связи исправил раздел «О себе» в резюме.",
+          "textStart": 3,
+          "textEnd": 55
+        }
+      ],
+      "noCompletedActionsExpected": false,
+      "importProgressDelta": {
+        "cv": 0,
+        "mock": 0,
+        "feedback": 0
+      },
+      "referenceIsActualModelOutput": false
+    },
+    {
+      "id": "11-quoted-instruction",
+      "file": "text/11-quoted-instruction.txt",
+      "kind": "text",
+      "sha256": "ad4d31806976b36530edac595f0ebd45e833aff74d7239e27a07e899d679a296",
+      "contentHash": "53879ec295a1f982b4b7bccbfb483192db38fb780c10ace45c1d7f3a014e4850",
+      "referenceEvents": [],
+      "noCompletedActionsExpected": true,
+      "importProgressDelta": {
+        "cv": 0,
+        "mock": 0,
+        "feedback": 0
+      },
+      "referenceIsActualModelOutput": false
+    },
+    {
+      "id": "12-repeat-cv",
+      "file": "text/12-repeat-cv.txt",
+      "kind": "text",
+      "sha256": "e9a5c06c348f94c0a28964c3a0a39b1c78f5b42733bb0dcde0b93b7bdb998f69",
+      "contentHash": "113671e46dc96e60419417fdfa2755b2bea2a652eda02b50297cf89eeda27864",
+      "referenceEvents": [
+        {
+          "criterionId": "cv",
+          "eventType": "completed_action",
+          "quoteAnchor": "Сегодня отправил резюме на учебную стажировку в вымышленную лабораторию «Кварц».",
+          "textStart": 0,
+          "textEnd": 80
+        }
+      ],
+      "noCompletedActionsExpected": false,
+      "importProgressDelta": {
+        "cv": 0,
+        "mock": 0,
+        "feedback": 0
+      },
+      "referenceIsActualModelOutput": false,
+      "duplicateOf": "text/02-cv-sent.txt",
+      "expectedDuplicateAfterOriginalImport": true
+    },
+    {
+      "id": "empty.txt",
+      "file": "invalid/empty.txt",
+      "kind": "invalid",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "expected": "Empty input must not be submitted by UI."
+    },
+    {
+      "id": "whitespace.txt",
+      "file": "invalid/whitespace.txt",
+      "kind": "invalid",
+      "sha256": "743b2cb5fa591d164c63c2343e70fde734982cc2314b93fb080ef15760c639b8",
+      "expected": "Whitespace-only input must not be submitted by UI."
+    },
+    {
+      "id": "broken.wav",
+      "file": "invalid/broken.wav",
+      "kind": "invalid",
+      "sha256": "4bf22a6324cbe8edbd54d89e4c8b8862b21899ccd505cf6fdf7d5e1766ce8e82",
+      "expected": "Explicit processing error; no source/evidence/progress committed."
+    },
+    {
+      "id": "audio-01-action",
+      "file": "audio/01-action.wav",
+      "kind": "audio",
+      "sha256": "eb3be88c92626ec9271c4b5ca389041b090e0230d306d6e3f876077a3517ad6a",
+      "contentHash": "a93c8892bf36432b90f45bf898f7f2b64ba04c391ebdab30e959cc98df9331de",
+      "audio": {
+        "format": "PCM16",
+        "sampleRate": 16000,
+        "channels": 1,
+        "durationSeconds": 20.86025,
+        "sampleCount": 333764
+      },
+      "expectedSemanticEvents": [
+        {
+          "criterionId": "cv",
+          "eventType": "completed_action"
+        },
+        {
+          "criterionId": "mock",
+          "eventType": "intention"
+        }
+      ],
+      "importProgressDelta": {
+        "cv": 0,
+        "mock": 0,
+        "feedback": 0
+      },
+      "confirmOneSupportedActionDelta": {
+        "cv": 1,
+        "mock": 0,
+        "feedback": 0
+      },
+      "referenceTextIsSttOutput": false,
+      "liveSttStatus": "NOT_RUN"
+    },
+    {
+      "id": "audio-02-plan",
+      "file": "audio/02-plan.wav",
+      "kind": "audio",
+      "sha256": "7fd9f2ed5924b432e342de37fd8821fa36b176482fac290da6ffad373a44060c",
+      "contentHash": "b6b465c50f0e9f3b00ee0a3c71df64ff331ed3530fa26c46d93e45b68727dea6",
+      "audio": {
+        "format": "PCM16",
+        "sampleRate": 16000,
+        "channels": 1,
+        "durationSeconds": 23.67975,
+        "sampleCount": 378876
+      },
+      "expectedSemanticEvents": [
+        {
+          "criterionId": "cv",
+          "eventType": "intention"
+        },
+        {
+          "criterionId": "mock",
+          "eventType": "obstacle"
+        }
+      ],
+      "importProgressDelta": {
+        "cv": 0,
+        "mock": 0,
+        "feedback": 0
+      },
+      "confirmOneSupportedActionDelta": {
+        "cv": 0,
+        "mock": 0,
+        "feedback": 0
+      },
+      "referenceTextIsSttOutput": false,
+      "liveSttStatus": "NOT_RUN"
+    }
+  ]
+}

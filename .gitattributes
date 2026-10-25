@@ -1,0 +1,2 @@
+# This negative test input intentionally consists only of spaces and tabs.
+docs/demo/test-data/invalid/whitespace.txt -whitespace

@@ -1,0 +1,30 @@
+{
+  "goalId": "demo",
+  "request": {
+    "title": "Подготовиться к ML-собеседованию",
+    "deadline": "2026-11-01T17:30:00+03:00",
+    "criteria": [
+      {
+        "id": "cv",
+        "description": "Отправить резюме",
+        "targetCount": 1,
+        "unit": "отправка"
+      },
+      {
+        "id": "mock",
+        "description": "Провести пробные интервью",
+        "targetCount": 2,
+        "unit": "интервью"
+      },
+      {
+        "id": "feedback",
+        "description": "Внести правки по обратной связи",
+        "targetCount": 1,
+        "unit": "исправление"
+      }
+    ],
+    "confirm": true,
+    "expectedRevision": null
+  },
+  "warning": "Reference for a new isolated goal only. Do not overwrite an existing goal or reset live state."
+}

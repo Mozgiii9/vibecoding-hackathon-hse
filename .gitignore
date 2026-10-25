@@ -4,6 +4,8 @@
 /research/
 /tmp/
 /output/playwright/
+/output/test-data/
+/output/test-data-tts/
 /.playwright-cli/
 /.playwright-mcp/
 /Moscow 2.m4a
