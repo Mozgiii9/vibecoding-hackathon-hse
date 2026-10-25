@@ -4,7 +4,11 @@
 
 Происхождение финальной проверки: независимый A выполнил **ef360ae**, его audio-результат **DIAGNOSTIC_RECOVERY_PASS**, первоначальные FAIL сохранены. C выполнил **семь чистых аудиопроверок PASS на eba453c**. [Перечисленные runtime-исходники](../demo/evidence/c-production/runtime-equivalence.json) ef360ae и eba453c идентичны, но A не запускал точный deployment SHA eba453c. [Resume-тест A на точном eba453c](../demo/evidence/c-production/a-authored-resume.json) выполнил C: **PASS 1/1**. Финальный handoff A `ad779d9` объединён.
 
-**Отдельное расширение IN_PROGRESS:** владелец добавил публичный HTTPS/TLS-доступ для iPhone. Публичный доступ пока не принят, физический iPhone **NOT_RUN**. Нужно отдельно проверить сертификат/TLS, обычный вход, текст и загрузку короткого аудио на устройстве. Основной MVP принят, вся расширенная цель ещё не завершена.
+**Отдельное расширение ACTIVE:** публичный [HTTPS](https://77.239.111.64/) имеет статус **PUBLIC_HTTPS_READY**. Доверенный сертификат Let’s Encrypt с IP SAN, UI/SPA/ресурсы, точный source SHA, initialized local JWT bootstrap и отказ защищённого API анонимному запросу/поддельным actor-заголовкам независимо проверены, PASS. [План HTTPS](../demo/HTTPS_PLAN.md), [deployment](../demo/evidence/c-production/https-deployment.json), [независимый отчёт](../demo/evidence/c-production/https-independent.json). Приложение остаётся на eba453c; HTTPS-proxy работает отдельно, без новой функции приложения после freeze.
+
+Публичный реальный text-сценарий **COMPLETED_TEXT**: новый источник, точная цитата, confirm и mock **1→2**, [проверки публичного текста](../demo/defense/recordings/https-eba453c/metadata.json) и [проверенная HTTPS-запись](../demo/defense/recordings/https-eba453c/completed-text/demo.webm). Независимое декодирование: **11,20 с, 1440×900**, реальный UI в начале/середине/конце; небольшое серое поле, как у оригинала. Белое изображение было артефактом Chrome media viewer; QA файла закрыта. Прежняя production-текстовая запись также остаётся резервом.
+
+Свежая публичная аудиопроверка **PASS_FRESH_AUDIO**: [6 проверок за 82,23 с](../demo/evidence/c-production/https-audio-results.json), обычный вход, старый WAV duplicate с прежними ID/counts, свежий WAV с изменёнными байтами и реальными STT/Gemini, точные цитаты и таймкоды, proposals без роста; confirm cv1→2, повтор с теми же ID/counts, reload сохраняет auth/данные. Итог **cv2/mock2/feedback0**. Владелец сообщил: «Приложение открылось, требуется вход». Физический iPhone **PHONE_LOGIN_SCREEN_CONFIRMED**, обычная авторизация, текст и аудио на устройстве ещё не проверены. Основной MVP принят, вся расширенная цель остаётся ACTIVE.
 
 Согласованный основной объём включает текст **и** короткое аудио. Ручная форма цели и следующий шаг по правилу допустимы в v1. LLM-интервью/модельный коучинг, continuous recording и OAuth не входят в текущую реализацию.
 
@@ -18,7 +22,8 @@
 | Надёжность и ошибки | Атомарный JSON-store, bounded transport, состояния ошибок | Restart/restore PASS. A отдельно проверил protocol-fake негативные сценарии, это не live provider quality | A+B+C |
 | Наш воспроизводимый выпуск | Source-built Linux/x64 Node22.21.1, без Vite/upstream images | PASS C: manifest/release identity, backup49files, restore только в новую synthetic копию, совпадение core-state SHA256 | A; общий выпуск C |
 | Интерфейс | Тёплый тёмный responsive React | PASS C: desktop/mobile390, точный source/quote и counts после restore. A-authored resume на точном C выполнен C, PASS1/1 | C; независимо A на ef360ae |
-| Защита | Четыре экрана, script, synthetic корпус и два коротких text WebM | Материалы есть. Полный трёхминутный text+audio ролик, человеческие репетиции и физический проектор NOT_RUN | B корпус; C комплект |
+| Публичный HTTPS | Отдельный TLS proxy на 443, source UI/API eba453c неизменён, HTTP landing сохранён | PUBLIC_HTTPS_READY: trusted IP SAN/TLS1.3, UI/assets/SHA и auth guard PASS; реальный text COMPLETED_TEXT, mock1→2; public audio PASS_FRESH_AUDIO 6/6, cv1→2; физический iPhone PHONE_LOGIN_SCREEN_CONFIRMED, auth/text/audio pending | C; независимая HTTP(S)-проверка C2; устройство проверяет владелец |
+| Защита | Четыре экрана, script, synthetic корпус и короткие text WebM | Материалы есть. Полный трёхминутный text+audio ролик, человеческие репетиции и физический проектор NOT_RUN | B корпус; C комплект |
 
 ## Сквозной сценарий приёмки
 
@@ -33,7 +38,8 @@
 
 ## Что остаётся после core-приёмки
 
-- Новая задача C: публичный HTTPS/TLS для iPhone, затем физический вход/текст/аудиопроход. До результата IN_PROGRESS, физическое устройство NOT_RUN.
+- Публичный HTTPS — PUBLIC_HTTPS_READY; свежий public audio — PASS_FRESH_AUDIO. На физическом iPhone подтверждён только экран входа: PHONE_LOGIN_SCREEN_CONFIRMED; обычная авторизация, текст и аудио pending. Расширенная цель ACTIVE, не COMPLETE.
+- Сертификат shortlived действует до 2026-11-01T03:48:08Z. Автопродление и старт proxy после перезагрузки не настроены, см. HTTPS_PLAN.md.
 - Команда: две человеческие репетиции, физический проектор и полный резервный text+audio ролик, без фиктивных отметок PASS.
 - Ограничения: Docker runtime не запускался, полный backend suite не объявлен зелёным из-за документированного baseline. Sidecar B не отменяет native inference при клиентском abort.
 

@@ -1,0 +1,54 @@
+{
+  "checkedAt": "2026-10-25T12:50:57.069Z",
+  "origin": "https://77.239.111.64",
+  "sourceSha": "eba453caec424c47a31c8f8947a83ed9389dc8a3",
+  "proxy": {
+    "runtime": "/srv/ryadom-hackathon/integration/https",
+    "httpsPort": 443,
+    "httpEnabled": false,
+    "sourceSha256": "0c6412668f8ea774340f6a514d2fecbafbd164ecfa79d5ad5eec29a6b564331c",
+    "initialPid": 87619,
+    "authoritativePid": "https/proxy.pid"
+  },
+  "certificate": {
+    "ca": "Let's Encrypt",
+    "issuer": "YE1",
+    "ipSan": "77.239.111.64",
+    "notBefore": "2026-10-25T11:48:09Z",
+    "notAfter": "2026-11-01T03:48:08Z",
+    "profile": "shortlived",
+    "issuanceChallenge": "TLS-ALPN-01",
+    "client": "lego 5.5.2",
+    "clientArchiveSha256": "2a35505089e7772c92e1e9ac144df91151ef2eca8568630db0ff91fca06d9bef",
+    "explicitOwnerAccountAndTermsApproval": true,
+    "automaticRenewalConfigured": false
+  },
+  "preservedProcesses": {
+    "ui": 86315,
+    "gateway": 86366,
+    "stt": 82144,
+    "landing": 86916
+  },
+  "publicChecks": {
+    "ordinaryTlsTrustAndIp": "PASS",
+    "releaseIdentity": "PASS",
+    "bootstrapInitialized": true,
+    "anonymousProtectedApi": 401,
+    "httpLanding": 200,
+    "liveText": "COMPLETED_TEXT",
+    "freshAudio": "PASS_FRESH_AUDIO (6 checks)"
+  },
+  "physicalIphone": "LOGIN_SCREEN_CONFIRMED_BY_OWNER; ordinary login/text/audio pending",
+  "initialHarnessAttempt": {
+    "status": "FAIL",
+    "stage": "ordinary-ui-auth",
+    "reason": "Clean-signup harness requires uninitialized auth; existing initialized account preserved",
+    "authenticated": false,
+    "productFailure": false,
+    "artifacts": "https-initial-harness-failure.json"
+  },
+  "limitations": [
+    "Physical iPhone acceptance requires owner test.",
+    "TLS proxy is retained with nohup; boot-time service and automatic renewal were not configured."
+  ]
+}

@@ -91,9 +91,38 @@
     "activeInstanceUnchanged": true
   },
   "additionalHttpsScope": {
-    "status": "IN_PROGRESS",
-    "publicTls": "NOT_READY",
-    "physicalIphone": "NOT_RUN",
-    "http80": "Occupied by separate landing; preserved"
+    "status": "PUBLIC_HTTPS_READY",
+    "deploymentFile": "https-deployment.json",
+    "independentTlsAndAnonymousApi": "PASS",
+    "independentFile": "https-independent.json",
+    "publicText": {
+      "status": "COMPLETED_TEXT",
+      "duplicate": false,
+      "mockBefore": 1,
+      "mockAfter": 2,
+      "checksFile": "../../defense/recordings/https-eba453c/metadata.json",
+      "videoQa": "DECODED_NONBLANK_UI",
+      "videoQaFile": "../../defense/recordings/https-eba453c/qa/report.json",
+      "video": "../../defense/recordings/https-eba453c/completed-text/demo.webm"
+    },
+    "publicAudio": {
+      "status": "PASS_FRESH_AUDIO",
+      "checks": 6,
+      "durationMs": 82230,
+      "resultFile": "https-audio-results.json",
+      "sourceVariant": "Existing synthetic corpus WAV with 1000ms PCM silence prefix; speech unchanged, intentionally new byte hash",
+      "automaticRetries": 0,
+      "afterCounts": {
+        "cv": 2,
+        "mock": 2,
+        "feedback": 0
+      }
+    },
+    "physicalIphone": {
+      "status": "LOGIN_SCREEN_CONFIRMED_BY_OWNER",
+      "ownerReport": "Приложение открылось, требуется вход",
+      "ordinaryLogin": "NOT_RUN",
+      "textAudioOnDevice": "NOT_RUN"
+    }
   }
 }

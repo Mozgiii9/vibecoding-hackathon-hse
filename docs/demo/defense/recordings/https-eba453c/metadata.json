@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "kind": "real-ui-recording",
+  "mode": "text",
+  "status": "COMPLETED_TEXT",
+  "startedAt": "2026-10-25T12:50:18.976Z",
+  "finishedAt": "2026-10-25T12:50:33.247Z",
+  "candidateSha": "eba453caec424c47a31c8f8947a83ed9389dc8a3",
+  "candidateShaProvenance": "operator-provided-not-independently-verified",
+  "viewport": {
+    "width": 1440,
+    "height": 900
+  },
+  "syntheticData": true,
+  "sourceBodySha256": "cecec4a2ce989a92ac2fdd3ecf0fe15cde5f9d937c294cb27734cd0244b0742c",
+  "steps": [
+    {
+      "name": "ordinary_login_and_prepared_goal_verified",
+      "at": "2026-10-25T12:50:24.270Z"
+    },
+    {
+      "name": "real_ui_import_response_verified",
+      "at": "2026-10-25T12:50:28.757Z",
+      "duplicate": false
+    },
+    {
+      "name": "exact_source_and_quote_opened",
+      "at": "2026-10-25T12:50:30.340Z"
+    },
+    {
+      "name": "confirmation_attempt_started",
+      "at": "2026-10-25T12:50:30.342Z"
+    },
+    {
+      "name": "one_completed_action_confirmed",
+      "at": "2026-10-25T12:50:30.576Z"
+    },
+    {
+      "name": "server_progress_increased_by_one",
+      "at": "2026-10-25T12:50:31.151Z",
+      "before": 1,
+      "after": 2
+    }
+  ],
+  "duplicate": false,
+  "confirmationAttempted": true,
+  "confirmationPerformed": true,
+  "providerCall": "not-observable-from-browser",
+  "video": {
+    "available": true,
+    "relativePath": "completed-text/demo.webm"
+  },
+  "failure": null
+}

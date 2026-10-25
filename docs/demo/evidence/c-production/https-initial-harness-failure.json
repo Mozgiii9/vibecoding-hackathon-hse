@@ -1,0 +1,20 @@
+{
+  "status": "FAIL",
+  "startedAt": "2026-10-25T12:47:40.792Z",
+  "baseUrl": "https://77.239.111.64",
+  "gitSha": "491a8e1d7c114de043c4f65afa7b04755926e726",
+  "trackedTreeDirty": false,
+  "runnerSha256": "f60ccd77344be3ce70e695a00fc763698faef124025df6a73534ef362a07491e",
+  "audioSha256": "889c89021c3a64f384a6056a7307b32faae3394dbae44882d5109561359b1577",
+  "checks": [],
+  "screenshots": [],
+  "limitations": [
+    "Browser acceptance does not prove process restart, backup/restore, or all MVP criteria.",
+    "Duplicate identity/progress is observed. STT/extraction call counts require independent service telemetry."
+  ],
+  "failure": {
+    "stage": "ordinary-ui-auth",
+    "type": "ASSERTION_FAILED"
+  },
+  "finishedAt": "2026-10-25T12:47:46.007Z"
+}

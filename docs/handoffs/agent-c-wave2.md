@@ -1,13 +1,14 @@
 # C — общий source-кандидат «Рядом»
 
-Состояние после финальной сверки 25 октября 2026: **основной MVP ACCEPTED** интегратором, запись принятия 15:24 МСК в [summary](../demo/evidence/c-production/summary.json). Финальный handoff A `ad779d9` объединён. Новая явно добавленная владельцем задача публичного HTTPS/TLS-доступа для iPhone находится **IN_PROGRESS**. Полная расширенная цель ещё не завершена: публичный HTTPS не принят, физический iPhone **NOT_RUN**.
+Состояние 25 октября 2026: **основной MVP ACCEPTED** интегратором, запись принятия 15:24 МСК в [summary](../demo/evidence/c-production/summary.json). Финальный handoff A `ad779d9` объединён. Отдельный публичный HTTPS имеет статус **PUBLIC_HTTPS_READY**, реальный публичный текст — **COMPLETED_TEXT**, mock1→2. Свежий public audio **PASS_FRESH_AUDIO** 6/6, итогcv2/mock2/feedback0. Физический iPhone **PHONE_LOGIN_SCREEN_CONFIRMED**: обычная авторизация, текст и аудио на устройстве ещё pending. Вся расширенная цель остаётся **ACTIVE**, не COMPLETE.
 
 ## Реализация и версия
 
 - Deployment SHA: **eba453caec424c47a31c8f8947a83ed9389dc8a3**; source-built Linux/x64 Node22.21.1, без Docker/Vite/upstream app images. Manifest и actual `/release.json` совпадают.
 - Включены A goals-core/backup/source packaging и B context/STT/quality. C улучшил русский первый вход, bootstrap retry, возврат в goal workspace, сохранение draft при ошибке save и guard ошибки первой загрузки/пустого title.
 - Последующие merge B меняют runner/evidence/docs, не deployment application code. `runnerCheckoutSha` в audio report не является deployment SHA; точная версия цели указана в [summary](../demo/evidence/c-production/summary.json).
-- Запуск и фактические пути: [OPERATIONS.md](../demo/OPERATIONS.md). UI http://127.0.0.1:17073/ через активный SSH tunnel; публичный hosting не заявляется.
+- Запуск и фактические пути: [OPERATIONS.md](../demo/OPERATIONS.md), [HTTPS_PLAN.md](../demo/HTTPS_PLAN.md). Публичный адрес [https://77.239.111.64/](https://77.239.111.64/); отдельный Node proxy на443, HTTP_ENABLED=0, существующий HTTP landing на80 сохранён. UI17073/API18789/STT19000 остаются приватными. Source UI/API **eba453c** не менялся; proxy расположен вне приложения, новых функций приложения после freeze не добавлено.
+- [HTTPS deployment](../demo/evidence/c-production/https-deployment.json) и [независимая проверка](../demo/evidence/c-production/https-independent.json): trusted Let’s Encrypt IP SAN, сертификат до2026-11-01T03:48:08Z. Автопродление и автоматический старт proxy после reboot не настроены.
 
 ## Проверки
 
@@ -19,6 +20,10 @@
 | Независимый B common-code gate |ef360ae:7PASS, обычный UI→реальныеSTT/Gemini→quote→confirm→duplicate→reload, сохранено B |
 | Production C audio |eba453c:7PASS, clean signup/logout/login/goal0, WAV→настоящая расшифровка и4evidence, всеquotes точные, UIconfirmcv1, duplicate IDs/counts прежние, reload сохраняет auth/data |
 | Production C text |eba453c: обычный login, новый text→quote→confirmmock0→1, реальный WebM; intention не увеличивает cv1/mock1/feedback0 |
+| Публичный HTTPS C |PUBLIC_HTTPS_READY: обычная проверка TLS1.3/IP SAN, UI/SPA/same-origin assets200, exactSHAeba453c, bootstrap initialized/local, anonymous401 и x-actor-spoof401; config schema-safe/no credential fields; старый HTTP landing200 |
+| Публичный реальный text C |COMPLETED_TEXT: новый источник → exactquote → confirm, mock1→2; [проверки публичного текста](../demo/defense/recordings/https-eba453c/metadata.json), [проверенный WebM](../demo/defense/recordings/https-eba453c/completed-text/demo.webm):11,20с/1440×900; реальный UI в начале/середине/конце подтверждён независимым декодированием |
+| Публичный свежий audio C |[PASS_FRESH_AUDIO](../demo/evidence/c-production/https-audio-results.json):6/6 за82,23с. Обычный login; старый WAVduplicate сохраняетID/counts; свежий WAV с изменёнными байтами → реальныеSTT/Gemini/exactquotes/groundedtimes, proposals без роста; confirmcv1→2; repeat сохраняетID/counts; reload сохраняетauth/данные. Итогcv2/mock2/feedback0 |
+| Физический iPhone |PHONE_LOGIN_SCREEN_CONFIRMED по сообщению владельца «Приложение открылось, требуется вход». Обычная авторизация, текст и аудио на устройстве pending |
 | Production C review |audioCVreject1→0, затем reconfirm0→1; серверные counts и UI совпадают |
 | Production restore |SIGTERM толькоC,49файлов backup, новая synthetic копия, corestate SHA256 идентичен; secrets отдельно приватно, исходная память сохранена |
 | UI после restore |сессия восстановлена,6events/reviews иcounts1/1/0; exactaudioquote, настоящий0:04–0:09, sourcekeyboardfocus |
@@ -34,8 +39,8 @@
 
 Готовы автономные4экрана, трёхминутныйscript, реальные текстовые записи dev ef360ae **15,04 с** и production eba453c **16,12 с**, обе1440×900 и COMPLETED_TEXT, checklist2человеческих репетиций. Это короткие текстовые резервы, полного трёхминутного text+audio фильма нет. Репетиции и физический проектор **NOT_RUN**, фиктивных отметок нет. PPTX/PDF не создавались. Личные записи и ключи в артефактах отсутствуют; все источники synthetic.
 
-После обновления экранов повторная локальная headless-проверка: все4экрана1280×720 помещаются выше toolbar;390×844 без горизонтального переполнения, конец длинного экрана доступен прокруткой. Стрелки/пробел/прямой переход/заметки/Escape PASS, JS errors0, external HTTP requests0. Метаданные обоих WebM прочитаны браузером:15,04/16,12с и1440×900. Это проверка артефактов, не физического проектора или iPhone.
+После обновления экранов повторная локальная headless-проверка: все4экрана1280×720 помещаются выше toolbar;390×844 без горизонтального переполнения, конец длинного экрана доступен прокруткой. Стрелки/пробел/прямой переход/заметки/Escape PASS, JS errors0, external HTTP requests0. Метаданные обоих WebM прочитаны браузером:15,04/16,12с и1440×900. Третья, публичная HTTPS-запись отдельно декодирована существующим Playwright ffmpeg:11,20с/1440×900, early/mid/end содержат реальный UI; C лично просмотрел end-frame с цитатой и подтверждённым действием. Небольшое серое поле соответствует прежним записям. Белое изображение Chrome media viewer было артефактом просмотра, QA файла закрыта. Это проверка артефактов, не физического проектора или iPhone.
 
-Core-приёмка закрыта с указанным выше происхождением A/C. Последний экран актуализирован под рабочий MVP. Остаются человеческие репетиции и полный резервный ролик. Новая публичная HTTPS-задача включает отдельную проверку сертификата/TLS и обычного входа, текста и загрузки короткого аудио на физическом iPhone. До её результатов готовность публичного iPhone-сценария не заявляется.
+Core-приёмка закрыта с указанным выше происхождением A/C. Публичный HTTPS — PUBLIC_HTTPS_READY, публичный реальный text — COMPLETED_TEXT, свежий public audio — PASS_FRESH_AUDIO. На физическом iPhone подтверждён только экран входа (PHONE_LOGIN_SCREEN_CONFIRMED); обычная авторизация, текст и аудио ещё pending. Вся расширенная цель остаётся ACTIVE. Третья HTTPS-запись проверена и добавлена к текстовым резервам, прежняя production-запись сохранена; открытой QA-проблемы видео нет. Остаются человеческие репетиции и полный резервный ролик.
 
 Аудио работает через сохранённый sidecar B; его native inference не отменяется клиентским abort, что документировано. Цель ручная, nextStep по правилу; LLM-интервью/коучинг, continuous recording и OAuth не реализованы и не обещаются.

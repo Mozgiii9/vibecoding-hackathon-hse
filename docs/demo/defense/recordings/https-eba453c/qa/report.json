@@ -1,0 +1,47 @@
+{
+  "checkedAt": "2026-10-25T12:58:24.228Z",
+  "status": "DECODED_NONBLANK_UI",
+  "decoder": "Already installed Playwright ffmpeg-1011/ffmpeg-mac, VP8/libvpx, PNG frame output",
+  "systemFfprobe": "UNAVAILABLE_MISSING_X265_DYLIB; no installation or repair performed",
+  "input": {
+    "file": "docs/demo/defense/recordings/https-eba453c/completed-text/demo.webm",
+    "sha256": "74cded98b3fd72c3d2cdf02fb52a65dac27d21eb6e66553ed2ae2aac27ab2484",
+    "matchesOriginalRecording": true,
+    "originalSha256": "74cded98b3fd72c3d2cdf02fb52a65dac27d21eb6e66553ed2ae2aac27ab2484",
+    "codec": "VP8",
+    "width": 1440,
+    "height": 900,
+    "durationSeconds": 11.2,
+    "fps": 25
+  },
+  "frames": [
+    {
+      "atSeconds": 1,
+      "file": "https-early.png",
+      "observed": "Dark loading screen with readable Russian safe-login preparation text. Not blank."
+    },
+    {
+      "atSeconds": 5.6,
+      "file": "https-middle.png",
+      "observed": "Real warm dark UI with HTTPS synthetic source title/body and processing state."
+    },
+    {
+      "atSeconds": 10,
+      "file": "https-end.png",
+      "observed": "Confirmed completed-action row and selected source with highlighted exact quote."
+    }
+  ],
+  "comparison": {
+    "file": "docs/demo/defense/recordings/production-eba453c/completed-text/demo.webm",
+    "sha256": "06a00b6fa7ecaaa524ab964b65dfd98f3a103ad7a78ab0b08d197a2d866dc03f",
+    "frame": "production-end.png",
+    "atSeconds": 14.9,
+    "observed": "Earlier production UI also decodes correctly and contains the same grey lower padding."
+  },
+  "conclusion": "The third recording contains actual nonblank UI. White browser screenshots do not reflect the independently decoded file content. The precise browser viewing/decoding discrepancy is not diagnosed.",
+  "limitations": [
+    "Three HTTPS frames sampled, not a complete human playback acceptance.",
+    "Grey lower padding is encoded in both recordings.",
+    "No video transcoding, source edits, document changes, network access or new browser/runtime performed."
+  ]
+}

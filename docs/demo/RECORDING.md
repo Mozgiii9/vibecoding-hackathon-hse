@@ -1,15 +1,18 @@
 # Harness записи реального UI
 
-Подготовлен [scripts/demo/record.mjs](../../scripts/demo/record.mjs), затем C записал два реальных текстовых прохода через обычный UI. Оба имеют `COMPLETED_TEXT`, `duplicate: false`, точную цитату, одно подтверждение и рост критерия интервью с 0 до 1. Ниже отдельно зафиксированы существующие записи и правила harness.
+Подготовлен [scripts/demo/record.mjs](../../scripts/demo/record.mjs), затем C записал реальные текстовые проходы через обычный UI. Все три имеют `COMPLETED_TEXT`, `duplicate: false`, точную цитату, одно подтверждение и рост критерия интервью. Ниже зафиксированы записи и правила harness.
 
 | Запись | Кандидат и фактический результат |
 |---|---|
 | [Dev WebM](defense/recordings/text-ef360ae/completed-text/demo.webm), [metadata](defense/recordings/text-ef360ae/metadata.json) | ef360ae, 25 октября 14:33 МСК, 1440×900, длительность видеопотока 15,04 с |
 | [Production WebM](defense/recordings/production-eba453c/completed-text/demo.webm), [metadata](defense/recordings/production-eba453c/metadata.json) | eba453c, 25 октября 14:51–14:52 МСК, 1440×900, длительность видеопотока 16,12 с |
+| [Public HTTPS WebM](defense/recordings/https-eba453c/completed-text/demo.webm), [metadata](defense/recordings/https-eba453c/metadata.json), [QA](defense/recordings/https-eba453c/qa/report.json) | eba453c, 25 октября 15:50 МСК, 1440×900, 11,20 с; новый текст, mock1→2 |
+
+Для HTTPS-проверки использована временная ignored-копия harness с абсолютным projectRoot и новым synthetic текстом: «Синтетическая заметка для проверки публичного HTTPS. Сегодня провели одно пробное ML-интервью с наставником по градиентному бустингу». Остальные проверки сохранены. Новое тело даёт новый content hash; повтор старого текста не объявляется новым вызовом Gemini. Декодирование HTTPS WebM существующим ffmpeg подтвердило реальные early/middle/end кадры; конечный кадр осмотрен интегратором. В файле есть серая нижняя полоса. Белые кадры отдельного Chrome-viewer не совпали с декодированным содержимым, точная причина просмотра не установлена.
 
 Для защиты основной короткий резерв — production-запись. Время `startedAt` / `finishedAt` в metadata включает запуск браузера и финализацию, поэтому отличается от длительности видеопотока. SHA в metadata передан оператором, его происхождение сохранено. **Полный трёхминутный ролик text+audio, обе человеческие репетиции и физический проектор остаются NOT_RUN.**
 
-Основной MVP принят интегратором по [production evidence](evidence/c-production/summary.json). Аудио подтверждено отдельными семью чистыми UI-проверками C на eba453c; его нет в этих текстовых WebM. Независимая проверка A выполнена на ef360ae с идентичными перечисленными runtime-исходниками, со статусом audio `DIAGNOSTIC_RECOVERY_PASS`. Тест восстановления A дополнительно выполнен C на точном eba453c, PASS 1/1. Новый публичный HTTPS/TLS-сценарий для iPhone находится в работе, физический iPhone NOT_RUN. Это отдельная добавленная задача, её завершение здесь не заявляется.
+Основной MVP принят интегратором по [production evidence](evidence/c-production/summary.json). Аудио подтверждено семью чистыми UI-проверками C на eba453c и [шестью публичными HTTPS-проверками](evidence/c-production/https-audio-results.json); его нет в текстовых WebM. Независимая проверка A выполнена на ef360ae с идентичными перечисленными runtime-исходниками, со статусом audio `DIAGNOSTIC_RECOVERY_PASS`. Resume-тест A выполнен C на точном eba453c, PASS 1/1. Публичный TLS работает; владелец подтвердил экран входа на физическом iPhone. Авторизация, текст и аудио на устройстве ещё не подтверждены.
 
 ## Что делает text-сценарий
 

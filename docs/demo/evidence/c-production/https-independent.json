@@ -1,0 +1,82 @@
+{
+  "checkedAt": "2026-10-25T12:49:32.720Z",
+  "endpoint": "https://77.239.111.64",
+  "candidate": "eba453caec424c47a31c8f8947a83ed9389dc8a3",
+  "result": "PASS",
+  "method": "Node HTTP(S), normal certificate verification; no credentials; no model or audio requests",
+  "checks": {
+    "tls": {
+      "verified": true,
+      "protocol": "TLSv1.3",
+      "ipSanMatches": true,
+      "validUntil": "2026-11-01T03:48:08.000Z"
+    },
+    "html": {
+      "status": 200,
+      "hasReactRoot": true
+    },
+    "assets": {
+      "allSameOrigin": true,
+      "foreignOriginCount": 0,
+      "javascriptCount": 1,
+      "items": [
+        {
+          "path": "/ryadom.svg",
+          "status": 200,
+          "contentType": "image/svg+xml"
+        },
+        {
+          "path": "/assets/index-TKXvtVI6.js",
+          "status": 200,
+          "contentType": "text/javascript"
+        },
+        {
+          "path": "/assets/index-CL5t9grJ.css",
+          "status": 200,
+          "contentType": "text/css"
+        }
+      ]
+    },
+    "spaFallback": {
+      "status": 200,
+      "hasReactRoot": true
+    },
+    "release": {
+      "status": 200,
+      "shaMatches": true,
+      "sourceSha": "eba453caec424c47a31c8f8947a83ed9389dc8a3"
+    },
+    "bootstrap": {
+      "status": 200,
+      "initialized": true,
+      "localJwtMode": true
+    },
+    "auth": [
+      {
+        "path": "/api/goals/demo",
+        "anonymousStatus": 401,
+        "spoofedActorStatus": 401
+      },
+      {
+        "path": "/api/session",
+        "anonymousStatus": 401,
+        "spoofedActorStatus": 401
+      }
+    ],
+    "config": {
+      "status": 200,
+      "schemaValid": true,
+      "hasCredentialFields": false,
+      "versionMatches": true
+    },
+    "unrelatedHttpLanding": {
+      "status": 200,
+      "preserved200": true,
+      "redirectsToOurHttps": false
+    }
+  },
+  "limitations": [
+    "Physical iPhone/Safari/WKWebView not tested",
+    "Authenticated session and LLM/STT not invoked"
+  ]
+}

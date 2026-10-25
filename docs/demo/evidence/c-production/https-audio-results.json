@@ -1,0 +1,227 @@
+{
+  "status": "PASS_FRESH_AUDIO",
+  "startedAt": "2026-10-25T12:53:16.008Z",
+  "finishedAt": "2026-10-25T12:54:38.238Z",
+  "targetOrigin": "https://77.239.111.64",
+  "runnerCheckoutSha": "491a8e1d7c114de043c4f65afa7b04755926e726",
+  "runnerSha256": "c837b366102e4e1272363fb35626ceb5c16d13c21ea9cb9fd9f7f93b9bdfb158",
+  "deploymentSourceSha": "eba453caec424c47a31c8f8947a83ed9389dc8a3",
+  "deploymentIdentityProvenance": "release.json observed over target connection, separate from runner checkout",
+  "strictTls": true,
+  "syntheticData": true,
+  "checks": [
+    {
+      "name": "ordinary-login-existing-goal",
+      "status": "PASS",
+      "at": "2026-10-25T12:53:25.999Z",
+      "goalId": "demo",
+      "counts": {
+        "cv": 1,
+        "mock": 2,
+        "feedback": 0
+      }
+    },
+    {
+      "name": "https-existing-wav-duplicate-no-progress-growth",
+      "status": "PASS",
+      "at": "2026-10-25T12:53:50.360Z",
+      "sourceId": "7c59c52d-685b-4009-9d1a-1a494f016e25",
+      "evidenceIds": [
+        "7a865418-41b7-41fe-9734-6295ed489ba9",
+        "9393f2dc-8d10-414a-90ac-7cbcc4213601",
+        "917960b1-3b92-4115-96ee-1edc4fcf08b6",
+        "693e1323-a85e-46c8-8644-d5188726f581"
+      ],
+      "sttCallCount": "NOT_OBSERVABLE_FROM_BROWSER"
+    },
+    {
+      "name": "real-stt-proposals-exact-quotes-no-count-growth",
+      "status": "PASS",
+      "at": "2026-10-25T12:54:26.888Z",
+      "sourceId": "7c736d56-434e-42ab-9b6e-f2d11f942bd2",
+      "transcript": "Это учебная запись для демонстрации помощника. Сегодня я отправил резюме на стажировку. Рекрутир подтвердил, что получил резюме. Сегодня мы также провели первые пробные интервью с другом. Во время интервью я ответил на вопросы промышленные обучения. После встречи я записал замечание, но правки по обратной связи пока не внес. Завтра хочу повторить сложные темы и подготовить исправление. Второй пробное интервью еще не проводили. Мне нужно сначала разобрать ошибки, а затем договориться о новой встрече.",
+      "segments": [
+        {
+          "startMs": 720,
+          "endMs": 6000,
+          "textStart": 0,
+          "textEnd": 46
+        },
+        {
+          "startMs": 6000,
+          "endMs": 10240,
+          "textStart": 47,
+          "textEnd": 87
+        },
+        {
+          "startMs": 10240,
+          "endMs": 14720,
+          "textStart": 88,
+          "textEnd": 128
+        },
+        {
+          "startMs": 14720,
+          "endMs": 20360,
+          "textStart": 129,
+          "textEnd": 187
+        },
+        {
+          "startMs": 20360,
+          "endMs": 26400,
+          "textStart": 188,
+          "textEnd": 249
+        },
+        {
+          "startMs": 26400,
+          "endMs": 31980,
+          "textStart": 250,
+          "textEnd": 312
+        },
+        {
+          "startMs": 31980,
+          "endMs": 33980,
+          "textStart": 313,
+          "textEnd": 326
+        },
+        {
+          "startMs": 33980,
+          "endMs": 40180,
+          "textStart": 327,
+          "textEnd": 388
+        },
+        {
+          "startMs": 40180,
+          "endMs": 44580,
+          "textStart": 389,
+          "textEnd": 430
+        },
+        {
+          "startMs": 44580,
+          "endMs": 49380,
+          "textStart": 431,
+          "textEnd": 487
+        },
+        {
+          "startMs": 49380,
+          "endMs": 50780,
+          "textStart": 488,
+          "textEnd": 504
+        }
+      ],
+      "evidence": [
+        {
+          "criterionId": "cv",
+          "eventType": "completed_action",
+          "summary": "Отправил резюме на стажировку",
+          "quote": "Сегодня я отправил резюме на стажировку.",
+          "textStart": 47,
+          "textEnd": 87,
+          "startMs": 6000,
+          "endMs": 10240,
+          "id": "f87b9c83-bc2f-4471-8658-e0b2b0e04786",
+          "goalId": "demo",
+          "sourceId": "7c736d56-434e-42ab-9b6e-f2d11f942bd2",
+          "eventKey": "3f9aade97cca23fc526d6718aacc24c9274a7d8e00bb1445292d2e02b47716e8",
+          "status": "proposed",
+          "revision": 1,
+          "createdAt": "2026-10-25T12:54:25.471Z"
+        },
+        {
+          "criterionId": "mock",
+          "eventType": "completed_action",
+          "summary": "Провел первое пробное интервью с другом",
+          "quote": "Сегодня мы также провели первые пробные интервью с другом.",
+          "textStart": 129,
+          "textEnd": 187,
+          "startMs": 14720,
+          "endMs": 20360,
+          "id": "1cc3f9cd-5f63-4e44-b504-ac6019b0b7fa",
+          "goalId": "demo",
+          "sourceId": "7c736d56-434e-42ab-9b6e-f2d11f942bd2",
+          "eventKey": "a9044609460f27ba6d4f8230088c56e44475544632e82f441412b93c633307e1",
+          "status": "proposed",
+          "revision": 1,
+          "createdAt": "2026-10-25T12:54:25.471Z"
+        },
+        {
+          "criterionId": "feedback",
+          "eventType": "intention",
+          "summary": "Планирует подготовить исправление по темам на следующий день",
+          "quote": "Завтра хочу повторить сложные темы и подготовить исправление.",
+          "textStart": 327,
+          "textEnd": 388,
+          "startMs": 33980,
+          "endMs": 40180,
+          "id": "a143a120-e61b-4a6f-8eb6-6c526d72ae03",
+          "goalId": "demo",
+          "sourceId": "7c736d56-434e-42ab-9b6e-f2d11f942bd2",
+          "eventKey": "3070c0bb99a82b81763ff6b34293452104362746f3d06286784ee92cf250624a",
+          "status": "proposed",
+          "revision": 1,
+          "createdAt": "2026-10-25T12:54:25.471Z"
+        },
+        {
+          "criterionId": "mock",
+          "eventType": "intention",
+          "summary": "Планирует договориться о новом пробном интервью после разбора ошибок",
+          "quote": "Мне нужно сначала разобрать ошибки, а затем договориться о новой встрече.",
+          "textStart": 431,
+          "textEnd": 504,
+          "startMs": 44580,
+          "endMs": 50780,
+          "id": "1af83abe-de7f-4959-9551-f81165363233",
+          "goalId": "demo",
+          "sourceId": "7c736d56-434e-42ab-9b6e-f2d11f942bd2",
+          "eventKey": "513a0c678d89421f0a97a59d1bc59ae49d61ad1af31bdfcfade47db8ec732408",
+          "status": "proposed",
+          "revision": 1,
+          "createdAt": "2026-10-25T12:54:25.471Z"
+        }
+      ]
+    },
+    {
+      "name": "one-ui-confirm-increases-matching-server-count",
+      "status": "PASS",
+      "at": "2026-10-25T12:54:28.827Z",
+      "evidenceId": "f87b9c83-bc2f-4471-8658-e0b2b0e04786",
+      "criterionId": "cv",
+      "counts": {
+        "cv": 2,
+        "mock": 2,
+        "feedback": 0
+      }
+    },
+    {
+      "name": "fresh-wav-repeat-same-ids-and-counts",
+      "status": "PASS",
+      "at": "2026-10-25T12:54:34.522Z",
+      "sourceId": "7c736d56-434e-42ab-9b6e-f2d11f942bd2",
+      "counts": {
+        "cv": 2,
+        "mock": 2,
+        "feedback": 0
+      }
+    },
+    {
+      "name": "reload-preserves-existing-goal-auth-evidence-and-counts",
+      "status": "PASS",
+      "at": "2026-10-25T12:54:38.043Z",
+      "counts": {
+        "cv": 2,
+        "mock": 2,
+        "feedback": 0
+      },
+      "evidenceCount": 11
+    }
+  ],
+  "confirmationAttempted": true,
+  "confirmationPerformed": true,
+  "originalAudioSha256": "889c89021c3a64f384a6056a7307b32faae3394dbae44882d5109561359b1577",
+  "freshAudioSha256": "a63b3e8b1ae9175ff822e18d54b2631aee15ccdf6ba47019b79d85179a836c4c",
+  "freshAudioProvenance": "Operator-supplied synthetic WAV with intentionally changed bytes, such as a silence prefix. This runner does not claim to verify how it was created.",
+  "limitations": [
+    "No goal/auth reset or runtime restart.",
+    "Duplicate response does not expose STT invocation count.",
+    "Headless browser is not physical iPhone acceptance."
+  ]
+}
