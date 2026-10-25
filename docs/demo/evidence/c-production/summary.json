@@ -60,7 +60,14 @@
     "preservedLocally": true,
     "productFailure": false
   },
-  "independentFinalA": "PENDING",
+  "independentFinalA": {
+    "executedCandidate": "ef360ae0627e35ddfe615143b5409690ac222ed8",
+    "status": "ACCEPTED per A handoff; audio DIAGNOSTIC_RECOVERY_PASS",
+    "sameRuntimeSourcesAsC": true,
+    "equivalenceFile": "runtime-equivalence.json",
+    "exactCDeploymentExecutionByA": false,
+    "initialAudioFailuresPreserved": true
+  },
   "humanRehearsals": "NOT_RUN",
   "physicalProjector": "NOT_RUN",
   "limitations": [
@@ -68,5 +75,25 @@
     "STT sidecar is retained in agent-b isolated environment; source delivery includes service and lockfile.",
     "Text WebM records a real text path; audio is proven separately by UI evidence.",
     "Existing upstream starter-pack lint baseline remains documented by A; complete backend suite is not claimed green."
-  ]
+  ],
+  "acceptanceByIntegrator": "ACCEPTED",
+  "acceptedAt": "2026-10-25T12:24:42.607Z",
+  "aAuthoredResumeOnExactC": {
+    "status": "PASS",
+    "executedBy": "C integrator",
+    "resultFile": "a-authored-resume.json"
+  },
+  "secretExposureCheckFile": "secret-exposure-check.json",
+  "standbyShow": {
+    "prepared": true,
+    "started": false,
+    "instance": "instances/show-eba453c",
+    "activeInstanceUnchanged": true
+  },
+  "additionalHttpsScope": {
+    "status": "IN_PROGRESS",
+    "publicTls": "NOT_READY",
+    "physicalIphone": "NOT_RUN",
+    "http80": "Occupied by separate landing; preserved"
+  }
 }

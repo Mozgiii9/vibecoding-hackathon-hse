@@ -46,6 +46,13 @@ Launcher работает foreground; при необходимости пере
 
 ## Резерв защиты
 
+Для чистой репетиции подготовлены **не запущенные** `instances/show-eba453c` и `private-show-c.env` с новым namespace/master key. Активная восстановленная копия не изменена. Когда интегратор завершит текущее окно A/C, остановить только её проверенный supervisor и запустить тот же release с `private-show-c.env` и state `/srv/ryadom-hackathon/integration/instances/show-eba453c`. Launcher откажет на занятых портах и не остановит соседние процессы. Затем обычным UI создать синтетический аккаунт и цель; старые instance и backup сохранить. Не стартовать второй gateway одновременно.
+
+```bash
+# Только после остановки собственного прежнего C: запустить подготовленную чистую demo-среду.
+./tools/node-v22.21.1-linux-x64/bin/node releases/eba453c/scripts/release/launch-source.mjs private-show-c.env /srv/ryadom-hackathon/integration/releases/eba453c /srv/ryadom-hackathon/integration/instances/show-eba453c
+```
+
 Четыре автономных [экрана презентации](defense/index.html), [сценарий](DEMO_SCRIPT.md), [чеклист репетиций](REHEARSAL.md) и [реальное текстовое видео production-кандидата](defense/recordings/production-eba453c/completed-text/demo.webm). Ролик не содержит весь трёхминутный рассказ и не заменяет audio evidence.
 
 Локальный `npm --prefix app/builds/typescript run dev:hackathon` остаётся текстовым резервом. Его env приватен; аудио в нём использует SSH-доступ к тому же серверному STT. Полностью offline LLM/STT-работа не заявляется. При сетевом сбое использовать автономные слайды и подписанную запись реального прохода, не выдавая её за текущий live-запрос.

@@ -1,0 +1,28 @@
+{
+  "sourceSha": "eba453caec424c47a31c8f8947a83ed9389dc8a3",
+  "testAuthorship": "Agent A",
+  "executedBy": "C integrator",
+  "test": "Ordinary login; exact pre-restore goal/evidence/progress including IDs/revisions/status; all six source quotes/timecodes at1440and390px",
+  "checkpointOrigin": "Preserved pre-restore synthetic backup, read-only GoalsStore getters; exact state hash already matched",
+  "stats": {
+    "startTime": "2026-10-25T12:19:42.891Z",
+    "duration": 10371.372,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "tests": [
+    {
+      "title": "LIVE restart resume: ordinary login and identical persisted workspace",
+      "status": "expected",
+      "results": [
+        {
+          "status": "passed"
+        }
+      ]
+    }
+  ],
+  "traceVideoHar": "off",
+  "status": "PASS"
+}
