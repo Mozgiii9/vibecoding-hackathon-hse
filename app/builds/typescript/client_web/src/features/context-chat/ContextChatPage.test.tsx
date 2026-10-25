@@ -54,7 +54,7 @@ it("keeps draft and request ID on failure, then retries without duplicating a se
   await waitFor(() => expect(field).toBeEnabled());
   await user.type(field, "Что я уже сделал?");
   await user.click(screen.getByRole("button", { name: "Отправить сообщение" }));
-  expect(await screen.findByRole("alert")).toHaveTextContent("Ваше сообщение сохранено");
+  expect(await screen.findByRole("alert")).toHaveTextContent("Текст остался в поле");
   expect(field).toHaveValue("Что я уже сделал?");
   await user.click(screen.getByRole("button", { name: "Отправить сообщение снова" }));
   await screen.findByText(reply.text);

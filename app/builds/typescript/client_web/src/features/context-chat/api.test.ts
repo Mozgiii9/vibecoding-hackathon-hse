@@ -24,7 +24,7 @@ it.each([401, 403])("keeps auth failure %s clear even when a proxy sends HTML", 
 
 it("shows a safe actionable error without upstream messages", async () => {
   fetch.mockResolvedValue(json({ error: { code: "provider_failed", message: "private provider diagnostics" } }, 502));
-  await expect(sendContextChat("demo", input, new AbortController().signal)).rejects.toThrow("Ваше сообщение сохранено");
+  await expect(sendContextChat("demo", input, new AbortController().signal)).rejects.toThrow("Текст остался в поле");
 });
 
 it("rejects unsupported grounded answers and orphan replies", async () => {
