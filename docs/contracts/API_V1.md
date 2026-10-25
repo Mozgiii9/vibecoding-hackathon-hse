@@ -81,7 +81,7 @@ createContextProviders(config: {
 ## Идемпотентность и транзакция
 
 1. B берёт подтверждённый Goal snapshot через порт.
-2. Хеширует `kind + "\\0" + originalBytes` SHA-256, hex lowercase. Для текста originalBytes = UTF-8 исходного принятого text; title/capturedAt в hash не входят.
+2. Хеширует последовательность `kind`, один нулевой байт `0x00`, затем `originalBytes` через SHA-256, hex lowercase. Для текста originalBytes = UTF-8 исходного принятого text; title/capturedAt в hash не входят.
 3. `findImport(goalId, contentHash)` проверяется до LLM/STT; найденный результат возвращается с duplicate = true и текущими пользовательскими статусами.
 4. B вызывает провайдеры вне транзакции и валидирует предложения: criterion существует; `text.slice(textStart,textEnd) === quote`; диапазоны целочисленные и корректные. LLM может вернуть quote вместо offsets, но код обязан найти точное вхождение и корректно обработать неоднозначность, не угадывая.
 5. `commitImport` у A снова проверяет hash, goal revision и валидность данных, затем сохраняет Source и весь Evidence одной операцией. Изменившаяся цель → 409 `goal_changed`. Повтор гоняющихся запросов возвращает один набор ID.

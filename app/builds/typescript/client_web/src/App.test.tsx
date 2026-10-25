@@ -6,6 +6,10 @@ import { __resetAuthAdapterForTests } from "@/api/auth-adapter";
 
 import App from "./App";
 
+vi.mock("@/features/goals/GoalsPage", () => ({
+  default: () => <main>Goal workspace</main>,
+}));
+
 function renderApp() {
   return render(
     <BrowserRouter>
@@ -111,8 +115,6 @@ describe("App", () => {
     await user.type(screen.getByLabelText("Password"), "password123");
     await user.click(screen.getByRole("button", { name: "Sign in" }));
 
-    expect(
-      (await screen.findAllByPlaceholderText("Message your BrainDrive...")).length
-    ).toBeGreaterThan(0);
+    expect(await screen.findByText("Goal workspace")).toBeInTheDocument();
   });
 });

@@ -79,6 +79,7 @@ import {
   ensureBrainDriveModelsCheckoutKey,
 } from "./credits-provisioning.js";
 import { createMemoryBackupScheduler } from "./memory-backup-scheduler.js";
+import { registerHackathonFeatures } from "./hackathon.js";
 import { GatewayProjectService, isProjectMetadata, ProtectedProjectError, type GatewayProjectFile } from "./projects.js";
 import { GatewaySkillService } from "./skills.js";
 import { prepareContextWindow, type PreparedContextWindow } from "./context-window.js";
@@ -2373,6 +2374,8 @@ export async function buildServer(rootDir = process.cwd()) {
     app.post("/account/portal-session", async (request, reply) => proxyToGateway(request, reply, "POST", "/api/gateway/billing/create-portal-session", request.body));
     app.post("/account/topup", async (request, reply) => proxyToGateway(request, reply, "POST", "/api/gateway/billing/topup", request.body));
   }
+
+  await registerHackathonFeatures(app, { memoryRoot: runtimeConfig.memory_root });
 
   return {
     app,

@@ -1,14 +1,27 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 
 import { logout } from "@/api/auth-adapter";
 import { getConfig } from "@/api/config-adapter";
 import AuthFlow from "@/components/auth/AuthFlow";
 import AppShell from "@/components/layout/AppShell";
+import GoalsPage from "@/features/goals/GoalsPage";
+
+const GoalDesignPreview = import.meta.env.DEV
+  ? lazy(() => import("@/features/goals/GoalDesignPreview"))
+  : null;
 
 type AppScreen = "loading" | "auth" | "main";
 
 export default function App() {
+  if (GoalDesignPreview && new URLSearchParams(window.location.search).get("preview") === "goals") {
+    return <Suspense fallback={<p>Готовим демо-макет…</p>}><GoalDesignPreview /></Suspense>;
+  }
+  return <AuthenticatedApp />;
+}
+
+function AuthenticatedApp() {
   const [screen, setScreen] = useState<AppScreen>("loading");
+  const [surface, setSurface] = useState<"goals" | "assistant">("goals");
   const [deploymentMode, setDeploymentMode] = useState<"local" | "managed">("local");
   const [installMode, setInstallMode] = useState<"dev" | "local" | "prod" | "unknown">(
     "unknown"
@@ -44,7 +57,7 @@ export default function App() {
   if (screen === "loading") {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-bd-bg-primary px-4">
-        <p className="text-sm text-bd-text-muted">Loading...</p>
+        <p className="text-sm text-bd-text-secondary">Готовим твоё пространство…</p>
       </div>
     );
   }
@@ -55,23 +68,31 @@ export default function App() {
     );
   }
 
-  return (
+  function handleLogout() {
+    void logout().finally(() => {
+      if (deploymentMode === "managed") {
+        window.location.href = "/api/gateway/auth/logout";
+      } else {
+        setScreen("auth");
+      }
+    });
+  }
+
+  if (surface === "goals") {
+    return <GoalsPage onLogout={handleLogout} onOpenAssistant={() => setSurface("assistant")} />;
+  }
+
+  return <>
+    <button type="button" onClick={() => setSurface("goals")}
+      className="fixed right-5 top-4 z-50 rounded-full border border-bd-border bg-bd-bg-secondary px-4 py-2 text-sm text-bd-text-primary">
+      К моей цели
+    </button>
     <AppShell
       deploymentMode={deploymentMode}
       installMode={installMode}
       installLocation={installLocation}
       appVersion={appVersion}
-      onLogout={() => {
-        void logout().finally(() => {
-          if (deploymentMode === "managed") {
-            // In managed mode, hit the Gateway logout endpoint which stops the
-            // container, clears the bd_session cookie, and redirects to /login.
-            window.location.href = "/api/gateway/auth/logout";
-          } else {
-            setScreen("auth");
-          }
-        });
-      }}
+      onLogout={handleLogout}
     />
-  );
+  </>;
 }

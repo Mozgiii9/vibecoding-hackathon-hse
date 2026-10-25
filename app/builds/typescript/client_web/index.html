@@ -1,18 +1,18 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="ru" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, interactive-widget=resizes-content" />
     <!-- Fonts self-hosted in /public/fonts/ — no external requests -->
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>BrainDrive</title>
+    <link rel="icon" type="image/svg+xml" href="/ryadom.svg" />
+    <title>Рядом · Второй мозг</title>
     <style>
       @font-face {
         font-family: "Montserrat";
         font-weight: 700;
         font-style: normal;
         font-display: swap;
-        src: url("./fonts/Montserrat-Bold.ttf") format("truetype");
+        src: url("/fonts/Montserrat-Bold.ttf") format("truetype");
       }
 
       @font-face {
@@ -20,7 +20,7 @@
         font-weight: 400;
         font-style: normal;
         font-display: swap;
-        src: url("./fonts/Questrial-Regular.ttf") format("truetype");
+        src: url("/fonts/Questrial-Regular.ttf") format("truetype");
       }
 
       html,
@@ -28,8 +28,8 @@
         margin: 0;
         min-width: 320px;
         min-height: 100%;
-        background: #03050a;
-        color: #c5daed;
+        background: oklch(19.5% .011 58);
+        color: oklch(93% .014 78);
       }
 
       #startup-splash {
@@ -38,9 +38,7 @@
         z-index: 2147483647;
         display: grid;
         place-items: center;
-        background:
-          radial-gradient(circle at 50% 42%, rgba(50, 93, 135, 0.22), transparent 34rem),
-          linear-gradient(180deg, #071124 0%, #03050a 58%, #010208 100%);
+        background: oklch(19.5% .011 58);
         opacity: 1;
         transition: opacity 220ms ease;
       }
@@ -138,13 +136,13 @@
   </head>
   <body>
     <div id="root"></div>
-    <div id="startup-splash" role="status" aria-live="polite" aria-label="BrainDrive is loading">
+    <div id="startup-splash" role="status" aria-live="polite" aria-label="Готовим ваше пространство">
       <div class="startup-splash__content">
         <div class="startup-splash__brand">
-          <img class="startup-splash__brand-icon" src="./braindrive-icon.svg" alt="" />
-          <h1 class="startup-splash__title">BrainDrive</h1>
+          <img class="startup-splash__brand-icon" src="./ryadom.svg" alt="" />
+          <h1 class="startup-splash__title">Рядом</h1>
         </div>
-        <p class="startup-splash__message">Your Personal AI System is Loading...</p>
+        <p class="startup-splash__message">Готовим пространство для ваших целей…</p>
         <div class="startup-splash__bar" aria-hidden="true"></div>
       </div>
     </div>

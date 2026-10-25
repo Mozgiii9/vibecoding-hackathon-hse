@@ -3,6 +3,9 @@
 /.venv/
 /research/
 /tmp/
+/output/playwright/
+/.playwright-cli/
+/.playwright-mcp/
 /Moscow 2.m4a
 /*.pdf
 .DS_Store

@@ -17,6 +17,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "dev": "node scripts/dev-runtime.mjs --web",
+    "dev:hackathon": "node --env-file-if-exists=.env.hackathon scripts/hackathon-dev.mjs --web",
     "dev:server": "node scripts/dev-runtime.mjs",
     "dev:gateway": "tsx gateway/server.ts",
     "dev:cli": "tsx client/repl.ts",
