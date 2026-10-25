@@ -1,0 +1,27 @@
+{
+  "base_url": "https://my.braindrive.ai/credits/v1",
+  "model": "braindrive-models-default",
+  "api_key_env": "AI_GATEWAY_API_KEY",
+  "provider_id": "braindrive-models",
+  "default_provider_profile": "braindrive-models",
+  "provider_profiles": {
+    "braindrive-models": {
+      "base_url": "https://my.braindrive.ai/credits/v1",
+      "model": "braindrive-models-default",
+      "api_key_env": "AI_GATEWAY_API_KEY",
+      "provider_id": "braindrive-models"
+    },
+    "openrouter": {
+      "base_url": "https://openrouter.ai/api/v1",
+      "model": "z-ai/glm-5.2",
+      "api_key_env": "OPENROUTER_API_KEY",
+      "provider_id": "openrouter"
+    },
+    "ollama": {
+      "base_url": "http://127.0.0.1:11434/v1",
+      "model": "",
+      "api_key_env": "OLLAMA_API_KEY",
+      "provider_id": "ollama"
+    }
+  }
+}

@@ -1,0 +1,3877 @@
+import { useEffect, useId, useMemo, useRef, useState } from "react";
+import {
+  Bot,
+  ChevronDown,
+  ChevronRight,
+  Copy,
+  Download,
+  ExternalLink,
+  Key,
+  Cpu,
+  LoaderCircle,
+  Network,
+  PencilLine,
+  RotateCcw,
+  Save,
+  ShieldCheck,
+  Smartphone,
+  User,
+  UserCog,
+  X,
+  Check,
+  Info,
+  AlertCircle,
+  Trash2,
+  Upload
+} from "lucide-react";
+
+import MarkdownContent from "@/components/markdown/MarkdownContent";
+import TailscaleAccessSection from "@/components/settings/TailscaleAccessSection";
+import { openTrustedBillingUrl } from "@/utils/billing-url";
+import { openExternalUrl } from "@/utils/external-url";
+import { renderSVG } from "uqr";
+
+import { getSession, logout } from "@/api/auth-adapter";
+import {
+  applyBrowserAccessFirewallRule,
+  getBrowserAccessStatus,
+  restartBrowserAccess,
+  updateBrowserAccessSettings,
+  type BrowserAccessNetworkScope,
+  type BrowserAccessStatus,
+} from "@/api/desktop-browser-access";
+import {
+  deleteProviderModel,
+  downloadLibraryExport,
+  importLibraryArchive,
+  createCreditsCheckout,
+  getRootAgent,
+  getOwnerProfile,
+  getCreditsStatus,
+  getProviderModels,
+  getSettings as getGatewaySettings,
+  restoreMemoryBackup as restoreGatewayMemoryBackup,
+  runMemoryBackupNow,
+  pullProviderModel,
+  updateMemoryBackupSettings as updateGatewayMemoryBackupSettings,
+  updateOwnerProfile,
+  updateRootAgentOverlay,
+  updateProviderCredential as updateGatewayProviderCredential,
+  updateSettings as updateGatewaySettings,
+  getAccount,
+  changePassword as apiChangePassword,
+  changeEmail as apiChangeEmail,
+  deleteAccount as apiDeleteAccount,
+  createPortalSession,
+  createTopupSession,
+  type AccountInfo,
+} from "@/api/gateway-adapter";
+import { isTauriRuntime } from "@/api/runtime-api-base";
+import { resetGatewayChatRuntime } from "@/api/useGatewayChat";
+import type {
+  GatewayBrainDriveModelsKeyState,
+  GatewayCredentialUpdateRequest,
+  GatewayCreditsStatus,
+  GatewayMemoryBackupFrequency,
+  GatewayMemoryBackupRestoreRequest,
+  GatewayMemoryBackupRestoreResult,
+  GatewayMemoryBackupRunRequest,
+  GatewayMemoryBackupRunResult,
+  GatewayMemoryBackupSettingsUpdateRequest,
+  GatewayModelCatalog,
+  GatewayModelCatalogEntry,
+  GatewayMigrationImportResult,
+  GatewayProviderProfile,
+  GatewaySettings,
+} from "@/api/types";
+import type { UserProfile } from "@/types/ui";
+
+type SettingsPatch = Partial<Pick<GatewaySettings, "default_model" | "active_provider_profile">> & {
+  provider_base_url?: { provider_profile: string; base_url: string };
+};
+
+type SettingsModalProps = {
+  mode?: "local" | "managed";
+  installMode?: "dev" | "local" | "prod" | "unknown";
+  installLocation?: "local" | "managed" | "unknown";
+  appVersion?: string;
+  onClose: () => void;
+};
+
+type SettingsTab = "provider" | "profile" | "your-agent" | "account" | "export" | "memory-backup" | "browser-access" | "remote-access";
+
+type TabDef = { id: SettingsTab; label: string; icon: typeof Key; managedOnly?: boolean; localOnly?: boolean; desktopOnly?: boolean };
+
+// Managed hosting shows: Account, Your Profile, Your Agent, Export (D93).
+// Local shows: AI Models, Your Profile, Your Agent, Remote Access, Browser Access, Memory Backup, Export.
+const allTabs: TabDef[] = [
+  { id: "account", label: "Account", icon: UserCog, managedOnly: true },
+  { id: "provider", label: "AI Models", icon: Cpu, localOnly: true },
+  { id: "profile", label: "Your Profile", icon: User },
+  { id: "your-agent", label: "Your Agent", icon: Bot },
+  { id: "remote-access", label: "Remote Access", icon: ShieldCheck, localOnly: true, desktopOnly: true },
+  { id: "browser-access", label: "Browser Access", icon: Network, localOnly: true, desktopOnly: true },
+  { id: "memory-backup", label: "Backup", icon: Save, localOnly: true },
+  { id: "export", label: "Migrate", icon: Download },
+];
+
+const BROWSER_ACCESS_DEFAULT_PORT = 18088;
+const BROWSER_ACCESS_MAX_PORT = 18107;
+
+export default function SettingsModal({
+  mode = "local",
+  installMode = "unknown",
+  installLocation = "unknown",
+  appVersion = "unknown",
+  onClose,
+}: SettingsModalProps) {
+  const tabs = allTabs.filter((tab) => {
+    if (tab.managedOnly && mode !== "managed") return false;
+    if (tab.localOnly && mode !== "local") return false;
+    if (tab.desktopOnly && !isTauriRuntime()) return false;
+    return true;
+  });
+  const [activeTab, setActiveTab] = useState<SettingsTab>(mode === "managed" ? "account" : "provider");
+  const [settings, setSettings] = useState<GatewaySettings | null>(null);
+  const [isLoadingSettings, setIsLoadingSettings] = useState(mode === "local");
+  const [settingsError, setSettingsError] = useState<string | null>(null);
+  const [modelCatalog, setModelCatalog] = useState<GatewayModelCatalog | null>(null);
+  const [isLoadingModelCatalog, setIsLoadingModelCatalog] = useState(false);
+  const [modelCatalogError, setModelCatalogError] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [importResult, setImportResult] = useState<GatewayMigrationImportResult | null>(null);
+  const [catalogRefreshKey, setCatalogRefreshKey] = useState(0);
+  const overlayRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        onClose();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
+
+  function handleOverlayClick(event: React.MouseEvent) {
+    if (event.target === overlayRef.current) {
+      onClose();
+    }
+  }
+
+  useEffect(() => {
+    if (mode !== "local") {
+      setIsLoadingSettings(false);
+      setSettingsError(null);
+      setModelCatalog(null);
+      setModelCatalogError(null);
+      return;
+    }
+
+    let cancelled = false;
+    setIsLoadingSettings(true);
+    setSettingsError(null);
+
+    void getGatewaySettings()
+      .then((payload) => {
+        if (cancelled) {
+          return;
+        }
+        setSettings(payload);
+      })
+      .catch((loadError) => {
+        if (cancelled) {
+          return;
+        }
+        setSettingsError(loadError instanceof Error ? loadError.message : String(loadError));
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsLoadingSettings(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mode]);
+
+  useEffect(() => {
+    if (mode !== "local" || isLoadingSettings || settingsError || !settings) {
+      setIsLoadingModelCatalog(false);
+      setModelCatalogError(null);
+      return;
+    }
+
+    const providerProfile =
+      settings.active_provider_profile ??
+      settings.default_provider_profile ??
+      settings.provider_profiles[0]?.id ??
+      null;
+
+    if (!providerProfile) {
+      setModelCatalog(null);
+      setModelCatalogError("No provider profile configured.");
+      return;
+    }
+
+    const selectedProvider = settings.provider_profiles.find((profile) => profile.id === providerProfile);
+    if (
+      selectedProvider?.provider_id?.toLowerCase() === "braindrive-models" &&
+      selectedProvider.credential_mode === "unset"
+    ) {
+      setModelCatalog(null);
+      setModelCatalogError(null);
+      setIsLoadingModelCatalog(false);
+      return;
+    }
+
+    let cancelled = false;
+    setIsLoadingModelCatalog(true);
+    setModelCatalogError(null);
+
+    void getProviderModels(providerProfile)
+      .then((payload) => {
+        if (!cancelled) {
+          setModelCatalog(payload);
+          setModelCatalogError(payload.warning ?? null);
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          setModelCatalog(null);
+          setModelCatalogError(error instanceof Error ? error.message : String(error));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsLoadingModelCatalog(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    mode,
+    isLoadingSettings,
+    settingsError,
+    settings,
+    catalogRefreshKey,
+  ]);
+
+  async function saveSettings(
+    patch: SettingsPatch
+  ): Promise<GatewaySettings> {
+    const updated = await updateGatewaySettings(patch);
+    setSettings(updated);
+    setSettingsError(null);
+    return updated;
+  }
+
+  async function saveCredential(patch: GatewayCredentialUpdateRequest): Promise<void> {
+    const updated = await updateGatewayProviderCredential(patch);
+    setSettings(updated.settings);
+    setSettingsError(null);
+    resetGatewayChatRuntime();
+  }
+
+  async function saveMemoryBackupSettings(
+    payload: GatewayMemoryBackupSettingsUpdateRequest
+  ): Promise<GatewaySettings> {
+    const updated = await updateGatewayMemoryBackupSettings(payload);
+    setSettings(updated);
+    setSettingsError(null);
+    return updated;
+  }
+
+  async function triggerMemoryBackupNow(
+    payload: GatewayMemoryBackupRunRequest = {}
+  ): Promise<GatewayMemoryBackupRunResult> {
+    const updated = await runMemoryBackupNow(payload);
+    setSettings(updated.settings);
+    setSettingsError(null);
+    return updated.result;
+  }
+
+  async function triggerMemoryBackupRestore(
+    payload?: GatewayMemoryBackupRestoreRequest
+  ): Promise<GatewayMemoryBackupRestoreResult> {
+    const updated = await restoreGatewayMemoryBackup(payload ?? {});
+    setSettings(updated.settings);
+    setSettingsError(null);
+    resetGatewayChatRuntime();
+    if (updated.logout_required) {
+      await logout();
+      window.location.reload();
+    }
+    return updated.result;
+  }
+
+  async function handleDownloadExport(): Promise<void> {
+    setIsExporting(true);
+    setExportError(null);
+    try {
+      const exported = await downloadLibraryExport();
+      const objectUrl = URL.createObjectURL(exported.blob);
+      const link = document.createElement("a");
+      link.href = objectUrl;
+      link.download = exported.fileName;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(objectUrl);
+    } catch (downloadError) {
+      setExportError(downloadError instanceof Error ? downloadError.message : String(downloadError));
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
+  async function handleImportArchive(file: File): Promise<void> {
+    setIsImporting(true);
+    setImportError(null);
+    setImportResult(null);
+
+    try {
+      const result = await importLibraryArchive(file);
+      setImportResult(result);
+      if (mode === "local") {
+        setSettings(result.settings);
+        resetGatewayChatRuntime();
+        setCatalogRefreshKey((current) => current + 1);
+        if (result.logout_required) {
+          await logout();
+          window.location.reload();
+        }
+      }
+    } catch (error) {
+      setImportError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setIsImporting(false);
+    }
+  }
+
+  return (
+    <div
+      ref={overlayRef}
+      onClick={handleOverlayClick}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+    >
+      {/* Desktop modal */}
+      <div className="hidden h-[80vh] w-full max-w-[720px] flex-col overflow-hidden rounded-2xl border border-bd-border bg-bd-bg-secondary shadow-2xl md:flex">
+        <div className="flex items-center justify-between border-b border-bd-border px-6 py-4">
+          <h2 className="font-heading text-lg font-semibold text-bd-text-heading">
+            Settings
+          </h2>
+          <button
+            type="button"
+            aria-label="Close settings"
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-md text-bd-text-muted transition-colors duration-200 hover:text-bd-text-secondary"
+          >
+            <X size={18} strokeWidth={1.5} />
+          </button>
+        </div>
+
+        <div className="flex min-h-0 flex-1">
+          <nav className="flex w-[200px] shrink-0 flex-col gap-1 border-r border-bd-border p-3">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  className={[
+                    "flex items-center gap-2.5 rounded-lg px-3 py-2.5 text-left text-sm transition-all duration-200",
+                    isActive
+                      ? "bg-bd-bg-tertiary text-bd-text-primary"
+                      : "text-bd-text-muted hover:bg-bd-bg-hover hover:text-bd-text-secondary"
+                  ].join(" ")}
+                >
+                  <Icon size={16} strokeWidth={1.5} />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+
+          <div className="flex-1 overflow-y-auto p-6">
+            <TabContent
+              tab={activeTab}
+              mode={mode}
+              settings={settings}
+              isLoadingSettings={isLoadingSettings}
+              settingsError={settingsError}
+              modelCatalog={modelCatalog}
+              isLoadingModelCatalog={isLoadingModelCatalog}
+              modelCatalogError={modelCatalogError}
+              onSaveSettings={saveSettings}
+              onSaveCredential={saveCredential}
+              onSaveMemoryBackupSettings={saveMemoryBackupSettings}
+              onRunMemoryBackupNow={triggerMemoryBackupNow}
+              onRestoreMemoryBackup={triggerMemoryBackupRestore}
+              onDownloadExport={handleDownloadExport}
+              isExporting={isExporting}
+              exportError={exportError}
+              onImportArchive={handleImportArchive}
+              isImporting={isImporting}
+              importError={importError}
+              importResult={importResult}
+              installMode={installMode}
+              installLocation={installLocation}
+              appVersion={appVersion}
+              onRefreshCatalog={() => setCatalogRefreshKey((k) => k + 1)}
+              />
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile full-screen */}
+      <div className="flex h-dvh w-full flex-col bg-bd-bg-secondary md:hidden">
+        <div className="flex items-center justify-between border-b border-bd-border px-4 py-4">
+          <h2 className="font-heading text-lg font-semibold text-bd-text-heading">
+            Settings
+          </h2>
+          <button
+            type="button"
+            aria-label="Close settings"
+            onClick={onClose}
+            className="flex h-8 w-8 items-center justify-center rounded-md text-bd-text-muted transition-colors duration-200 hover:text-bd-text-secondary"
+          >
+            <X size={18} strokeWidth={1.5} />
+          </button>
+        </div>
+
+        <div className="flex gap-1 overflow-x-auto border-b border-bd-border px-4 py-2">
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.id;
+
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={[
+                  "shrink-0 rounded-lg px-3 py-2 text-sm transition-all duration-200",
+                  isActive
+                    ? "bg-bd-bg-tertiary text-bd-text-primary"
+                    : "text-bd-text-muted"
+                ].join(" ")}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="flex-1 overflow-y-auto p-4">
+          <TabContent
+            tab={activeTab}
+            mode={mode}
+            settings={settings}
+            isLoadingSettings={isLoadingSettings}
+            settingsError={settingsError}
+            modelCatalog={modelCatalog}
+            isLoadingModelCatalog={isLoadingModelCatalog}
+            modelCatalogError={modelCatalogError}
+            onSaveSettings={saveSettings}
+            onRefreshCatalog={() => setCatalogRefreshKey((k) => k + 1)}
+            onSaveCredential={saveCredential}
+            onSaveMemoryBackupSettings={saveMemoryBackupSettings}
+            onRunMemoryBackupNow={triggerMemoryBackupNow}
+            onRestoreMemoryBackup={triggerMemoryBackupRestore}
+            onDownloadExport={handleDownloadExport}
+            isExporting={isExporting}
+            exportError={exportError}
+            onImportArchive={handleImportArchive}
+            isImporting={isImporting}
+            importError={importError}
+            importResult={importResult}
+            installMode={installMode}
+            installLocation={installLocation}
+            appVersion={appVersion}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const DEFAULT_USER: UserProfile = {
+  name: "Local Owner",
+  initials: "LO",
+  email: "owner@local.braindrive"
+};
+
+const SYNTHETIC_LOCAL_EMAIL_DOMAINS = ["@local.paa", "@local.braindrive"];
+
+function normalizeBillingEmail(email: string): string {
+  return email.trim();
+}
+
+function isSyntheticLocalEmail(email: string): boolean {
+  const normalized = normalizeBillingEmail(email).toLowerCase();
+  return SYNTHETIC_LOCAL_EMAIL_DOMAINS.some((domain) => normalized.endsWith(domain));
+}
+
+function getSavedBillingEmail(): string {
+  const savedEmail = localStorage.getItem("bd_billing_email") ?? "";
+  if (savedEmail && isSyntheticLocalEmail(savedEmail)) {
+    localStorage.removeItem("bd_billing_email");
+    return "";
+  }
+  return savedEmail;
+}
+
+function useSettingsUser(): UserProfile {
+  const [user, setUser] = useState<UserProfile>(DEFAULT_USER);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void getSession()
+      .then((session) => {
+        if (cancelled) {
+          return;
+        }
+
+        const nextUser = {
+          name: session.user.name,
+          initials: session.user.initials,
+          email: session.user.email
+        };
+
+        if (
+          nextUser.name !== DEFAULT_USER.name ||
+          nextUser.initials !== DEFAULT_USER.initials ||
+          nextUser.email !== DEFAULT_USER.email
+        ) {
+          setUser(nextUser);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setUser(DEFAULT_USER);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return user;
+}
+
+type SettingsDataProps = {
+  settings: GatewaySettings | null;
+  isLoadingSettings: boolean;
+  settingsError: string | null;
+  onSaveSettings: (
+    patch: SettingsPatch
+  ) => Promise<GatewaySettings>;
+  onSaveCredential: (patch: GatewayCredentialUpdateRequest) => Promise<void>;
+};
+
+function TabContent({
+  tab,
+  mode,
+  settings,
+  isLoadingSettings,
+  settingsError,
+  modelCatalog,
+  isLoadingModelCatalog,
+  modelCatalogError,
+  onSaveSettings,
+  onSaveCredential,
+  onSaveMemoryBackupSettings,
+  onRunMemoryBackupNow,
+  onRestoreMemoryBackup,
+  onDownloadExport,
+  isExporting,
+  exportError,
+  onImportArchive,
+  isImporting,
+  importError,
+  importResult,
+  installMode,
+  installLocation,
+  appVersion,
+  onRefreshCatalog,
+}: {
+  tab: SettingsTab;
+  mode: "local" | "managed";
+  settings: GatewaySettings | null;
+  isLoadingSettings: boolean;
+  settingsError: string | null;
+  modelCatalog: GatewayModelCatalog | null;
+  isLoadingModelCatalog: boolean;
+  modelCatalogError: string | null;
+  onSaveSettings: (
+    patch: SettingsPatch
+  ) => Promise<GatewaySettings>;
+  onSaveCredential: (patch: GatewayCredentialUpdateRequest) => Promise<void>;
+  onSaveMemoryBackupSettings: (
+    payload: GatewayMemoryBackupSettingsUpdateRequest
+  ) => Promise<GatewaySettings>;
+  onRunMemoryBackupNow: (payload?: GatewayMemoryBackupRunRequest) => Promise<GatewayMemoryBackupRunResult>;
+  onRestoreMemoryBackup: (
+    payload?: GatewayMemoryBackupRestoreRequest
+  ) => Promise<GatewayMemoryBackupRestoreResult>;
+  onDownloadExport: () => Promise<void>;
+  isExporting: boolean;
+  exportError: string | null;
+  onImportArchive: (file: File) => Promise<void>;
+  isImporting: boolean;
+  importError: string | null;
+  importResult: GatewayMigrationImportResult | null;
+  installMode: "dev" | "local" | "prod" | "unknown";
+  installLocation: "local" | "managed" | "unknown";
+  appVersion: string;
+  onRefreshCatalog: () => void;
+}) {
+  switch (tab) {
+    case "provider":
+      return (
+        <ProviderSection
+          mode={mode}
+          settings={settings}
+          isLoadingSettings={isLoadingSettings}
+          settingsError={settingsError}
+          modelCatalog={modelCatalog}
+          isLoadingModelCatalog={isLoadingModelCatalog}
+          modelCatalogError={modelCatalogError}
+          onSaveSettings={onSaveSettings}
+          onSaveCredential={onSaveCredential}
+          onRefreshCatalog={onRefreshCatalog}
+        />
+      );
+    case "memory-backup":
+      return (
+        <MemoryBackupSection
+          mode={mode}
+          settings={settings}
+          isLoadingSettings={isLoadingSettings}
+          settingsError={settingsError}
+          onSaveMemoryBackupSettings={onSaveMemoryBackupSettings}
+          onRunMemoryBackupNow={onRunMemoryBackupNow}
+          onRestoreMemoryBackup={onRestoreMemoryBackup}
+        />
+      );
+    case "browser-access":
+      return <BrowserAccessSection />;
+    case "remote-access":
+      return <TailscaleAccessSection />;
+    case "profile":
+      return <ProfileSection />;
+    case "your-agent":
+      return <YourAgentSection />;
+    case "account":
+      return <AccountSection />;
+    case "export":
+      return (
+        <ExportSection
+          installMode={installMode}
+          installLocation={installLocation}
+          appVersion={appVersion}
+          onDownload={onDownloadExport}
+          isExporting={isExporting}
+          exportError={exportError}
+          onImport={onImportArchive}
+          isImporting={isImporting}
+          importError={importError}
+          importResult={importResult}
+        />
+      );
+  }
+}
+
+function BrowserAccessSection() {
+  const scopeGroupId = useId();
+  const [status, setStatus] = useState<BrowserAccessStatus | null>(null);
+  const [enabled, setEnabled] = useState(false);
+  const [networkScope, setNetworkScope] = useState<BrowserAccessNetworkScope>("thisComputer");
+  const [port, setPort] = useState(String(BROWSER_ACCESS_DEFAULT_PORT));
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isRestarting, setIsRestarting] = useState(false);
+  const [isApplyingFirewall, setIsApplyingFirewall] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [copyMessage, setCopyMessage] = useState<string | null>(null);
+  const [pendingScopeConfirm, setPendingScopeConfirm] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!isTauriRuntime()) {
+      setIsLoading(false);
+      setActionError("Browser Access is only available in the BrainDrive desktop app.");
+      return;
+    }
+
+    setIsLoading(true);
+    setActionError(null);
+    void getBrowserAccessStatus()
+      .then((nextStatus) => {
+        if (!cancelled) {
+          applyBrowserStatus(nextStatus);
+        }
+      })
+      .catch((error) => {
+        if (!cancelled) {
+          setActionError(error instanceof Error ? error.message : String(error));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  function applyBrowserStatus(nextStatus: BrowserAccessStatus) {
+    setStatus(nextStatus);
+    setEnabled(nextStatus.enabled);
+    setNetworkScope(nextStatus.networkScope);
+    setPort(String(nextStatus.requestedPort || nextStatus.port || BROWSER_ACCESS_DEFAULT_PORT));
+  }
+
+  function revertToStatus() {
+    setEnabled(status?.enabled ?? false);
+    setNetworkScope(status?.networkScope ?? "thisComputer");
+  }
+
+  async function applySettings(
+    nextEnabled: boolean,
+    nextScope?: BrowserAccessNetworkScope,
+    portOverride?: number
+  ) {
+    const scopeToUse = nextScope ?? networkScope;
+    // Everyday controls (toggle, scope) submit the persisted port; only
+    // Advanced -> Save passes the validated draft via portOverride.
+    const portToUse = portOverride ?? status?.requestedPort ?? status?.port ?? BROWSER_ACCESS_DEFAULT_PORT;
+
+    setIsSaving(true);
+    setActionError(null);
+    setActionMessage(null);
+    try {
+      const nextStatus = await updateBrowserAccessSettings({
+        enabled: nextEnabled,
+        networkScope: scopeToUse,
+        port: portToUse,
+      });
+      applyBrowserStatus(nextStatus);
+      if (nextStatus.state === "failed" || nextStatus.lastError) {
+        setActionError(nextStatus.lastError || "Browser Access could not start. Try Restart in Advanced.");
+      } else {
+        setActionMessage(
+          nextStatus.state === "running"
+            ? "Browser Access is running."
+            : nextStatus.enabled
+              ? "Browser Access settings saved."
+              : "Browser Access is off."
+        );
+      }
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : String(error));
+      // The backend saves config before starting the bridge, so a rejection
+      // does not mean nothing changed — trust a fresh status over cached state.
+      try {
+        const fresh = await getBrowserAccessStatus();
+        applyBrowserStatus(fresh);
+      } catch {
+        revertToStatus();
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  // Confirmation is keyed to the exposure transition: about to serve the home
+  // network when it is not already being served. A stored-but-disabled scope
+  // never bypasses this gate.
+  function wouldNewlyExpose(nextEnabled: boolean, scope: BrowserAccessNetworkScope): boolean {
+    return (
+      nextEnabled &&
+      scope === "privateNetwork" &&
+      !(status?.enabled && status?.networkScope === "privateNetwork" && status?.state === "running")
+    );
+  }
+
+  async function handleToggle() {
+    if (isBusy) return;
+    const nextEnabled = !enabled;
+    if (nextEnabled && wouldNewlyExpose(true, networkScope)) {
+      setPendingScopeConfirm(true);
+      return;
+    }
+    setPendingScopeConfirm(false);
+    setEnabled(nextEnabled);
+    await applySettings(nextEnabled);
+  }
+
+  async function handleScopeChange(nextScope: BrowserAccessNetworkScope) {
+    if (isBusy || nextScope === networkScope) return;
+    if (wouldNewlyExpose(enabled, nextScope)) {
+      // Keep the committed selection until the owner approves.
+      setPendingScopeConfirm(true);
+      return;
+    }
+    setPendingScopeConfirm(false);
+    setNetworkScope(nextScope);
+    await applySettings(enabled, nextScope);
+  }
+
+  async function handleConfirmWidening() {
+    setPendingScopeConfirm(false);
+    setEnabled(true);
+    setNetworkScope("privateNetwork");
+    await applySettings(true, "privateNetwork");
+  }
+
+  function handleCancelWidening() {
+    setPendingScopeConfirm(false);
+    revertToStatus();
+  }
+
+  async function handleSave() {
+    const parsedPort = Number(port);
+    if (!Number.isInteger(parsedPort) || parsedPort < BROWSER_ACCESS_DEFAULT_PORT || parsedPort > BROWSER_ACCESS_MAX_PORT) {
+      setActionError(`Choose a port from ${BROWSER_ACCESS_DEFAULT_PORT} to ${BROWSER_ACCESS_MAX_PORT}.`);
+      setActionMessage(null);
+      return;
+    }
+    if (wouldNewlyExpose(enabled, networkScope)) {
+      setPendingScopeConfirm(true);
+      return;
+    }
+    await applySettings(enabled, undefined, parsedPort);
+  }
+
+  async function handleRestart() {
+    setIsRestarting(true);
+    setActionError(null);
+    setActionMessage(null);
+    try {
+      const nextStatus = await restartBrowserAccess();
+      applyBrowserStatus(nextStatus);
+      setActionMessage(nextStatus.state === "running" ? "Browser Access restarted." : "Browser Access is not running.");
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setIsRestarting(false);
+    }
+  }
+
+  async function handleApplyFirewall() {
+    setIsApplyingFirewall(true);
+    setActionError(null);
+    setActionMessage(null);
+    try {
+      const result = await applyBrowserAccessFirewallRule(true);
+      if (result.ok) {
+        setActionMessage(result.message);
+      } else {
+        setActionError(result.command ? `${result.message} Command: ${result.command}` : result.message);
+      }
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setIsApplyingFirewall(false);
+    }
+  }
+
+  async function handleCopy(value: string) {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopyMessage("Copied.");
+      window.setTimeout(() => setCopyMessage(null), 1800);
+    } catch {
+      setCopyMessage("Copy failed.");
+      window.setTimeout(() => setCopyMessage(null), 1800);
+    }
+  }
+
+  const primaryUrl = status?.urls[0] ?? null;
+  const expectedLanPort = status?.port ?? status?.requestedPort ?? null;
+  const lanUrl =
+    status?.urls.map((url) => validatedLanBrowserUrl(url, expectedLanPort)).find((url): url is string => url !== null) ??
+    null;
+  const lanQrSvg = useMemo(() => (lanUrl ? renderSVG(lanUrl) : null), [lanUrl]);
+  const isBusy = isLoading || isSaving || isRestarting || isApplyingFirewall;
+  const canApplyFirewall = status?.networkScope === "privateNetwork" && status.enabled;
+  const currentPort = status?.port ?? status?.requestedPort ?? Number(port);
+  const currentScopeLabel = status?.networkScope === "privateNetwork" ? "Home network" : "This computer";
+  const statusPanelHint =
+    status?.firewallHint ||
+    (status?.networkScope === "privateNetwork"
+      ? "Your operating system may ask for a firewall OK before other devices can connect."
+      : "Access is limited to browsers on this computer.");
+
+  return (
+    <section className="space-y-5">
+      <div>
+        <h3 className="text-lg font-semibold text-bd-text-heading">Browser Access</h3>
+        <p className="mt-1 text-sm leading-5 text-bd-text-secondary">
+          Open BrainDrive in a web browser — on this computer, or from other devices on your home Wi-Fi.
+        </p>
+        <p className="mt-1 text-xs leading-4 text-bd-text-muted">
+          To use BrainDrive away from home, use Remote Access instead.
+        </p>
+      </div>
+
+      {isLoading ? (
+        <div
+          role="status"
+          aria-live="polite"
+          className="flex items-center gap-2 rounded-lg bg-bd-bg-tertiary px-3 py-2.5 text-sm text-bd-text-muted"
+        >
+          <LoaderCircle size={16} strokeWidth={1.5} className="animate-spin" />
+          Loading Browser Access status...
+        </div>
+      ) : null}
+
+      {status?.lastError ? (
+        <div role="alert" className="rounded-lg border border-bd-danger-border bg-bd-danger-bg px-3 py-2.5 text-sm text-bd-text-primary">
+          <p>{status.lastError}</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={handleRestart}
+              disabled={isBusy}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-bd-border bg-bd-bg-secondary px-3 py-2 text-xs font-medium text-bd-text-secondary transition-colors hover:bg-bd-bg-hover hover:text-bd-text-primary disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <RotateCcw size={14} strokeWidth={1.5} />
+              Restart
+            </button>
+            {canApplyFirewall ? (
+              <button
+                type="button"
+                onClick={handleApplyFirewall}
+                disabled={isBusy}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-bd-border bg-bd-bg-secondary px-3 py-2 text-xs font-medium text-bd-text-secondary transition-colors hover:bg-bd-bg-hover hover:text-bd-text-primary disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <ShieldCheck size={14} strokeWidth={1.5} />
+                Firewall
+              </button>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
+      <div aria-busy={isBusy} className="space-y-4 rounded-lg border border-bd-border p-4">
+        <label className="flex items-center justify-between gap-4">
+          <span>
+            <span className="block text-sm font-medium text-bd-text-heading">Enable Browser Access</span>
+            {status && !isLoading ? (
+              <span className="mt-1 flex items-center gap-1.5 text-xs text-bd-text-secondary">
+                <span className={browserAccessStateClasses(status.state)} />
+                {formatBrowserAccessState(status.state)}
+              </span>
+            ) : null}
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={enabled}
+            aria-label="Enable Browser Access"
+            disabled={isBusy}
+            onClick={() => void handleToggle()}
+            className={[
+              "relative inline-flex h-7 w-12 shrink-0 items-center rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bd-amber/60",
+              enabled ? "border-bd-amber bg-bd-amber" : "border-bd-border bg-bd-bg-tertiary"
+            ].join(" ")}
+          >
+            <span
+              className={[
+                "absolute left-1 top-[3px] h-5 w-5 rounded-full shadow-sm transition-transform",
+                enabled ? "translate-x-5 bg-bd-bg-tertiary" : "translate-x-0 bg-bd-sky"
+              ].join(" ")}
+            />
+          </button>
+        </label>
+
+        <div>
+          <span id={scopeGroupId} className="block text-sm font-medium text-bd-text-heading">Network Scope</span>
+          <div role="radiogroup" aria-labelledby={scopeGroupId} className="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {[
+              { id: "thisComputer" as const, label: "This computer", description: "Only web browsers on this computer." },
+              { id: "privateNetwork" as const, label: "Home network", description: "This computer, plus other devices on your home Wi-Fi like your phone or tablet." },
+            ].map((option) => (
+              <button
+                key={option.id}
+                type="button"
+                role="radio"
+                aria-checked={networkScope === option.id}
+                disabled={isBusy}
+                onClick={() => void handleScopeChange(option.id)}
+                className={[
+                  "rounded-lg border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bd-amber/60",
+                  networkScope === option.id
+                    ? "border-bd-amber bg-bd-bg-tertiary"
+                    : "border-bd-border hover:bg-bd-bg-hover"
+                ].join(" ")}
+              >
+                <span className="flex items-center gap-2 text-sm font-medium text-bd-text-primary">
+                  <span
+                    className={[
+                      "flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border",
+                      networkScope === option.id ? "border-bd-amber" : "border-bd-border"
+                    ].join(" ")}
+                    aria-hidden="true"
+                  >
+                    {networkScope === option.id ? <span className="h-1.5 w-1.5 rounded-full bg-bd-amber" /> : null}
+                  </span>
+                  {option.label}
+                </span>
+                <span className="mt-0.5 block text-xs text-bd-text-muted">{option.description}</span>
+              </button>
+            ))}
+          </div>
+          {pendingScopeConfirm ? (
+            <div className="mt-3 rounded-lg border border-bd-amber/40 bg-bd-amber/10 p-3">
+              <p className="text-sm leading-5 text-bd-text-primary">
+                Devices on your home Wi-Fi will be able to open BrainDrive in a browser. They&apos;ll still need your
+                BrainDrive sign-in.
+              </p>
+              <div className="mt-2.5 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => void handleConfirmWidening()}
+                  disabled={isBusy}
+                  className="rounded-lg bg-bd-amber px-3 py-2 text-xs font-medium text-bd-bg-primary transition-colors hover:bg-bd-amber-hover disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Turn on Home network
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancelWidening}
+                  disabled={isBusy}
+                  className="rounded-lg border border-bd-border bg-bd-bg-secondary px-3 py-2 text-xs font-medium text-bd-text-secondary transition-colors hover:bg-bd-bg-hover hover:text-bd-text-primary disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        <details className="rounded-lg border border-bd-border px-3 py-2.5">
+          <summary className="cursor-pointer text-sm font-medium text-bd-text-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bd-amber/60">
+            Advanced
+          </summary>
+          <label className="mt-3 block">
+            <span className="text-sm font-medium text-bd-text-heading">Port</span>
+            <input
+              type="number"
+              min={BROWSER_ACCESS_DEFAULT_PORT}
+              max={BROWSER_ACCESS_MAX_PORT}
+              value={port}
+              onChange={(event) => setPort(event.target.value)}
+              className="mt-1 h-10 w-full rounded-lg border border-bd-border bg-bd-bg-secondary px-3 text-sm text-bd-text-primary outline-none focus:border-bd-amber"
+            />
+            <span className="mt-1 block text-xs text-bd-text-secondary">
+              BrainDrive uses port {BROWSER_ACCESS_DEFAULT_PORT}. If it&apos;s busy, the next open port (up to{" "}
+              {BROWSER_ACCESS_MAX_PORT}) is chosen automatically.
+            </span>
+          </label>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={isBusy}
+              className="rounded-lg bg-bd-amber px-3 py-2 text-xs font-medium text-bd-bg-primary transition-colors hover:bg-bd-amber-hover disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              onClick={handleRestart}
+              disabled={isBusy}
+              className="inline-flex items-center gap-1.5 rounded-lg border border-bd-border bg-bd-bg-secondary px-3 py-2 text-xs font-medium text-bd-text-secondary transition-colors hover:border-bd-amber/60 hover:bg-bd-bg-hover hover:text-bd-text-primary disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <RotateCcw size={14} strokeWidth={1.5} />
+              Restart
+            </button>
+            {canApplyFirewall ? (
+              <button
+                type="button"
+                onClick={handleApplyFirewall}
+                disabled={isBusy}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-bd-border bg-bd-bg-secondary px-3 py-2 text-xs font-medium text-bd-text-secondary transition-colors hover:border-bd-amber/60 hover:bg-bd-bg-hover hover:text-bd-text-primary disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <ShieldCheck size={14} strokeWidth={1.5} />
+                Firewall
+              </button>
+            ) : null}
+          </div>
+        </details>
+      </div>
+
+      {status?.urls.length ? (
+        <div className="rounded-lg border border-bd-border bg-bd-bg-secondary/50 p-4">
+          <h4 className="text-sm font-medium text-bd-text-heading">Use BrainDrive in your browser</h4>
+          {primaryUrl ? (
+            <button
+              type="button"
+              onClick={() => openExternalUrl(primaryUrl)}
+              className="mt-3 inline-flex min-h-9 items-center gap-1.5 rounded-lg border border-bd-border bg-bd-bg-secondary px-3 py-1.5 text-sm font-medium text-bd-text-secondary transition-colors hover:border-bd-amber/60 hover:bg-bd-bg-hover hover:text-bd-text-primary"
+            >
+              <ExternalLink size={14} strokeWidth={1.5} />
+              Open on this computer
+            </button>
+          ) : null}
+
+          {lanUrl ? (
+            <div className="mt-4 border-t border-bd-border/80 pt-4">
+              <div className="flex items-center gap-2">
+                <Smartphone className="shrink-0 text-bd-text-secondary" size={16} strokeWidth={1.5} />
+                <h5 className="text-sm font-medium text-bd-text-heading">On your phone or tablet</h5>
+              </div>
+              <div className="mt-3 flex flex-col items-start gap-5 sm:flex-row">
+                <ol className="min-w-0 flex-1 list-decimal space-y-2 pl-4 text-sm leading-5 text-bd-text-primary">
+                  <li>Make sure it&apos;s on the same Wi-Fi as this computer.</li>
+                  <li>Scan this code with your camera.</li>
+                  <li>Add the link to your bookmarks.</li>
+                </ol>
+                {lanQrSvg ? (
+                  <div
+                    role="img"
+                    aria-label="QR code for your home network BrainDrive address"
+                    className="h-40 w-40 shrink-0 self-center rounded-lg bg-white p-2 [&>svg]:h-full [&>svg]:w-full"
+                    dangerouslySetInnerHTML={{ __html: lanQrSvg }}
+                  />
+                ) : null}
+              </div>
+              <div className="mt-4 border-t border-bd-border/80 pt-4">
+                <div className="flex items-center gap-2">
+                  <Network className="shrink-0 text-bd-text-secondary" size={16} strokeWidth={1.5} />
+                  <h5 className="text-sm font-medium text-bd-text-heading">Any device on your network with a browser</h5>
+                </div>
+                <p className="mt-2 text-sm leading-5 text-bd-text-secondary">
+                  Open the browser and go to this address:
+                </p>
+                <div className="mt-2 flex min-w-0 flex-col gap-2 sm:flex-row">
+                  <input
+                    readOnly
+                    aria-label="Your home network BrainDrive address"
+                    value={lanUrl}
+                    className="h-10 min-w-0 flex-1 rounded-lg border border-bd-border bg-bd-bg-secondary px-3 font-mono text-xs text-bd-text-primary outline-none focus:border-bd-amber"
+                  />
+                  <button
+                    type="button"
+                    aria-label={`Copy ${lanUrl}`}
+                    onClick={() => handleCopy(lanUrl)}
+                    className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-bd-border bg-bd-bg-secondary px-3 py-2 text-sm font-medium text-bd-text-secondary transition-colors hover:border-bd-amber/60 hover:bg-bd-bg-hover hover:text-bd-text-primary"
+                  >
+                    <Copy size={15} strokeWidth={1.5} />
+                    Copy
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : null}
+
+          {lanUrl ? (
+            <p className="mt-3 text-xs leading-4 text-bd-text-secondary">
+              Other devices still need your BrainDrive sign-in — access stays yours.
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
+      {status ? (
+        <details className="rounded-lg border border-bd-border px-4 py-3 text-sm text-bd-text-secondary">
+          <summary className="cursor-pointer font-medium text-bd-text-heading focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bd-amber/60">
+            Technical details
+          </summary>
+          <dl className="mt-3 grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 text-xs">
+            <dt>State</dt>
+            <dd className="flex items-center gap-2 text-bd-text-primary">
+              <span className={browserAccessStateClasses(status.state)} />
+              {formatBrowserAccessState(status.state)}
+            </dd>
+            <dt>Scope</dt>
+            <dd className="text-bd-text-primary">{currentScopeLabel}</dd>
+            <dt>Port</dt>
+            <dd className="font-mono text-bd-text-primary">{currentPort || BROWSER_ACCESS_DEFAULT_PORT}</dd>
+          </dl>
+          <p className="mt-3 text-xs leading-4">{statusPanelHint}</p>
+        </details>
+      ) : null}
+
+      {copyMessage ? (
+        <div role="status" aria-live="polite" className="rounded-lg border border-bd-border bg-bd-bg-tertiary px-3 py-2 text-sm text-bd-text-secondary">
+          {copyMessage}
+        </div>
+      ) : null}
+      {actionMessage ? (
+        <div role="status" aria-live="polite" className="rounded-lg border border-bd-success-border bg-bd-success-bg px-3 py-2 text-sm text-bd-text-primary">
+          {actionMessage}
+        </div>
+      ) : null}
+      {actionError ? (
+        <div role="alert" className="rounded-lg border border-bd-danger-border bg-bd-danger-bg px-3 py-2 text-sm text-bd-text-primary">
+          {actionError}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+// The desktop shell constructs LAN URLs from a private IPv4 and u16 port, but
+// validate at the client boundary anyway: the QR, copy, and open actions must
+// never point anywhere except a private-network address on the expected port.
+function validatedLanBrowserUrl(value: string, expectedPort: number | null): string | null {
+  let parsed: URL;
+  try {
+    parsed = new URL(value);
+  } catch {
+    return null;
+  }
+  if (parsed.protocol !== "http:" || parsed.username || parsed.password) return null;
+  const host = parsed.hostname;
+  if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(host)) return null;
+  const octets = host.split(".").map(Number);
+  if (octets.some((octet) => octet > 255)) return null;
+  const [a, b] = octets;
+  const isPrivate = a === 10 || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168);
+  if (!isPrivate) return null;
+  if (expectedPort !== null && parsed.port !== String(expectedPort)) return null;
+  return value;
+}
+
+function formatBrowserAccessState(state: string): string {
+  switch (state) {
+    case "running":
+      return "Running";
+    case "failed":
+      return "Needs attention";
+    case "stopped":
+      return "Stopped";
+    case "not-started":
+      return "Not started";
+    default:
+      return state;
+  }
+}
+
+function browserAccessStateClasses(state: string): string {
+  const color =
+    state === "running"
+      ? "bg-bd-success"
+      : state === "failed"
+        ? "bg-bd-danger"
+        : "bg-bd-text-muted";
+  return `h-2.5 w-2.5 rounded-full ${color}`;
+}
+
+function MemoryBackupSection({
+  mode,
+  settings,
+  isLoadingSettings,
+  settingsError,
+  onSaveMemoryBackupSettings,
+  onRunMemoryBackupNow,
+  onRestoreMemoryBackup,
+}: {
+  mode: "local" | "managed";
+  settings: GatewaySettings | null;
+  isLoadingSettings: boolean;
+  settingsError: string | null;
+  onSaveMemoryBackupSettings: (
+    payload: GatewayMemoryBackupSettingsUpdateRequest
+  ) => Promise<GatewaySettings>;
+  onRunMemoryBackupNow: (payload?: GatewayMemoryBackupRunRequest) => Promise<GatewayMemoryBackupRunResult>;
+  onRestoreMemoryBackup: (
+    payload?: GatewayMemoryBackupRestoreRequest
+  ) => Promise<GatewayMemoryBackupRestoreResult>;
+}) {
+  const [repositoryUrl, setRepositoryUrl] = useState("");
+  const [frequency, setFrequency] = useState<GatewayMemoryBackupFrequency>("after_changes");
+  const [token, setToken] = useState("");
+  const [isSavingSettings, setIsSavingSettings] = useState(false);
+  const [settingsActionError, setSettingsActionError] = useState<string | null>(null);
+  const [settingsActionSuccess, setSettingsActionSuccess] = useState<string | null>(null);
+  const [isSavingNow, setIsSavingNow] = useState(false);
+  const [saveNowMessage, setSaveNowMessage] = useState<string | null>(null);
+  const [saveNowError, setSaveNowError] = useState<string | null>(null);
+  const [isRestoring, setIsRestoring] = useState(false);
+  const [restoreMessage, setRestoreMessage] = useState<string | null>(null);
+  const [restoreError, setRestoreError] = useState<string | null>(null);
+
+  const backupSettings = settings?.memory_backup ?? null;
+
+  useEffect(() => {
+    setRepositoryUrl(backupSettings?.repository_url ?? "");
+    setFrequency(backupSettings?.frequency ?? "after_changes");
+  }, [backupSettings?.repository_url, backupSettings?.frequency]);
+
+  if (mode !== "local") {
+    return null;
+  }
+
+  if (isLoadingSettings) {
+    return (
+      <div className="space-y-3">
+        <h3 className="font-heading text-base font-semibold text-bd-text-heading">Backup</h3>
+        <p className="text-sm text-bd-text-muted">Loading backup settings...</p>
+      </div>
+    );
+  }
+
+  if (settingsError) {
+    return (
+      <div className="space-y-3">
+        <h3 className="font-heading text-base font-semibold text-bd-text-heading">Backup</h3>
+        <div className="rounded-lg border border-bd-danger-border bg-bd-danger-bg px-3 py-2.5 text-sm text-bd-text-primary">
+          {settingsError}
+        </div>
+      </div>
+    );
+  }
+
+  const lastSave = backupSettings?.last_save_at
+    ? new Date(backupSettings.last_save_at).toLocaleString()
+    : "No backups yet";
+  const lastResult = backupSettings?.last_result ?? "never";
+  const frequencyOptions: Array<{ value: GatewayMemoryBackupFrequency; label: string }> = [
+    { value: "after_changes", label: "After changes" },
+    { value: "hourly", label: "Every hour" },
+    { value: "daily", label: "Every day" },
+    { value: "manual", label: "Manual" },
+  ];
+  const hasBackupConflict =
+    backupSettings?.last_error?.includes("already contains a BrainDrive backup") ?? false;
+
+  function handleRunBackupNow(payload: GatewayMemoryBackupRunRequest = {}): void {
+    setIsSavingNow(true);
+    setSaveNowError(null);
+    setSaveNowMessage(null);
+    void onRunMemoryBackupNow(payload)
+      .then((result) => {
+        if (result.result === "conflict") {
+          setSaveNowMessage(null);
+          return;
+        }
+        const summary =
+          result.result === "failed"
+              ? result.message ?? "Backup failed."
+              : result.result === "noop"
+                ? result.message ?? "Already up to date — nothing new to back up."
+                : "Backup saved successfully.";
+        setSaveNowMessage(summary);
+      })
+      .catch((error) => {
+        setSaveNowError(error instanceof Error ? error.message : String(error));
+      })
+      .finally(() => {
+        setIsSavingNow(false);
+      });
+  }
+
+  function handleRestoreFromBackup(): void {
+    const confirmed = window.confirm(
+      "This will replace all your current data with the backup. API keys will need to be re-entered. Continue?"
+    );
+    if (!confirmed) {
+      return;
+    }
+    setIsRestoring(true);
+    setRestoreError(null);
+    setRestoreMessage(null);
+    void onRestoreMemoryBackup()
+      .then(() => {
+        setRestoreMessage("Restored from backup successfully.");
+      })
+      .catch((error) => {
+        setRestoreError(error instanceof Error ? error.message : String(error));
+      })
+      .finally(() => {
+        setIsRestoring(false);
+      });
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="font-heading text-base font-semibold text-bd-text-heading">Backup</h3>
+        <p className="mt-1 text-sm text-bd-text-muted">
+          Connect your BrainDrive to a free GitHub account to keep it backed up automatically.
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        {/* Step 1 */}
+        <div className="rounded-lg border border-bd-border bg-bd-bg-tertiary p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-bd-bg-secondary text-xs font-bold text-bd-text-muted">1</div>
+            <div className="flex-1">
+              <div className="text-sm font-medium text-bd-text-heading">Create a backup repository</div>
+              <p className="mt-1 text-xs text-bd-text-muted">Go to GitHub and create a free repository for your backups. Ensure visibility is set to private. Paste the repository URL below.</p>
+              <a
+                href="https://github.com/new?name=braindrive-backup&visibility=private"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-block text-xs font-medium text-bd-amber hover:text-bd-amber-hover hover:underline"
+              >
+                Create on GitHub &rarr;
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Step 2 */}
+        <div className="rounded-lg border border-bd-border bg-bd-bg-tertiary p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-bd-bg-secondary text-xs font-bold text-bd-text-muted">2</div>
+            <div className="flex-1">
+              <div className="text-sm font-medium text-bd-text-heading">Create an access token</div>
+              <p className="mt-1 text-xs text-bd-text-muted">GitHub needs a token so BrainDrive can save to your repository. Set expiration to "No expiration" so your backups don't stop. Copy the token from GitHub and paste it below before closing — it only shows once.</p>
+              <a
+                href="https://github.com/settings/tokens/new?scopes=repo&description=BrainDrive+Backup"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-block text-xs font-medium text-bd-amber hover:text-bd-amber-hover hover:underline"
+              >
+                Create token on GitHub &rarr;
+              </a>
+            </div>
+          </div>
+        </div>
+
+        {/* Step 3 */}
+        <div className="rounded-lg border border-bd-border bg-bd-bg-tertiary p-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-bd-bg-secondary text-xs font-bold text-bd-text-muted">3</div>
+            <div className="flex-1 space-y-3">
+              <div className="text-sm font-medium text-bd-text-heading">Connect</div>
+              <p className="text-xs text-bd-text-muted">Paste your repository URL and token below.</p>
+              <div>
+                <label className="block text-xs font-medium text-bd-text-secondary" htmlFor="memory-backup-repo">
+                  Repository URL
+                </label>
+                <input
+                  id="memory-backup-repo"
+                  type="url"
+                  autoComplete="off"
+                  value={repositoryUrl}
+                  onChange={(event) => {
+                    setRepositoryUrl(event.target.value);
+                    setSettingsActionError(null);
+                    setSettingsActionSuccess(null);
+                  }}
+                  placeholder="https://github.com/you/braindrive-backup"
+                  className="mt-1 h-10 w-full rounded-lg border border-bd-border bg-bd-bg-secondary px-3 text-sm text-bd-text-primary outline-none focus:border-bd-amber"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-bd-text-secondary" htmlFor="memory-backup-token">
+                  Token
+                </label>
+                <input
+                  id="memory-backup-token"
+                  type="password"
+                  autoComplete="new-password"
+                  value={token}
+                  onChange={(event) => {
+                    setToken(event.target.value);
+                    setSettingsActionError(null);
+                    setSettingsActionSuccess(null);
+                  }}
+                  placeholder={backupSettings?.token_configured ? "Leave blank to keep current token" : "Paste token"}
+                  className="mt-1 h-10 w-full rounded-lg border border-bd-border bg-bd-bg-secondary px-3 text-sm text-bd-text-primary outline-none focus:border-bd-amber"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-bd-text-secondary">
+                  Backup frequency
+                </label>
+                <div className="mt-1 flex flex-wrap gap-2">
+                  {frequencyOptions.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => {
+                        setFrequency(option.value as GatewayMemoryBackupFrequency);
+                        setSettingsActionError(null);
+                        setSettingsActionSuccess(null);
+                      }}
+                      className={[
+                        "rounded-lg px-3 py-2 text-xs font-medium transition-colors",
+                        frequency === option.value
+                          ? "bg-bd-amber text-bd-bg-primary"
+                          : "border border-bd-border bg-bd-bg-secondary text-bd-text-secondary hover:bg-bd-bg-hover"
+                      ].join(" ")}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {hasBackupConflict ? (
+        <div className="rounded-lg border border-bd-amber bg-bd-bg-tertiary p-4">
+          <div className="text-sm font-medium text-bd-text-heading">Choose what to do</div>
+          <p className="mt-1 text-xs text-bd-text-muted">
+            We found a BrainDrive backup in this GitHub repo. Pick which copy should be kept.
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={isSavingNow || !backupSettings}
+              onClick={() => handleRunBackupNow({ on_remote_conflict: "replace_remote" })}
+              className="rounded-lg bg-bd-amber px-3 py-2 text-xs font-medium text-bd-bg-primary transition-colors hover:bg-bd-amber-hover disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isSavingNow ? "Backing up..." : "Back Up This BrainDrive"}
+            </button>
+            <button
+              type="button"
+              disabled={isRestoring || !backupSettings}
+              onClick={handleRestoreFromBackup}
+              className="rounded-lg border border-bd-border px-3 py-2 text-xs font-medium text-bd-text-secondary transition-colors hover:bg-bd-bg-hover disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isRestoring ? "Restoring..." : "Restore GitHub Backup"}
+            </button>
+          </div>
+          <p className="mt-3 text-xs text-bd-text-muted">
+            Backing up this BrainDrive updates GitHub with what is here now. Restoring uses the GitHub copy on this BrainDrive.
+          </p>
+        </div>
+      ) : backupSettings?.repository_url && backupSettings?.token_configured ? (
+        <div className={[
+          "rounded-lg border p-3 text-sm",
+          lastResult === "failed"
+            ? "border-bd-danger-border bg-bd-danger-bg"
+            : lastResult === "success"
+              ? "border-bd-success-border bg-bd-success-bg"
+              : "border-bd-border bg-bd-bg-tertiary"
+        ].join(" ")}>
+          <div className="flex items-center gap-2">
+            {lastResult === "success" ? (
+              <span className="text-bd-success">&#10003;</span>
+            ) : lastResult === "failed" ? (
+              <span className="text-bd-danger">&#10007;</span>
+            ) : null}
+            <span className="font-medium text-bd-text-primary">
+              {lastResult === "success"
+                ? "Backups are on"
+                : lastResult === "failed"
+                  ? "Backup needs attention"
+                  : "Ready to back up"}
+            </span>
+          </div>
+          <div className="mt-2 flex items-center justify-between gap-3 text-xs text-bd-text-muted">
+            <span>Last backup</span>
+            <span>{lastSave}</span>
+          </div>
+          {backupSettings?.last_error && (
+            <div className="mt-2 text-xs text-bd-danger">{backupSettings.last_error}</div>
+          )}
+        </div>
+      ) : (
+        <div className="rounded-lg border border-bd-border bg-bd-bg-tertiary p-3 text-sm text-bd-text-muted">
+          Not connected yet — complete the steps above to start backing up.
+        </div>
+      )}
+
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          disabled={isSavingSettings || repositoryUrl.trim().length === 0}
+          onClick={() => {
+            setIsSavingSettings(true);
+            setSettingsActionError(null);
+            setSettingsActionSuccess(null);
+            const normalizedUrl = repositoryUrl.trim().replace(/\/+$/, "");
+            const repoUrl = normalizedUrl.endsWith(".git") ? normalizedUrl : `${normalizedUrl}.git`;
+            void onSaveMemoryBackupSettings({
+              repository_url: repoUrl,
+              frequency,
+              ...(token.trim().length > 0 ? { git_token: token.trim() } : {}),
+            })
+              .then(() => {
+                setToken("");
+                setSettingsActionSuccess("Settings saved.");
+              })
+              .catch((error) => {
+                setSettingsActionError(error instanceof Error ? error.message : String(error));
+              })
+              .finally(() => {
+                setIsSavingSettings(false);
+              });
+          }}
+          className="rounded-lg bg-bd-amber px-3 py-2 text-xs font-medium text-bd-bg-primary transition-colors hover:bg-bd-amber-hover disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isSavingSettings ? "Saving..." : "Save Settings"}
+        </button>
+        {!hasBackupConflict && (
+          <button
+            type="button"
+            disabled={isSavingNow || !backupSettings}
+            onClick={() => handleRunBackupNow()}
+            className="rounded-lg border border-bd-border px-3 py-2 text-xs font-medium text-bd-text-secondary transition-colors hover:bg-bd-bg-hover disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isSavingNow ? "Backing up..." : "Back Up Now"}
+          </button>
+        )}
+      </div>
+
+      {settingsActionError && (
+        <div className="rounded-lg border border-bd-danger-border bg-bd-danger-bg px-3 py-2 text-sm text-bd-text-primary">
+          {settingsActionError}
+        </div>
+      )}
+      {settingsActionSuccess && (
+        <div className="rounded-lg border border-bd-success-border bg-bd-success-bg px-3 py-2 text-sm text-bd-text-primary">
+          {settingsActionSuccess}
+        </div>
+      )}
+      {saveNowError && (
+        <div className="rounded-lg border border-bd-danger-border bg-bd-danger-bg px-3 py-2 text-sm text-bd-text-primary">
+          {saveNowError}
+        </div>
+      )}
+      {saveNowMessage && !hasBackupConflict && (
+        <div className="rounded-lg border border-bd-border bg-bd-bg-tertiary px-3 py-2 text-sm text-bd-text-secondary">
+          {saveNowMessage}
+        </div>
+      )}
+      {hasBackupConflict && restoreError && (
+        <div className="rounded-lg border border-bd-danger-border bg-bd-danger-bg px-3 py-2 text-sm text-bd-text-primary">
+          {restoreError}
+        </div>
+      )}
+      {hasBackupConflict && restoreMessage && (
+        <div className="rounded-lg border border-bd-border bg-bd-bg-tertiary px-3 py-2 text-sm text-bd-text-secondary">
+          {restoreMessage}
+        </div>
+      )}
+
+      {!hasBackupConflict && (
+        <div className="rounded-lg border border-bd-border p-4">
+          <div className="text-sm font-medium text-bd-text-heading">Restore</div>
+          <p className="mt-1 text-xs text-bd-text-muted">
+            Replace your current BrainDrive with a previous backup. Your API keys will need to be re-entered after restoring.
+            {!backupSettings?.repository_url && !backupSettings?.token_configured && (
+              <> GitHub tokens can&apos;t be transferred between machines — create a new one in step 2 above, enter your backup repo URL and token in step 3, save, then click the &quot;Restore from Backup&quot; button below.</>
+            )}
+          </p>
+          <button
+            type="button"
+            disabled={isRestoring || !backupSettings}
+            onClick={handleRestoreFromBackup}
+            className="mt-3 rounded-lg border border-bd-border px-3 py-2 text-xs font-medium text-bd-text-secondary transition-colors hover:bg-bd-bg-hover disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isRestoring ? "Restoring..." : "Restore from Backup"}
+          </button>
+          {restoreError && (
+            <div className="mt-3 rounded-lg border border-bd-danger-border bg-bd-danger-bg px-3 py-2 text-sm text-bd-text-primary">
+              {restoreError}
+            </div>
+          )}
+          {restoreMessage && (
+            <div className="mt-3 rounded-lg border border-bd-border bg-bd-bg-tertiary px-3 py-2 text-sm text-bd-text-secondary">
+              {restoreMessage}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+const CREDIT_AMOUNTS = [5, 10, 25];
+
+function BrainDriveModelsPanel({
+  profile,
+  keyState,
+  onSaveCredential,
+}: {
+  profile: GatewayProviderProfile;
+  keyState: GatewayBrainDriveModelsKeyState | null;
+  onSaveCredential: (patch: GatewayCredentialUpdateRequest) => Promise<void>;
+}) {
+  const user = useSettingsUser();
+  const [apiKey, setApiKey] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [showRepairKey, setShowRepairKey] = useState(false);
+  const [balance, setBalance] = useState<GatewayCreditsStatus | null>(null);
+  const [keyInvalid, setKeyInvalid] = useState(false);
+  const [purchaseLoading, setPurchaseLoading] = useState<number | null>(null);
+  const [purchaseError, setPurchaseError] = useState<string | null>(null);
+  const [purchaseState, setPurchaseState] = useState<"idle" | "activating" | "ready" | "zero_balance" | "repair_required">("idle");
+  const [billingEmail, setBillingEmail] = useState(() => getSavedBillingEmail());
+  const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [selectedAmount, setSelectedAmount] = useState<number>(CREDIT_AMOUNTS[0]!);
+  const [showTopUp, setShowTopUp] = useState(false);
+
+  useEffect(() => {
+    if (!billingEmail && user.email && user.email.includes("@") && !isSyntheticLocalEmail(user.email)) {
+      setBillingEmail(normalizeBillingEmail(user.email));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user.email]);
+
+  function handleEmailChange(value: string) {
+    setBillingEmail(value);
+    const normalized = normalizeBillingEmail(value);
+    if (normalized.includes("@") && !isSyntheticLocalEmail(normalized)) {
+      localStorage.setItem("bd_billing_email", normalized);
+    } else if (isSyntheticLocalEmail(normalized) && localStorage.getItem("bd_billing_email") === normalized) {
+      localStorage.removeItem("bd_billing_email");
+    }
+  }
+
+  const normalizedBillingEmail = normalizeBillingEmail(billingEmail);
+  const emailSaved = Boolean(
+    normalizedBillingEmail &&
+    !isSyntheticLocalEmail(normalizedBillingEmail) &&
+    localStorage.getItem("bd_billing_email") === normalizedBillingEmail
+  );
+
+  const isFirstTime = profile.credential_mode === "unset";
+  const hasConfiguredKey = !isFirstTime || purchaseState === "activating" || purchaseState === "ready" || Boolean(keyState);
+  const isActivating = purchaseState === "activating" || Boolean(keyState?.checkout_pending);
+  const isReady = purchaseState === "ready" || (balance?.remaining_usd ?? 0) > 0;
+
+  async function refreshCreditsStatus(): Promise<GatewayCreditsStatus | null> {
+    try {
+      const nextBalance = await getCreditsStatus();
+      setBalance(nextBalance);
+      const needsRepair = nextBalance.key_valid === false || nextBalance.purchase_status === "repair_required";
+      setKeyInvalid(needsRepair);
+      if (needsRepair) {
+        setPurchaseState("repair_required");
+        return nextBalance;
+      }
+      if (nextBalance.purchase_status === "activating") {
+        setPurchaseState("activating");
+      } else if ((nextBalance.remaining_usd ?? 0) > 0 || nextBalance.purchase_status === "ready") {
+        setPurchaseState("ready");
+      } else if (nextBalance.purchase_status === "zero_balance") {
+        setPurchaseState("zero_balance");
+      }
+      return nextBalance;
+    } catch {
+      return null;
+    }
+  }
+
+  useEffect(() => {
+    if (!hasConfiguredKey) {
+      return;
+    }
+    void refreshCreditsStatus();
+  }, [hasConfiguredKey]);
+
+  useEffect(() => {
+    if (!isActivating) {
+      return;
+    }
+    const intervalId = window.setInterval(() => {
+      void refreshCreditsStatus();
+    }, 3000);
+    return () => window.clearInterval(intervalId);
+  }, [isActivating]);
+
+  async function handlePurchase(amount: number) {
+    if (!normalizedBillingEmail || !normalizedBillingEmail.includes("@") || isSyntheticLocalEmail(normalizedBillingEmail)) return;
+    setPurchaseError(null);
+    setPurchaseLoading(amount);
+    try {
+      const data = await createCreditsCheckout({ amount, email: normalizedBillingEmail });
+      setPurchaseState(data.purchase_status === "activating" ? "activating" : "idle");
+      if (!openTrustedBillingUrl(data.checkout_url)) {
+        setPurchaseError("Received an unexpected checkout link. Please try again.");
+      }
+      void refreshCreditsStatus();
+    } catch (error) {
+      const code = typeof error === "object" && error && "code" in error ? String(error.code) : "";
+      if (code === "braindrive_models_key_repair_required") {
+        setKeyInvalid(true);
+        setShowRepairKey(true);
+        setPurchaseState("repair_required");
+        setPurchaseError("BrainDrive Models needs the key from your purchase email, or a migration from the original computer, before checkout can continue.");
+      } else {
+        setPurchaseError("Failed to open checkout. Please try again.");
+      }
+    } finally {
+      setPurchaseLoading(null);
+    }
+  }
+
+  function handleSaveRepairKey() {
+    const trimmed = apiKey.trim();
+    if (!/^sk-[A-Za-z0-9_-]{8,}$/.test(trimmed)) {
+      setSaveError("That doesn't look like a BrainDrive Models key. Copy the full key from your purchase email.");
+      return;
+    }
+    setIsSaving(true);
+    setSaveError(null);
+    void onSaveCredential({
+      provider_profile: profile.id,
+      mode: "secret_ref",
+      api_key: trimmed,
+      secret_ref: profile.credential_ref ?? undefined,
+      required: true,
+      set_active_provider: true,
+    })
+      .then(() => {
+        setApiKey("");
+        setShowRepairKey(false);
+        setKeyInvalid(false);
+        setPurchaseState("idle");
+        void refreshCreditsStatus();
+      })
+      .catch((err) => { setSaveError(err instanceof Error ? err.message : String(err)); })
+      .finally(() => { setIsSaving(false); });
+  }
+
+  const emailValid = normalizedBillingEmail.includes("@") && !isSyntheticLocalEmail(normalizedBillingEmail);
+  const isOpeningCheckout = purchaseLoading !== null;
+
+  const repairKeyForm = (
+    <div className="space-y-2">
+      <p className="text-xs leading-5 text-bd-text-muted">
+        Paste the key from your purchase email &mdash; from an earlier purchase, a reinstall, or another computer. Moving computers? Use the Migrate tab instead &mdash; it carries your keys; backups don&apos;t.
+      </p>
+      <input
+        type="password" autoComplete="new-password"
+        value={apiKey}
+        onChange={(e) => { setApiKey(e.target.value); setSaveError(null); }}
+        placeholder="Paste your emailed BrainDrive Models key"
+        className="h-10 w-full rounded-lg border border-bd-border bg-bd-bg-secondary px-3 text-sm text-bd-text-primary outline-none focus:border-bd-amber"
+      />
+      {saveError && (
+        <div className="flex items-center gap-1.5 text-xs text-red-400">
+          <AlertCircle size={12} />
+          {saveError}
+        </div>
+      )}
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          disabled={isSaving || apiKey.trim().length === 0}
+          onClick={handleSaveRepairKey}
+          className="rounded-lg bg-bd-amber px-3 py-1.5 text-xs font-medium text-bd-bg-primary transition-colors hover:bg-bd-amber-hover disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {isSaving ? "Saving..." : "Save Key"}
+        </button>
+        {!keyInvalid && (
+          <button
+            type="button"
+            onClick={() => { setShowRepairKey(false); setApiKey(""); setSaveError(null); }}
+            className="rounded-lg border border-bd-border px-3 py-1.5 text-xs text-bd-text-secondary transition-colors hover:bg-bd-bg-hover"
+          >
+            Cancel
+          </button>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="space-y-3 pt-1">
+      {keyInvalid ? (
+        <div className="space-y-2">
+          <div className="flex items-start gap-1.5 text-xs leading-5 text-red-400">
+            <AlertCircle size={12} className="mt-1 shrink-0" />
+            BrainDrive Models can&apos;t use its key on this computer. Restore it with the backup key from your purchase email.
+          </div>
+          {repairKeyForm}
+        </div>
+      ) : isActivating ? (
+        <div className="space-y-2">
+          <div className="flex items-center gap-2 text-sm text-bd-text-secondary">
+            <LoaderCircle size={16} className="animate-spin text-bd-amber" />
+            Waiting for checkout to finish &mdash; your credits will appear here automatically.
+          </div>
+          <button
+            type="button"
+            onClick={() => setPurchaseState("idle")}
+            className="text-xs text-bd-text-muted transition-colors hover:text-bd-text-secondary hover:underline"
+          >
+            Closed checkout without paying? Start over
+          </button>
+        </div>
+      ) : isReady && !showTopUp ? (
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-baseline gap-2">
+            <span className="text-xl font-semibold text-bd-text-primary">${(balance?.remaining_usd ?? 0).toFixed(2)}</span>
+            <span className="text-xs text-bd-text-muted">credits remaining</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowTopUp(true)}
+            className="rounded-lg border border-bd-amber px-3 py-1.5 text-xs font-medium text-bd-amber transition-colors hover:bg-bd-amber hover:text-bd-bg-primary"
+          >
+            Add credits
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {hasConfiguredKey && (
+            <div className="flex items-baseline gap-2">
+              <span className="text-xl font-semibold text-bd-text-primary">${(balance?.remaining_usd ?? 0).toFixed(2)}</span>
+              <span className="text-xs text-bd-text-muted">credits remaining</span>
+            </div>
+          )}
+          <div>
+            <label htmlFor="bd-models-billing-email" className="mb-1.5 block text-xs font-medium text-bd-text-secondary">
+              Email for your receipt
+            </label>
+            {emailSaved && !isEditingEmail ? (
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-bd-text-primary">{billingEmail}</span>
+                <button type="button" onClick={() => setIsEditingEmail(true)} className="text-xs text-bd-text-muted transition-colors hover:text-bd-text-secondary hover:underline">Change email</button>
+              </div>
+            ) : (
+              <input
+                id="bd-models-billing-email"
+                type="email"
+                value={billingEmail}
+                onChange={(e) => handleEmailChange(e.target.value)}
+                placeholder="you@example.com"
+                className="h-10 w-full rounded-lg border border-bd-border bg-bd-bg-secondary px-3 text-sm text-bd-text-primary outline-none focus:border-bd-amber"
+              />
+            )}
+          </div>
+          <div className="flex gap-2" role="group" aria-label="Credit amount">
+            {CREDIT_AMOUNTS.map((amt) => (
+              <button
+                key={amt}
+                type="button"
+                aria-pressed={selectedAmount === amt}
+                onClick={() => setSelectedAmount(amt)}
+                className={[
+                  "flex-1 rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
+                  selectedAmount === amt
+                    ? "border-bd-amber bg-bd-amber/10 text-bd-amber"
+                    : "border-bd-border text-bd-text-secondary hover:border-bd-amber/50 hover:text-bd-text-primary"
+                ].join(" ")}
+              >
+                ${amt}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            disabled={!emailValid || isOpeningCheckout}
+            onClick={() => handlePurchase(selectedAmount)}
+            className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-bd-amber px-3 py-2.5 text-sm font-semibold text-bd-bg-primary transition-colors hover:bg-bd-amber-hover disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isOpeningCheckout ? "Opening checkout..." : (
+              <>
+                Continue to checkout
+                <ExternalLink size={14} strokeWidth={2} />
+              </>
+            )}
+          </button>
+          {isReady && showTopUp && (
+            <button
+              type="button"
+              onClick={() => setShowTopUp(false)}
+              className="text-xs text-bd-text-muted transition-colors hover:text-bd-text-secondary hover:underline"
+            >
+              Cancel
+            </button>
+          )}
+          {purchaseError && (
+            <div className="flex items-center gap-1.5 text-xs text-red-400">
+              <AlertCircle size={12} />
+              {purchaseError}
+            </div>
+          )}
+        </div>
+      )}
+
+      {!keyInvalid && (
+        showRepairKey ? (
+          <div className="border-t border-bd-border pt-3">
+            <div className="mb-2 text-sm font-medium text-bd-text-heading">Use an existing key</div>
+            {repairKeyForm}
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setShowRepairKey(true)}
+            className="text-xs text-bd-text-muted transition-colors hover:text-bd-text-secondary hover:underline"
+          >
+            Already have a key? Use it here
+          </button>
+        )
+      )}
+    </div>
+  );
+}
+function ProviderSection({
+  mode,
+  settings,
+  isLoadingSettings,
+  settingsError,
+  onSaveSettings,
+  onSaveCredential,
+  modelCatalog,
+  isLoadingModelCatalog,
+  modelCatalogError,
+  onRefreshCatalog,
+}: {
+  mode: "local" | "managed";
+  modelCatalog: GatewayModelCatalog | null;
+  isLoadingModelCatalog: boolean;
+  modelCatalogError: string | null;
+  onRefreshCatalog: () => void;
+} & SettingsDataProps) {
+  const [selectedProfile, setSelectedProfile] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [providerApiKey, setProviderApiKey] = useState("");
+  const [isSavingCredential, setIsSavingCredential] = useState(false);
+  const [credentialError, setCredentialError] = useState<string | null>(null);
+  const [ollamaUrl, setOllamaUrl] = useState("");
+  const [isSavingUrl, setIsSavingUrl] = useState(false);
+  const [urlError, setUrlError] = useState<string | null>(null);
+  const activeProfile = settings?.provider_profiles.find((profile) => profile.id === selectedProfile) ??
+    settings?.provider_profiles[0] ?? null;
+  const canUsePlainCredentialMode = activeProfile?.credential_mode === "plain" ||
+    activeProfile?.provider_id?.toLowerCase() === "ollama";
+
+  const [showApiKeyInput, setShowApiKeyInput] = useState(!canUsePlainCredentialMode);
+
+  useEffect(() => {
+    if (!settings) {
+      return;
+    }
+    setSelectedProfile(settings.active_provider_profile ?? settings.default_provider_profile ?? "");
+    const ollamaProfile = settings.provider_profiles.find(
+      (p) => p.provider_id?.toLowerCase() === "ollama"
+    );
+    if (ollamaProfile) {
+      setOllamaUrl(ollamaProfile.base_url ?? "");
+    }
+  }, [settings]);
+
+  useEffect(() => {
+    setShowApiKeyInput(!canUsePlainCredentialMode);
+  }, [canUsePlainCredentialMode]);
+
+  if (mode === "managed") {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h3 className="font-heading text-base font-semibold text-bd-text-heading">
+            AI Models
+          </h3>
+          <p className="mt-1 text-sm text-bd-text-muted">
+            Your AI model access is included with your subscription.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 rounded-lg bg-bd-bg-tertiary px-3 py-2.5">
+          <Check size={16} strokeWidth={1.5} className="shrink-0 text-bd-success" />
+          <span className="text-sm text-bd-text-secondary">
+            Connected — managed by BrainDrive
+          </span>
+        </div>
+
+        <p className="text-xs text-bd-text-muted">
+          Model access is pre-configured and included in your plan. No API
+          keys needed. To use your own provider instead, export your library
+          and run BrainDrive locally.
+        </p>
+      </div>
+    );
+  }
+
+  if (isLoadingSettings) {
+    return (
+      <div className="space-y-3">
+        <h3 className="font-heading text-base font-semibold text-bd-text-heading">AI Models</h3>
+        <p className="text-sm text-bd-text-muted">Loading provider settings...</p>
+      </div>
+    );
+  }
+
+  if (settingsError) {
+    return (
+      <div className="space-y-3">
+        <h3 className="font-heading text-base font-semibold text-bd-text-heading">AI Models</h3>
+        <div className="rounded-lg border border-bd-danger-border bg-bd-danger-bg px-3 py-2.5 text-sm text-bd-text-primary">
+          {settingsError}
+        </div>
+      </div>
+    );
+  }
+
+  if (!settings) {
+    return null;
+  }
+
+  const orderedProfiles = [...settings.provider_profiles].sort(
+    (a, b) =>
+      Number(b.provider_id?.toLowerCase() === "braindrive-models") -
+      Number(a.provider_id?.toLowerCase() === "braindrive-models")
+  );
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="font-heading text-base font-semibold text-bd-text-heading">
+          AI Models
+        </h3>
+        <p className="mt-1 text-sm text-bd-text-muted">
+          Choose how BrainDrive connects to AI models.
+        </p>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <div className="space-y-2">
+            {orderedProfiles.map((profile) => {
+              const isSelected = selectedProfile === profile.id;
+              const isOllama = profile.provider_id?.toLowerCase() === "ollama";
+              const isBrainDriveModels = profile.provider_id?.toLowerCase() === "braindrive-models";
+              const profileCanUsePlain = profile.credential_mode === "plain" || isOllama;
+              const showKeyForProfile = isSelected && showApiKeyInput;
+
+              return (
+                <div key={profile.id} className="space-y-0">
+                  <button
+                    type="button"
+                    disabled={isSaving}
+                    onClick={() => {
+                      setSelectedProfile(profile.id);
+                      setCredentialError(null);
+                      setProviderApiKey("");
+                      setIsSaving(true);
+                      setSaveError(null);
+                      void onSaveSettings({ active_provider_profile: profile.id })
+                        .then(() => {})
+                        .catch((error) => {
+                          setSaveError(error instanceof Error ? error.message : String(error));
+                        })
+                        .finally(() => {
+                          setIsSaving(false);
+                        });
+                    }}
+                    className={[
+                      "flex w-full items-center gap-3 border px-4 py-3 text-left transition-all duration-200",
+                      isSelected
+                        ? "rounded-t-lg border-bd-amber border-b-0 bg-bd-bg-tertiary"
+                        : "rounded-lg border-bd-border hover:border-bd-border hover:bg-bd-bg-hover"
+                    ].join(" ")}
+                  >
+                    <div className={[
+                      "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2",
+                      isSelected ? "border-bd-amber" : "border-bd-border"
+                    ].join(" ")}>
+                      {isSelected && <div className="h-2 w-2 rounded-full bg-bd-amber" />}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <div className={[
+                          "text-sm font-medium",
+                          isSelected ? "text-bd-text-primary" : "text-bd-text-secondary"
+                        ].join(" ")}>
+                          {isBrainDriveModels ? "BrainDrive Models" : isOllama ? "Ollama" : "OpenRouter"}
+                        </div>
+                        {isBrainDriveModels && (
+                          <span className="rounded-full border border-bd-amber/40 bg-bd-amber/10 px-2 py-0.5 text-[10px] font-medium text-bd-amber">
+                            Recommended
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-xs text-bd-text-muted">
+                        {isBrainDriveModels
+                          ? <>We pick the best AI model for you — add credits and go</>
+                          : isOllama
+                          ? <>Runs on your computer, free — <a href="https://ollama.com" target="_blank" rel="noopener noreferrer" className="text-bd-text-muted hover:text-bd-text-secondary hover:underline" onClick={(e) => e.stopPropagation()}>ollama.com</a></>
+                          : <>Cloud-based, requires API key — <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer" className="text-bd-text-muted hover:text-bd-text-secondary hover:underline" onClick={(e) => e.stopPropagation()}>openrouter.ai/keys</a></>}
+                      </div>
+                    </div>
+                  </button>
+
+                  {isSelected && (
+                    <div className={[
+                      "border border-t-0 border-bd-amber bg-bd-bg-tertiary px-4 pb-3 pt-2 rounded-b-lg"
+                    ].join(" ")}>
+                      {isBrainDriveModels ? (
+                        <BrainDriveModelsPanel
+                          profile={profile}
+                          keyState={settings.braindrive_models_key ?? null}
+                          onSaveCredential={onSaveCredential}
+                        />
+                      ) : (
+                        <>
+                          {isOllama && (
+                            <div className="mb-3 space-y-1.5">
+                              <div className="flex items-center gap-1.5">
+                                <label
+                                  htmlFor="ollama-server-url"
+                                  className="text-sm font-medium text-bd-text-secondary"
+                                >
+                                  Server URL
+                                </label>
+                                <div className="group relative inline-flex">
+                                  <button
+                                    type="button"
+                                    aria-label="Docker Ollama URL help"
+                                    className="inline-flex h-4 w-4 items-center justify-center rounded-full text-bd-text-muted transition-colors hover:text-bd-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bd-amber/60"
+                                  >
+                                    <Info size={12} strokeWidth={2} />
+                                  </button>
+                                  <div
+                                    role="tooltip"
+                                    className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-2 w-72 -translate-x-1/2 rounded-md border border-bd-border bg-bd-bg-secondary px-3 py-2 text-xs leading-5 text-bd-text-secondary opacity-0 shadow-[0_12px_30px_rgba(2,8,23,0.45)] transition-all duration-150 group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:opacity-100"
+                                  >
+                                    If BrainDrive is installed on this computer, use
+                                    {" "}
+                                    <span className="font-medium text-bd-text-primary">
+                                      http://127.0.0.1:11434/v1
+                                    </span>
+                                    . If BrainDrive runs in Docker, use http://host.docker.internal:11434/v1.
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <input
+                                  id="ollama-server-url"
+                                  type="url"
+                                  autoComplete="off"
+                                  value={ollamaUrl}
+                                  onChange={(event) => {
+                                    setOllamaUrl(event.target.value);
+                                    setUrlError(null);
+                                  }}
+                                  placeholder="http://127.0.0.1:11434/v1"
+                                  className="h-10 flex-1 rounded-lg border border-bd-border bg-bd-bg-secondary px-3 text-sm text-bd-text-primary outline-none focus:border-bd-amber"
+                                />
+                                <button
+                                  type="button"
+                                  disabled={isSavingUrl || ollamaUrl.trim().length === 0}
+                                  onClick={() => {
+                                    setIsSavingUrl(true);
+                                    setUrlError(null);
+                                    void onSaveSettings({
+                                      provider_base_url: {
+                                        provider_profile: profile.id,
+                                        base_url: ollamaUrl.trim(),
+                                      },
+                                    })
+                                      .then(() => {})
+                                      .catch((error) => {
+                                        setUrlError(error instanceof Error ? error.message : String(error));
+                                      })
+                                      .finally(() => {
+                                        setIsSavingUrl(false);
+                                      });
+                                  }}
+                                  className="rounded-lg bg-bd-amber px-3 py-2 text-xs font-medium text-bd-bg-primary transition-colors hover:bg-bd-amber-hover disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                  {isSavingUrl ? "Saving..." : "Save"}
+                                </button>
+                              </div>
+                              {urlError && (
+                                <div className="rounded-lg border border-bd-danger-border bg-bd-danger-bg px-3 py-2 text-sm text-bd-text-primary">
+                                  {urlError}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          {!showKeyForProfile ? (
+                            <button
+                              type="button"
+                              onClick={() => setShowApiKeyInput(true)}
+                              className="text-xs text-bd-text-muted transition-colors hover:text-bd-text-secondary hover:underline"
+                            >
+                              {profileCanUsePlain
+                                ? `Optional: set API key for remote ${isOllama ? "Ollama" : profile.provider_id}`
+                                : profile.credential_mode === "secret_ref" ? "Update API key" : "Set API key"}
+                            </button>
+                          ) : (
+                            <div className="space-y-3">
+                              <div>
+                                <label
+                                  htmlFor="provider-api-key"
+                                  className="mb-1.5 block text-sm font-medium text-bd-text-secondary"
+                                >
+                                  API Key
+                                </label>
+                                {profile.credential_mode === "secret_ref" && (
+                                  <div className="mb-2 flex items-center gap-2 text-xs text-bd-text-muted">
+                                    <Check size={14} strokeWidth={1.5} className="shrink-0 text-bd-success" />
+                                    API key configured — enter a new key below to replace it
+                                  </div>
+                                )}
+                                <input
+                                  id="provider-api-key"
+                                  type="password"
+                                  autoComplete="new-password"
+                                  value={providerApiKey}
+                                  onChange={(event) => {
+                                    setProviderApiKey(event.target.value);
+                                    setCredentialError(null);
+                                  }}
+                                  placeholder={profile.credential_mode === "secret_ref" ? "Enter new key to replace existing" : `Paste your ${profile.provider_id} API key`}
+                                  className="h-10 w-full rounded-lg border border-bd-border bg-bd-bg-secondary px-3 text-sm text-bd-text-primary outline-none focus:border-bd-amber"
+                                />
+                              </div>
+
+                              <div className="flex flex-wrap items-center gap-2">
+                                <button
+                                  type="button"
+                                  disabled={isSavingCredential || providerApiKey.trim().length === 0}
+                                  onClick={() => {
+                                    setIsSavingCredential(true);
+                                    setCredentialError(null);
+                                    void onSaveCredential({
+                                      provider_profile: profile.id,
+                                      mode: "secret_ref",
+                                      api_key: providerApiKey.trim(),
+                                      secret_ref: profile.credential_ref ?? undefined,
+                                      required: true,
+                                      set_active_provider: true,
+                                    })
+                                      .then(() => {
+                                        setProviderApiKey("");
+                                        setShowApiKeyInput(false);
+                                      })
+                                      .catch((error) => {
+                                        setCredentialError(error instanceof Error ? error.message : String(error));
+                                      })
+                                      .finally(() => {
+                                        setIsSavingCredential(false);
+                                      });
+                                  }}
+                                  className="rounded-lg bg-bd-amber px-3 py-1.5 text-xs font-medium text-bd-bg-primary transition-colors hover:bg-bd-amber-hover disabled:cursor-not-allowed disabled:opacity-60"
+                                >
+                                  {isSavingCredential ? "Saving key..." : "Save API Key"}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setShowApiKeyInput(false);
+                                    setProviderApiKey("");
+                                    setCredentialError(null);
+                                  }}
+                                  className="rounded-lg border border-bd-border px-3 py-1.5 text-xs text-bd-text-secondary transition-colors hover:bg-bd-bg-hover"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+
+                              {credentialError && (
+                                <div className="rounded-lg border border-bd-danger-border bg-bd-danger-bg px-3 py-2 text-sm text-bd-text-primary">
+                                  {credentialError}
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          {profile.id === (settings.active_provider_profile ?? settings.default_provider_profile) && (
+                            <div className="mt-4 border-t border-bd-border pt-3">
+                              <ModelSection
+                                mode={mode}
+                                settings={settings}
+                                isLoadingSettings={isLoadingSettings}
+                                settingsError={settingsError}
+                                modelCatalog={modelCatalog}
+                                isLoadingModelCatalog={isLoadingModelCatalog}
+                                modelCatalogError={modelCatalogError}
+                                onSaveSettings={onSaveSettings}
+                                onRefreshCatalog={onRefreshCatalog}
+                                embedded
+                              />
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {saveError && (
+          <div className="rounded-lg border border-bd-danger-border bg-bd-danger-bg px-3 py-2.5 text-sm text-bd-text-primary">
+            {saveError}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ModelSection({
+  mode,
+  settings,
+  isLoadingSettings,
+  settingsError,
+  modelCatalog,
+  isLoadingModelCatalog,
+  modelCatalogError,
+  onSaveSettings,
+  onRefreshCatalog,
+  embedded = false,
+}: {
+  mode: "local" | "managed";
+  settings: GatewaySettings | null;
+  isLoadingSettings: boolean;
+  settingsError: string | null;
+  modelCatalog: GatewayModelCatalog | null;
+  isLoadingModelCatalog: boolean;
+  modelCatalogError: string | null;
+  onSaveSettings: (
+    patch: SettingsPatch
+  ) => Promise<GatewaySettings>;
+  onRefreshCatalog: () => void;
+  embedded?: boolean;
+}) {
+  const managedModels = [
+    { name: "Claude Haiku 4.5", provider: "Anthropic" },
+    { name: "Claude Opus 4.6", provider: "Anthropic" },
+    { name: "GPT-4o", provider: "OpenAI" }
+  ];
+
+  const [defaultModel, setDefaultModel] = useState("");
+  const [isCatalogOpen, setIsCatalogOpen] = useState(false);
+  const [catalogQuery, setCatalogQuery] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [pullModelName, setPullModelName] = useState("");
+  const [isPulling, setIsPulling] = useState(false);
+  const [pullError, setPullError] = useState<string | null>(null);
+  const [pullSuccess, setPullSuccess] = useState<string | null>(null);
+  const [pullStatus, setPullStatus] = useState("");
+  const [pullProgress, setPullProgress] = useState<{ total: number; completed: number } | null>(null);
+  const [deletingModel, setDeletingModel] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const catalogSearchId = useId();
+
+  const activeProfile = settings?.provider_profiles.find(
+    (p) => p.id === (settings.active_provider_profile ?? settings.default_provider_profile)
+  ) ?? settings?.provider_profiles[0] ?? null;
+  const isOllama = activeProfile?.provider_id?.toLowerCase() === "ollama";
+
+  useEffect(() => {
+    if (!settings) {
+      return;
+    }
+    setDefaultModel(settings.default_model);
+  }, [settings]);
+
+  const configuredModels = useMemo(
+    () => toConfiguredCatalogEntries(settings?.available_models ?? []),
+    [settings]
+  );
+  const allCatalogModels = useMemo(
+    () => mergeCatalogEntries(modelCatalog?.models ?? [], configuredModels),
+    [modelCatalog, configuredModels]
+  );
+  const filteredCatalogModels = useMemo(() => {
+    const normalizedQuery = catalogQuery.trim().toLowerCase();
+    if (normalizedQuery.length === 0) {
+      return allCatalogModels;
+    }
+
+    return allCatalogModels.filter((model) =>
+      [
+        model.id,
+        model.name ?? "",
+        model.provider ?? "",
+        ...(model.tags ?? []),
+      ].some((field) => field.toLowerCase().includes(normalizedQuery))
+    );
+  }, [allCatalogModels, catalogQuery]);
+
+  return (
+    <div className={embedded ? "space-y-3" : "space-y-6"}>
+      <div>
+        {embedded ? (
+          <div className="text-sm font-medium text-bd-text-secondary">Default Model</div>
+        ) : (
+          <h3 className="font-heading text-base font-semibold text-bd-text-heading">
+            Default Model
+          </h3>
+        )}
+        <p className="mt-1 text-sm text-bd-text-muted">
+          {isOllama
+            ? "Choose from the models installed on your computer."
+            : "Choose the AI model your BrainDrive uses for conversations."}
+        </p>
+      </div>
+
+      <div className="space-y-3">
+        {mode === "local" && isLoadingSettings && (
+          <div className="flex items-center gap-2 rounded-lg bg-bd-bg-tertiary px-3 py-2.5">
+            <AlertCircle size={16} strokeWidth={1.5} className="shrink-0 text-bd-text-muted" />
+            <span className="text-sm text-bd-text-muted">
+              Loading model settings...
+            </span>
+          </div>
+        )}
+        {mode === "local" && settingsError && (
+          <div className="rounded-lg border border-bd-danger-border bg-bd-danger-bg px-3 py-2.5 text-sm text-bd-text-primary">
+            {settingsError}
+          </div>
+        )}
+        {mode === "local" && !isLoadingSettings && !settingsError && settings && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between rounded-lg border border-bd-amber bg-bd-bg-tertiary px-4 py-3">
+              <div>
+                <div className="text-sm font-medium text-bd-text-primary">{defaultModel || "Not set"}</div>
+                <div className="text-xs text-bd-text-muted">Current model</div>
+              </div>
+              <div className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2 border-bd-amber">
+                <div className="h-2 w-2 rounded-full bg-bd-amber" />
+              </div>
+            </div>
+
+            {modelCatalogError && (
+              <div className="rounded-lg border border-bd-border bg-bd-bg-tertiary px-3 py-2 text-xs text-bd-text-secondary">
+                <div className="flex items-start gap-1.5">
+                  <AlertCircle size={12} className="mt-0.5 shrink-0 text-bd-danger" />
+                  <div>
+                    {isOllama ? (
+                      <>
+                        Couldn&apos;t reach Ollama at {activeProfile?.base_url ?? "the configured URL"}. If Ollama runs
+                        on this computer, set the Server URL above to{" "}
+                        <span className="font-medium text-bd-text-primary">http://127.0.0.1:11434/v1</span>. If
+                        BrainDrive runs in Docker, use http://host.docker.internal:11434/v1.
+                      </>
+                    ) : (
+                      <>Couldn&apos;t load the model catalog: {modelCatalogError}</>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={() => setIsCatalogOpen((open) => !open)}
+              className="w-full rounded-lg border border-bd-border bg-bd-bg-tertiary px-3 py-2 text-left text-sm text-bd-text-secondary transition-colors hover:bg-bd-bg-hover"
+            >
+              {isCatalogOpen
+                ? isOllama ? "Hide installed models" : "Hide model catalog"
+                : isOllama ? "Show installed models" : "Browse model catalog"}
+            </button>
+
+            {isCatalogOpen && (
+              <div className="space-y-2">
+                <input
+                  id={catalogSearchId}
+                  type="text" autoComplete="off"
+                  value={catalogQuery}
+                  onChange={(event) => setCatalogQuery(event.target.value)}
+                  placeholder="Search models..."
+                  className="h-10 w-full rounded-lg border border-bd-border bg-bd-bg-tertiary px-3 text-sm text-bd-text-primary outline-none focus:border-bd-amber"
+                />
+
+                <div className="max-h-72 space-y-1 overflow-y-auto overflow-x-hidden rounded-lg border border-bd-border bg-bd-bg-tertiary p-2">
+                  {isLoadingModelCatalog ? (
+                    <p className="px-3 py-2 text-sm text-bd-text-muted">Loading models...</p>
+                  ) : filteredCatalogModels.length === 0 ? (
+                <p className="px-3 py-2 text-xs text-bd-text-muted">
+                  No models match "{catalogQuery}".
+                </p>
+              ) : (
+                filteredCatalogModels.map((model) => {
+                  const isSelected = defaultModel.trim() === model.id;
+                  const isDeleting = deletingModel === model.id;
+                  const freeTag = model.is_free || (model.tags ?? []).includes("free");
+                  return (
+                    <div
+                      key={model.id}
+                      className={[
+                        "flex items-center gap-1 rounded-md border transition-colors",
+                        isSelected
+                          ? "border-bd-amber bg-bd-bg-hover"
+                          : "border-transparent hover:border-bd-border hover:bg-bd-bg-hover",
+                      ].join(" ")}
+                    >
+                      <button
+                        type="button"
+                        disabled={isSaving || isDeleting}
+                        onClick={() => {
+                          setDefaultModel(model.id);
+                          setIsSaving(true);
+                          setSaveError(null);
+                          void onSaveSettings({ default_model: model.id })
+                            .catch((error) => {
+                              setSaveError(error instanceof Error ? error.message : String(error));
+                            })
+                            .finally(() => {
+                              setIsSaving(false);
+                            });
+                        }}
+                        className="min-w-0 flex-1 px-3 py-2 text-left"
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="truncate text-sm text-bd-text-primary">{model.id}</span>
+                          <div className="flex shrink-0 items-center gap-1">
+                            {freeTag && (
+                              <span className="rounded bg-bd-success/20 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-bd-success">
+                                free
+                              </span>
+                            )}
+                            {(model.tags ?? [])
+                              .filter((tag) => tag.toLowerCase() !== "free")
+                              .slice(0, 2)
+                              .map((tag) => (
+                                <span
+                                  key={`${model.id}:${tag}`}
+                                  className="rounded bg-bd-bg-secondary px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-bd-text-muted"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                          </div>
+                        </div>
+                        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-bd-text-muted">
+                          {model.name && <span>{model.name}</span>}
+                          {model.provider && <span>{model.provider}</span>}
+                          {typeof model.context_length === "number" && (
+                            <span>{model.context_length.toLocaleString()} ctx</span>
+                          )}
+                        </div>
+                      </button>
+                      {isOllama && (
+                        <button
+                          type="button"
+                          disabled={isDeleting || isSaving}
+                          title={`Remove ${model.id}`}
+                          onClick={() => {
+                            setDeletingModel(model.id);
+                            setDeleteError(null);
+                            void deleteProviderModel(model.id, activeProfile?.id)
+                              .then(() => {
+                                if (defaultModel === model.id) {
+                                  setDefaultModel("");
+                                }
+                                onRefreshCatalog();
+                              })
+                              .catch((error) => {
+                                setDeleteError(error instanceof Error ? error.message : String(error));
+                              })
+                              .finally(() => {
+                                setDeletingModel(null);
+                              });
+                          }}
+                          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-bd-text-muted transition-colors hover:bg-bd-danger-bg hover:text-bd-danger disabled:opacity-40"
+                        >
+                          <Trash2 size={14} strokeWidth={1.5} />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+                {deleteError && (
+                  <div className="rounded-lg border border-bd-danger-border bg-bd-danger-bg px-3 py-2 text-sm text-bd-text-primary">
+                    {deleteError}
+                  </div>
+                )}
+
+                {isOllama && (
+                  <div className="space-y-2 rounded-lg border border-bd-border bg-bd-bg-tertiary p-3">
+                    <div className="text-sm font-medium text-bd-text-secondary">
+                      Pull a new model
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text" autoComplete="off"
+                        value={pullModelName}
+                        onChange={(event) => {
+                          setPullModelName(event.target.value);
+                          setPullError(null);
+                          setPullSuccess(null);
+                        }}
+                        placeholder="e.g. llama3.2, gemma2, mistral"
+                        disabled={isPulling}
+                        className="h-10 flex-1 rounded-lg border border-bd-border bg-bd-bg-secondary px-3 text-sm text-bd-text-primary outline-none focus:border-bd-amber disabled:opacity-60"
+                      />
+                      <button
+                        type="button"
+                        disabled={isPulling || pullModelName.trim().length === 0}
+                        onClick={() => {
+                          const modelToPull = pullModelName.trim();
+                          setIsPulling(true);
+                          setPullError(null);
+                          setPullSuccess(null);
+                          setPullStatus("Starting download...");
+                          setPullProgress(null);
+                          void pullProviderModel(modelToPull, activeProfile?.id, (progress) => {
+                            setPullStatus(progress.status);
+                            if (typeof progress.total === "number" && progress.total > 0) {
+                              setPullProgress({ total: progress.total, completed: progress.completed ?? 0 });
+                            }
+                          })
+                            .then(() => {
+                              setPullSuccess(`${modelToPull} installed successfully.`);
+                              setPullModelName("");
+                              setPullProgress(null);
+                              setPullStatus("");
+                              onRefreshCatalog();
+                            })
+                            .catch((error) => {
+                              setPullError(error instanceof Error ? error.message : String(error));
+                              setPullProgress(null);
+                              setPullStatus("");
+                            })
+                            .finally(() => {
+                              setIsPulling(false);
+                            });
+                        }}
+                        className="rounded-lg bg-bd-amber px-3 py-2 text-xs font-medium text-bd-bg-primary transition-colors hover:bg-bd-amber-hover disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {isPulling ? "Pulling..." : "Pull"}
+                      </button>
+                    </div>
+                    {isPulling && (
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs text-bd-text-muted">
+                          <span>{pullStatus || "Preparing..."}</span>
+                          {pullProgress && pullProgress.total > 0 && (
+                            <span>
+                              {Math.round((pullProgress.completed / pullProgress.total) * 100)}%
+                            </span>
+                          )}
+                        </div>
+                        <div className="h-2 w-full overflow-hidden rounded-full bg-bd-bg-secondary">
+                          <div
+                            className="h-full rounded-full bg-bd-amber transition-all duration-300"
+                            style={{
+                              width: pullProgress && pullProgress.total > 0
+                                ? `${Math.round((pullProgress.completed / pullProgress.total) * 100)}%`
+                                : "0%",
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                    {pullError && (
+                      <div className="rounded-lg border border-bd-danger-border bg-bd-danger-bg px-3 py-2 text-sm text-bd-text-primary">
+                        {pullError}
+                      </div>
+                    )}
+                    {pullSuccess && (
+                      <div className="flex items-center gap-2 text-xs text-bd-success">
+                        <Check size={14} strokeWidth={1.5} className="shrink-0" />
+                        {pullSuccess}
+                      </div>
+                    )}
+                    <p className="text-xs text-bd-text-muted">
+                      Browse available models at{" "}
+                      <a
+                        href="https://ollama.com/library"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-bd-text-muted hover:text-bd-text-secondary hover:underline"
+                      >
+                        ollama.com/library
+                      </a>
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <p className="text-xs text-bd-text-muted">
+              Model changes take effect on your next message.
+            </p>
+
+            {saveError && (
+              <div className="rounded-lg border border-bd-danger-border bg-bd-danger-bg px-3 py-2.5 text-sm text-bd-text-primary">
+                {saveError}
+              </div>
+            )}
+          </div>
+        )}
+        {mode === "managed" && (
+          <div className="rounded-lg border border-bd-border p-4">
+            <div className="mb-3 text-sm font-medium text-bd-text-secondary">
+              Available Models
+            </div>
+            {managedModels.map((model) => (
+              <div
+                key={model.name}
+                className="flex items-center justify-between rounded-lg px-3 py-2.5 text-sm text-bd-text-muted"
+              >
+                <span>{model.name}</span>
+                <span className="text-xs">{model.provider}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function toConfiguredCatalogEntries(models: string[]): GatewayModelCatalogEntry[] {
+  return models
+    .map((model) => model.trim())
+    .filter((model) => model.length > 0)
+    .map((model) => ({
+      id: model,
+      tags: ["configured"],
+    }));
+}
+
+function mergeCatalogEntries(
+  primary: GatewayModelCatalogEntry[],
+  fallback: GatewayModelCatalogEntry[]
+): GatewayModelCatalogEntry[] {
+  const merged = new Map<string, GatewayModelCatalogEntry>();
+
+  for (const model of [...primary, ...fallback]) {
+    const key = model.id.trim().toLowerCase();
+    if (!key) {
+      continue;
+    }
+
+    const existing = merged.get(key);
+    if (!existing) {
+      merged.set(key, model);
+      continue;
+    }
+
+    const tags = Array.from(new Set([...(existing.tags ?? []), ...(model.tags ?? [])]));
+    merged.set(key, {
+      ...existing,
+      ...model,
+      tags: tags.length > 0 ? tags : undefined,
+    });
+  }
+
+  return [...merged.values()].sort((left, right) => left.id.localeCompare(right.id));
+}
+
+function ProfileSection() {
+  const user = useSettingsUser();
+  const [profileContent, setProfileContent] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function loadProfile() {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const content = await getOwnerProfile();
+      setProfileContent(content);
+      setDraft(content ?? "");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load profile");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleSave() {
+    setIsSaving(true);
+    setError(null);
+    try {
+      await updateOwnerProfile(draft);
+      setIsEditing(false);
+      await loadProfile();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save profile");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  function handleCancel() {
+    setDraft(profileContent ?? "");
+    setError(null);
+    setIsEditing(false);
+  }
+
+  useEffect(() => {
+    void loadProfile();
+  }, []);
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-start justify-between">
+        <div>
+          <h3 className="font-heading text-base font-semibold text-bd-text-heading">
+            Owner Profile
+          </h3>
+          <p className="mt-1 text-sm text-bd-text-muted">
+            Your profile builds naturally through conversation. It captures the
+            stable facts about your life, work, and goals that help personalize
+            every interaction.
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          {isEditing ? (
+            <>
+              <button
+                type="button"
+                onClick={handleCancel}
+                disabled={isSaving}
+                className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-bd-text-secondary transition-colors hover:bg-bd-bg-secondary hover:text-bd-text-heading disabled:opacity-50"
+              >
+                <X size={14} />
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={isSaving}
+                className="flex items-center gap-1.5 rounded-md bg-bd-amber px-2.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-bd-amber-hover disabled:opacity-50"
+              >
+                {isSaving ? <LoaderCircle size={14} className="animate-spin" /> : <Save size={14} />}
+                {isSaving ? "Saving…" : "Save"}
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                setDraft(profileContent ?? "");
+                setError(null);
+                setIsEditing(true);
+              }}
+              disabled={isLoading}
+              className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-bd-text-secondary transition-colors hover:bg-bd-bg-secondary hover:text-bd-text-heading disabled:opacity-50"
+            >
+              <PencilLine size={14} />
+              Edit
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="rounded-lg border border-bd-border bg-bd-bg-tertiary p-4">
+        <div className="flex items-center gap-3 pb-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-bd-amber text-lg font-bold text-bd-bg-primary">
+            {user.initials}
+          </div>
+          <div>
+            <div className="text-sm font-medium text-bd-text-primary">
+              {user.name}
+            </div>
+            <div className="text-xs text-bd-text-muted">Owner</div>
+          </div>
+        </div>
+
+        {error && (
+          <div className="mb-3 flex items-start gap-2 rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-400">
+            <AlertCircle size={14} className="mt-0.5 shrink-0" />
+            {error}
+          </div>
+        )}
+
+        <div className="border-t border-bd-border pt-4">
+          {isLoading ? (
+            <div className="flex items-center gap-2 py-4 text-sm text-bd-text-muted">
+              <LoaderCircle size={16} className="animate-spin" />
+              Loading profile…
+            </div>
+          ) : isEditing ? (
+            <textarea
+              value={draft}
+              onChange={(e) => setDraft(e.target.value)}
+              spellCheck={false}
+              className="min-h-[320px] w-full resize-none rounded-lg border border-bd-border bg-bd-bg-secondary px-4 py-3 font-mono text-[13px] leading-6 text-bd-text-primary outline-none transition-colors placeholder:text-bd-text-muted focus:border-bd-amber/60"
+            />
+          ) : profileContent ? (
+            <div className="prose-bd max-w-full text-sm leading-6 text-bd-text-primary">
+              <MarkdownContent content={profileContent} />
+            </div>
+          ) : (
+            <p className="py-4 text-sm italic text-bd-text-muted">
+              No profile yet. Start a conversation and ask your partner to build
+              your profile.
+            </p>
+          )}
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+function YourAgentSection() {
+  const [managedContent, setManagedContent] = useState("");
+  const [overlayContent, setOverlayContent] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [isCustomizationOpen, setIsCustomizationOpen] = useState(true);
+  const [isManagedOpen, setIsManagedOpen] = useState(false);
+
+  async function loadAgent() {
+    setIsLoading(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const content = await getRootAgent();
+      setManagedContent(content.managedContent);
+      setOverlayContent(content.overlayContent);
+      setDraft(content.overlayContent ?? "");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load your agent");
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  async function handleSave() {
+    setIsSaving(true);
+    setError(null);
+    setMessage(null);
+    try {
+      await updateRootAgentOverlay(draft);
+      const content = await getRootAgent();
+      setManagedContent(content.managedContent);
+      setOverlayContent(content.overlayContent);
+      setDraft(content.overlayContent ?? "");
+      setMessage("Your agent customization was saved.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save your agent");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  function handleRevert() {
+    setDraft(overlayContent ?? "");
+    setError(null);
+    setMessage(null);
+  }
+
+  useEffect(() => {
+    void loadAgent();
+  }, []);
+
+  const hasChanges = draft !== (overlayContent ?? "");
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="font-heading text-base font-semibold text-bd-text-heading">
+          Your Agent
+        </h3>
+        <p className="mt-1 text-sm text-bd-text-muted">
+          Your global agent controls the personality, tone, and operating style BrainDrive uses across every project.
+          Project and app agents add focused instructions on top of this one.
+        </p>
+      </div>
+
+      {error && (
+        <div className="flex items-start gap-2 rounded-md border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs text-red-400">
+          <AlertCircle size={14} className="mt-0.5 shrink-0" />
+          {error}
+        </div>
+      )}
+
+      {message && (
+        <div className="flex items-start gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-xs text-emerald-300">
+          <Check size={14} className="mt-0.5 shrink-0" />
+          {message}
+        </div>
+      )}
+
+      <div className="rounded-lg border border-bd-border bg-bd-bg-tertiary p-4">
+        <div className="mb-3 flex items-start gap-3">
+          <Info size={18} strokeWidth={1.5} className="mt-0.5 shrink-0 text-bd-text-secondary" />
+          <div className="space-y-1 text-sm text-bd-text-secondary">
+            <p>
+              BrainDrive keeps the managed default in <code className="rounded bg-bd-bg-secondary px-1 text-[11px] text-bd-text-primary">AGENT.md</code>.
+              Your changes are saved to <code className="rounded bg-bd-bg-secondary px-1 text-[11px] text-bd-text-primary">AGENT-user.md</code> so updates can refresh the default without overwriting your customization.
+            </p>
+          </div>
+        </div>
+
+        {isLoading ? (
+          <div className="flex items-center gap-2 py-4 text-sm text-bd-text-muted">
+            <LoaderCircle size={16} className="animate-spin" />
+            Loading your agent...
+          </div>
+        ) : (
+          <div className="space-y-3">
+            <div className="rounded-lg border border-bd-border bg-bd-bg-secondary/40">
+              <button
+                type="button"
+                onClick={() => setIsCustomizationOpen((open) => !open)}
+                aria-expanded={isCustomizationOpen}
+                className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+              >
+                <span className="flex min-w-0 items-center gap-2">
+                  {isCustomizationOpen ? (
+                    <ChevronDown size={16} className="shrink-0 text-bd-text-muted" />
+                  ) : (
+                    <ChevronRight size={16} className="shrink-0 text-bd-text-muted" />
+                  )}
+                  <span className="text-sm font-semibold text-bd-text-heading">Owner Customization</span>
+                </span>
+                <span className="shrink-0 text-xs text-bd-text-muted">AGENT-user.md</span>
+              </button>
+
+              {isCustomizationOpen && (
+                <div className="border-t border-bd-border px-4 py-4">
+                  <textarea
+                    aria-label="Your agent customization"
+                    value={draft}
+                    onChange={(event) => {
+                      setDraft(event.target.value);
+                      setMessage(null);
+                    }}
+                    placeholder="Add instructions for how your global agent should work with you..."
+                    spellCheck={false}
+                    className="min-h-[320px] w-full resize-y rounded-lg border border-bd-border bg-bd-bg-secondary px-4 py-3 font-mono text-[13px] leading-6 text-bd-text-primary outline-none transition-colors placeholder:text-bd-text-muted focus:border-bd-amber/60"
+                  />
+                  <div className="mt-3 flex items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={handleRevert}
+                      disabled={!hasChanges || isSaving}
+                      className="flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium text-bd-text-secondary transition-colors hover:bg-bd-bg-secondary hover:text-bd-text-heading disabled:opacity-50"
+                    >
+                      <RotateCcw size={14} />
+                      Revert
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSave}
+                      disabled={!hasChanges || isSaving}
+                      className="flex items-center gap-1.5 rounded-md bg-bd-amber px-2.5 py-1.5 text-xs font-medium text-white transition-colors hover:bg-bd-amber-hover disabled:opacity-50"
+                    >
+                      {isSaving ? <LoaderCircle size={14} className="animate-spin" /> : <Save size={14} />}
+                      {isSaving ? "Saving..." : "Save"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="rounded-lg border border-bd-border bg-bd-bg-secondary/40">
+              <button
+                type="button"
+                onClick={() => setIsManagedOpen((open) => !open)}
+                aria-expanded={isManagedOpen}
+                className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+              >
+                <span className="flex min-w-0 items-center gap-2">
+                  {isManagedOpen ? (
+                    <ChevronDown size={16} className="shrink-0 text-bd-text-muted" />
+                  ) : (
+                    <ChevronRight size={16} className="shrink-0 text-bd-text-muted" />
+                  )}
+                  <span className="text-sm font-semibold text-bd-text-heading">Managed Default</span>
+                </span>
+                <span className="shrink-0 text-xs text-bd-text-muted">AGENT.md</span>
+              </button>
+
+              {isManagedOpen && (
+                <div className="border-t border-bd-border px-4 py-4">
+                  <pre className="max-h-[360px] overflow-auto rounded-lg border border-bd-border bg-bd-bg-secondary p-4 text-[12px] leading-5 text-bd-text-secondary">
+                    <code>{managedContent}</code>
+                  </pre>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function AccountSection() {
+  const [accountInfo, setAccountInfo] = useState<AccountInfo | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Inline form toggles
+  const [showChangeEmail, setShowChangeEmail] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Form inputs
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [emailPassword, setEmailPassword] = useState("");
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
+
+  // Action states
+  const [isSavingEmail, setIsSavingEmail] = useState(false);
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isLoadingPortal, setIsLoadingPortal] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+
+  // Top-up
+  const [showTopupOptions, setShowTopupOptions] = useState(false);
+  const [topupAmount, setTopupAmount] = useState(1000); // $10 default
+  const [isLoadingTopup, setIsLoadingTopup] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    setIsLoading(true);
+    void getAccount()
+      .then((info) => {
+        if (!cancelled) setAccountInfo(info);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err instanceof Error ? err.message : "Failed to load account info");
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => { cancelled = true; };
+  }, []);
+
+  const clearForms = () => {
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+    setNewEmail("");
+    setEmailPassword("");
+    setDeletePassword("");
+    setDeleteConfirmation("");
+    setActionError(null);
+    setActionSuccess(null);
+  };
+
+  const handleChangeEmail = async () => {
+    setActionError(null);
+    setActionSuccess(null);
+    if (!newEmail.trim()) { setActionError("Email is required"); return; }
+    setIsSavingEmail(true);
+    try {
+      await apiChangeEmail(newEmail.trim(), emailPassword);
+      setAccountInfo((prev) => prev ? { ...prev, email: newEmail.trim() } : prev);
+      setShowChangeEmail(false);
+      clearForms();
+      setActionSuccess("Email updated");
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Failed to change email");
+    } finally {
+      setIsSavingEmail(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    setActionError(null);
+    setActionSuccess(null);
+    if (newPassword !== confirmPassword) { setActionError("Passwords do not match"); return; }
+    if (newPassword.length < 8) { setActionError("Password must be at least 8 characters"); return; }
+    setIsSavingPassword(true);
+    try {
+      await apiChangePassword(currentPassword, newPassword);
+      setShowChangePassword(false);
+      clearForms();
+      setActionSuccess("Password updated");
+      // Refresh account info to show updated password_changed_at
+      void getAccount().then(setAccountInfo).catch(() => {});
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Failed to change password");
+    } finally {
+      setIsSavingPassword(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setActionError(null);
+    if (deleteConfirmation !== "DELETE") { setActionError("Type DELETE to confirm"); return; }
+    setIsDeleting(true);
+    try {
+      await apiDeleteAccount(deletePassword, deleteConfirmation);
+      window.location.href = "/login";
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Failed to delete account");
+      setIsDeleting(false);
+    }
+  };
+
+  const handleManageSubscription = async () => {
+    setActionError(null);
+    setIsLoadingPortal(true);
+    try {
+      const portalUrl = await createPortalSession();
+      if (!openTrustedBillingUrl(portalUrl)) {
+        setActionError("Received an unexpected billing portal link. Please try again.");
+        return;
+      }
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Failed to open subscription portal");
+    } finally {
+      setIsLoadingPortal(false);
+    }
+  };
+
+  const handleTopup = async () => {
+    setActionError(null);
+    setIsLoadingTopup(true);
+    try {
+      const checkoutUrl = await createTopupSession(topupAmount);
+      if (!openTrustedBillingUrl(checkoutUrl)) {
+        setActionError("Received an unexpected checkout link. Please try again.");
+        return;
+      }
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : "Failed to start top-up checkout");
+    } finally {
+      setIsLoadingTopup(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <LoaderCircle size={24} className="animate-spin text-bd-text-muted" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-lg border border-bd-danger-border p-4">
+        <div className="flex items-center gap-2 text-sm text-bd-danger">
+          <AlertCircle size={16} />
+          {error}
+        </div>
+      </div>
+    );
+  }
+
+  const usagePercent = accountInfo && accountInfo.litellm_budget_dollars > 0
+    ? Math.min(100, Math.round(((accountInfo.litellm_spend_dollars ?? 0) / accountInfo.litellm_budget_dollars) * 100))
+    : 0;
+
+  const inputClasses = "h-10 w-full rounded-lg border border-bd-border bg-bd-bg-secondary px-3 text-sm text-bd-text-primary outline-none focus:border-bd-amber";
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="font-heading text-base font-semibold text-bd-text-heading">
+          Account
+        </h3>
+        <p className="mt-1 text-sm text-bd-text-muted">
+          Manage your BrainDrive subscription and account.
+        </p>
+      </div>
+
+      {/* Status messages */}
+      {actionSuccess && (
+        <div className="flex items-center gap-2 rounded-lg bg-bd-success-bg px-3 py-2 text-sm text-bd-success">
+          <Check size={16} /> {actionSuccess}
+        </div>
+      )}
+      {actionError && (
+        <div className="flex items-center gap-2 rounded-lg bg-bd-danger-bg px-3 py-2 text-sm text-bd-danger">
+          <AlertCircle size={16} /> {actionError}
+        </div>
+      )}
+
+      {/* Subscription */}
+      <div className="rounded-lg border border-bd-border p-4 space-y-4">
+        <div>
+          <div className="flex items-center justify-between">
+            <div className="text-sm font-medium text-bd-text-primary">
+              BrainDrive Concierge
+            </div>
+            <div className="flex items-center gap-2">
+              <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${
+                accountInfo?.subscription_status === "active"
+                  ? "bg-bd-success-bg text-bd-success"
+                  : "bg-bd-bg-tertiary text-bd-text-muted"
+              }`}>
+                {accountInfo?.subscription_status ?? "unknown"}
+              </span>
+              <span className="text-sm font-medium text-bd-text-primary">$25/month</span>
+            </div>
+          </div>
+          {accountInfo?.subscription_renewal_date && (
+            <div className="mt-2 text-xs text-bd-text-muted">
+              {accountInfo.cancel_at_period_end
+                ? `Cancels on ${new Date(accountInfo.subscription_renewal_date).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}`
+                : `Renews ${new Date(accountInfo.subscription_renewal_date).toLocaleDateString(undefined, { month: "long", day: "numeric", year: "numeric" })}`}
+            </div>
+          )}
+        </div>
+
+        {/* Usage bar */}
+        <div>
+          <div className="mb-1.5 flex items-center justify-between text-xs">
+            <span className="text-bd-text-secondary">
+              Usage this period
+            </span>
+            <span className="text-bd-text-muted">
+              {usagePercent}% used
+            </span>
+          </div>
+          <div className="h-2 w-full overflow-hidden rounded-full bg-bd-bg-secondary">
+            <div
+              className={`h-full rounded-full transition-all ${accountInfo?.credits_exhausted ? "bg-bd-danger" : "bg-bd-amber"}`}
+              style={{ width: `${usagePercent}%` }}
+            />
+          </div>
+          {accountInfo?.credits_exhausted && (
+            <div className="mt-2 text-xs text-bd-danger">
+              BrainDrive Concierge balance exhausted — your AI features are paused until next billing cycle.
+            </div>
+          )}
+        </div>
+
+        <button
+          type="button"
+          disabled={isLoadingPortal}
+          onClick={handleManageSubscription}
+          className="rounded-lg bg-bd-bg-tertiary px-3 py-1.5 text-xs text-bd-text-secondary transition-colors hover:bg-bd-bg-hover disabled:opacity-50"
+        >
+          {isLoadingPortal ? "Opening..." : "Manage Subscription"}
+        </button>
+
+        {/* BrainDrive Concierge Topup */}
+        {accountInfo?.topup_available && (
+          <div>
+            {accountInfo.credits_exhausted ? (
+              <div className="rounded-lg border border-bd-amber-border bg-bd-amber-bg/30 p-3 space-y-3">
+                <div className="text-xs font-medium text-bd-text-primary">BrainDrive Concierge Topup</div>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={topupAmount}
+                    onChange={(e) => setTopupAmount(Number(e.target.value))}
+                    className="h-8 rounded-md border border-bd-border bg-bd-bg-secondary px-2 text-xs text-bd-text-primary outline-none"
+                  >
+                    <option value={500}>$5</option>
+                    <option value={1000}>$10</option>
+                    <option value={2000}>$20</option>
+                    <option value={5000}>$50</option>
+                    <option value={10000}>$100</option>
+                  </select>
+                  <button
+                    type="button"
+                    disabled={isLoadingTopup}
+                    onClick={handleTopup}
+                    className="rounded-lg bg-bd-amber px-3 py-1.5 text-xs font-medium text-bd-bg-primary transition-colors hover:bg-bd-amber-hover disabled:opacity-50"
+                  >
+                    {isLoadingTopup ? "Opening..." : "BrainDrive Concierge Topup"}
+                  </button>
+                </div>
+                <div className="text-[11px] text-bd-text-muted">
+                  BrainDrive Concierge Topup is added instantly after payment.
+                </div>
+              </div>
+            ) : !showTopupOptions ? (
+              <button
+                type="button"
+                onClick={() => setShowTopupOptions(true)}
+                className="inline-flex items-center gap-1.5 rounded-lg bg-bd-amber px-3 py-1.5 text-xs font-semibold text-bd-bg-primary shadow-sm transition-colors hover:bg-bd-amber-hover"
+              >
+                <span aria-hidden="true">+</span>
+                BrainDrive Concierge Topup
+              </button>
+            ) : (
+              <div className="rounded-lg border border-bd-border p-3 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-medium text-bd-text-primary">BrainDrive Concierge Topup</div>
+                  <button
+                    type="button"
+                    onClick={() => setShowTopupOptions(false)}
+                    className="text-xs text-bd-text-muted hover:text-bd-text-secondary"
+                  >
+                    Cancel
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={topupAmount}
+                    onChange={(e) => setTopupAmount(Number(e.target.value))}
+                    className="h-8 rounded-md border border-bd-border bg-bd-bg-secondary px-2 text-xs text-bd-text-primary outline-none"
+                  >
+                    <option value={500}>$5</option>
+                    <option value={1000}>$10</option>
+                    <option value={2000}>$20</option>
+                    <option value={5000}>$50</option>
+                    <option value={10000}>$100</option>
+                  </select>
+                  <button
+                    type="button"
+                    disabled={isLoadingTopup}
+                    onClick={handleTopup}
+                    className="rounded-lg bg-bd-amber px-3 py-1.5 text-xs font-medium text-bd-bg-primary transition-colors hover:bg-bd-amber-hover disabled:opacity-50"
+                  >
+                    {isLoadingTopup ? "Opening..." : "BrainDrive Concierge Topup"}
+                  </button>
+                </div>
+                <div className="text-[11px] text-bd-text-muted">
+                  BrainDrive Concierge Topup is added instantly after payment.
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Email & Password */}
+      <div className="rounded-lg border border-bd-border p-4 space-y-4">
+        <div>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium text-bd-text-primary">Email</div>
+              <div className="text-sm text-bd-text-muted">{accountInfo?.email}</div>
+            </div>
+            <button
+              type="button"
+              onClick={() => { setShowChangeEmail(!showChangeEmail); setShowChangePassword(false); clearForms(); }}
+              className="rounded-lg bg-bd-bg-tertiary px-3 py-1.5 text-xs text-bd-text-secondary transition-colors hover:bg-bd-bg-hover"
+            >
+              {showChangeEmail ? "Cancel" : "Change"}
+            </button>
+          </div>
+          {showChangeEmail && (
+            <div className="mt-3 space-y-3">
+              <input
+                type="email"
+                placeholder="New email"
+                value={newEmail}
+                onChange={(e) => setNewEmail(e.target.value)}
+                className={inputClasses}
+              />
+              <input
+                type="password" autoComplete="new-password"
+                placeholder="Current password"
+                value={emailPassword}
+                onChange={(e) => setEmailPassword(e.target.value)}
+                className={inputClasses}
+              />
+              <button
+                type="button"
+                disabled={isSavingEmail}
+                onClick={handleChangeEmail}
+                className="rounded-lg bg-bd-amber px-4 py-2 text-xs font-medium text-bd-bg-primary transition-colors hover:bg-bd-amber-hover disabled:opacity-50"
+              >
+                {isSavingEmail ? "Saving..." : "Update Email"}
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div className="h-px bg-bd-border" />
+
+        <div>
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-sm font-medium text-bd-text-primary">Password</div>
+              <div className="text-sm text-bd-text-muted">
+                Last changed: {accountInfo?.password_changed_at
+                  ? new Date(accountInfo.password_changed_at).toLocaleDateString()
+                  : "Never"}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => { setShowChangePassword(!showChangePassword); setShowChangeEmail(false); clearForms(); }}
+              className="rounded-lg bg-bd-bg-tertiary px-3 py-1.5 text-xs text-bd-text-secondary transition-colors hover:bg-bd-bg-hover"
+            >
+              {showChangePassword ? "Cancel" : "Change"}
+            </button>
+          </div>
+          {showChangePassword && (
+            <div className="mt-3 space-y-3">
+              <input
+                type="password" autoComplete="new-password"
+                placeholder="Current password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                className={inputClasses}
+              />
+              <input
+                type="password" autoComplete="new-password"
+                placeholder="New password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className={inputClasses}
+              />
+              <input
+                type="password" autoComplete="new-password"
+                placeholder="Confirm new password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className={inputClasses}
+              />
+              <button
+                type="button"
+                disabled={isSavingPassword}
+                onClick={handleChangePassword}
+                className="rounded-lg bg-bd-amber px-4 py-2 text-xs font-medium text-bd-bg-primary transition-colors hover:bg-bd-amber-hover disabled:opacity-50"
+              >
+                {isSavingPassword ? "Saving..." : "Update Password"}
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Danger Zone */}
+      <div className="rounded-lg border border-bd-danger-border p-4">
+        <div className="text-sm font-medium text-bd-danger">Danger Zone</div>
+        <p className="mt-1 text-sm text-bd-text-muted">
+          Permanently delete your account and all associated data. This cannot
+          be undone. Export your library first.
+        </p>
+        {!showDeleteConfirm ? (
+          <button
+            type="button"
+            onClick={() => { setShowDeleteConfirm(true); clearForms(); }}
+            className="mt-3 rounded-lg border border-bd-danger-border px-3 py-1.5 text-xs text-bd-danger transition-colors hover:bg-bd-danger-bg"
+          >
+            Delete Account
+          </button>
+        ) : (
+          <div className="mt-3 space-y-3">
+            <input
+              type="password" autoComplete="new-password"
+              placeholder="Current password"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              className={inputClasses}
+            />
+            <input
+              type="text" autoComplete="off"
+              placeholder='Type "DELETE" to confirm'
+              value={deleteConfirmation}
+              onChange={(e) => setDeleteConfirmation(e.target.value)}
+              className={inputClasses}
+            />
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleDeleteAccount}
+                className="rounded-lg bg-bd-danger px-4 py-2 text-xs font-medium text-white transition-colors hover:opacity-90 disabled:opacity-50"
+              >
+                {isDeleting ? "Deleting..." : "Permanently Delete"}
+              </button>
+              <button
+                type="button"
+                onClick={() => { setShowDeleteConfirm(false); clearForms(); }}
+                className="rounded-lg bg-bd-bg-tertiary px-4 py-2 text-xs text-bd-text-secondary transition-colors hover:bg-bd-bg-hover"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <p className="text-xs text-bd-text-muted">
+        Cancel anytime. Your library is always exportable — you own your data
+        regardless of subscription status.
+      </p>
+    </div>
+  );
+}
+
+function ExportSection({
+  installMode,
+  installLocation,
+  appVersion,
+  onDownload,
+  isExporting,
+  exportError,
+  onImport,
+  isImporting,
+  importError,
+  importResult,
+}: {
+  installMode: "dev" | "local" | "prod" | "unknown";
+  installLocation: "local" | "managed" | "unknown";
+  appVersion: string;
+  onDownload: () => Promise<void>;
+  isExporting: boolean;
+  exportError: string | null;
+  onImport: (file: File) => Promise<void>;
+  isImporting: boolean;
+  importError: string | null;
+  importResult: GatewayMigrationImportResult | null;
+}) {
+  const [selectedImportFile, setSelectedImportFile] = useState<File | null>(null);
+  const isImportDisabled = isImporting || !selectedImportFile;
+  const installLabel = formatInstallModeLabel(installMode);
+  const installLocationLabel = formatInstallLocationLabel(installLocation);
+  const versionLabel = appVersion.trim().length > 0 ? appVersion : "unknown";
+
+  return (
+    <div className="flex min-h-full flex-col gap-6">
+      <div>
+        <h3 className="font-heading text-base font-semibold text-bd-text-heading">
+          Migrate
+        </h3>
+        <p className="mt-1 text-sm text-bd-text-muted">
+          Moving to a new machine or switching from local or hosted? Take everything with you.
+        </p>
+      </div>
+
+      <div className="rounded-lg border border-bd-border p-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-bd-bg-hover">
+            <Download size={20} strokeWidth={1.5} className="text-bd-text-secondary" />
+          </div>
+          <div className="flex-1">
+            <div className="text-sm font-medium text-bd-text-primary">
+              Export
+            </div>
+            <div className="text-xs text-bd-text-muted">
+              Download a complete copy of your BrainDrive.
+            </div>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => {
+            void onDownload();
+          }}
+          disabled={isExporting}
+          className="mt-4 w-full rounded-xl bg-bd-amber px-4 py-2.5 text-sm font-medium text-bd-bg-primary transition-colors duration-200 hover:bg-bd-amber-hover"
+        >
+          {isExporting ? "Preparing Download..." : "Download"}
+        </button>
+        {exportError && (
+          <div className="mt-3 rounded-lg border border-bd-danger-border bg-bd-danger-bg px-3 py-2.5 text-sm text-bd-text-primary">
+            {exportError}
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-lg border border-bd-border p-4">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-bd-bg-hover">
+            <Upload size={20} strokeWidth={1.5} className="text-bd-text-secondary" />
+          </div>
+          <div className="flex-1">
+            <div className="text-sm font-medium text-bd-text-primary">
+              Import
+            </div>
+            <div className="text-xs text-bd-text-muted">
+              Restore from a previous export.
+            </div>
+          </div>
+        </div>
+
+        <label className="mt-4 block text-xs font-medium text-bd-text-secondary" htmlFor="library-import-file">
+          Choose file
+        </label>
+        <input
+          id="library-import-file"
+          type="file"
+          accept=".tar.gz,application/gzip,application/x-gzip"
+          onChange={(event) => {
+            setSelectedImportFile(event.target.files?.[0] ?? null);
+          }}
+          className="mt-1 block w-full rounded-lg border border-bd-border bg-bd-bg-secondary px-3 py-2 text-sm text-bd-text-primary file:mr-3 file:rounded-md file:border-0 file:bg-bd-bg-hover file:px-2.5 file:py-1 file:text-xs file:text-bd-text-secondary"
+        />
+
+        <button
+          type="button"
+          onClick={() => {
+            if (selectedImportFile) {
+              void onImport(selectedImportFile);
+            }
+          }}
+          disabled={isImportDisabled}
+          className={`mt-4 w-full rounded-xl px-4 py-2.5 text-sm font-medium transition-colors duration-200 ${
+            isImportDisabled
+              ? "cursor-not-allowed bg-bd-bg-tertiary text-bd-text-muted"
+              : "bg-bd-amber text-bd-bg-primary hover:bg-bd-amber-hover"
+          }`}
+        >
+          {isImporting ? "Importing..." : "Import"}
+        </button>
+
+        {importError && (
+          <div className="mt-3 rounded-lg border border-bd-danger-border bg-bd-danger-bg px-3 py-2.5 text-sm text-bd-text-primary">
+            {importError}
+          </div>
+        )}
+
+        {importResult && (
+          <div className="mt-3 rounded-lg border border-bd-border bg-bd-bg-tertiary px-3 py-2.5 text-sm text-bd-text-primary">
+            <p>
+              Import complete. Format: {importResult.source_format}. Secrets restored: {importResult.restored.secrets ? "yes" : "no"}.
+            </p>
+            {importResult.warnings.length > 0 && (
+              <p className="mt-1 text-xs text-bd-text-muted">
+                {importResult.warnings.join(" ")}
+              </p>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div className="mt-auto rounded-lg border border-bd-border bg-bd-bg-tertiary px-3 py-2.5">
+        <div className="flex flex-wrap items-center gap-4 text-xs text-bd-text-muted">
+          <span>Install Type: {installLabel}</span>
+          <span>Install Location: {installLocationLabel}</span>
+          <span>App Version: {versionLabel}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function formatInstallModeLabel(mode: "dev" | "local" | "prod" | "unknown"): string {
+  switch (mode) {
+    case "dev":
+      return "developer";
+    case "prod":
+      return "production";
+    case "local":
+      return "local";
+    default:
+      return "unknown";
+  }
+}
+
+function formatInstallLocationLabel(location: "local" | "managed" | "unknown"): string {
+  switch (location) {
+    case "local":
+      return "local hardware";
+    case "managed":
+      return "BrainDrive Concierge";
+    default:
+      return "unknown";
+  }
+}

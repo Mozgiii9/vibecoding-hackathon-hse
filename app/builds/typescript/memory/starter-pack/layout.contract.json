@@ -1,0 +1,94 @@
+{
+  "layout_version": 2,
+  "draft": "memory-architecture-draft-3",
+  "required_directories": [
+    "conversations",
+    "documents",
+    "preferences",
+    "exports",
+    "skills"
+  ],
+  "required_files": [
+    "AGENT.md",
+    "me/profile.md",
+    "me/todo.md",
+    "preferences/default.json",
+    "documents/projects.json",
+    "skills/registry.json"
+  ],
+  "default_project_template_files": [
+    "AGENT.md",
+    "spec.md",
+    "run-interview.md",
+    "plan.md",
+    "run-planning.md"
+  ],
+  "overlay_naming": {
+    "managed_base_suffix": ".md",
+    "owner_overlay_suffix": "-user.md",
+    "invalid_examples": [
+      "user-AGENT.md",
+      "compare-custom.md",
+      "rules-local.md"
+    ]
+  },
+  "finance_project_template_files": [
+    "AGENT.md",
+    "spec.md",
+    "run-interview.md",
+    "plan.md",
+    "run-planning.md"
+  ],
+  "life_area_project_template_files": [
+    "AGENT.md",
+    "spec.md",
+    "run-interview.md",
+    "plan.md",
+    "run-planning.md"
+  ],
+  "life_area_project_ids": [
+    "career",
+    "finance",
+    "fitness",
+    "relationships"
+  ],
+  "page_journal_project_ids": [
+    "finance",
+    "fitness",
+    "career",
+    "relationships",
+    "new-project"
+  ],
+  "page_journal_project_template_files": [
+    "run-journal.md",
+    "journal.md"
+  ],
+  "default_page_project_ids": [
+    "finance",
+    "fitness",
+    "career",
+    "relationships",
+    "new-project"
+  ],
+  "project_optional_overlay_files": [
+    "AGENT-user.md",
+    "run-interview-user.md",
+    "run-planning-user.md"
+  ],
+  "finance_optional_overlay_files": [
+    "AGENT-user.md",
+    "run-interview-user.md",
+    "run-planning-user.md"
+  ],
+  "finance_project_generated_directories": [],
+  "fitness_project_template_files": [
+    "AGENT.md",
+    "spec.md",
+    "run-interview.md",
+    "plan.md",
+    "run-planning.md",
+    "run-journal.md",
+    "journal.md"
+  ],
+  "fitness_project_generated_directories": []
+}

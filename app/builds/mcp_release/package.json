@@ -1,0 +1,39 @@
+{
+  "name": "braindrive-mcp",
+  "version": "1.0.0",
+  "description": "BrainDrive MCP tool services",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/BrainDriveAI/braindrive.git",
+    "directory": "builds/mcp_release"
+  },
+  "homepage": "https://braindrive.ai",
+  "bugs": {
+    "url": "https://github.com/BrainDriveAI/braindrive/issues"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "dev": "tsx src/index.ts",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:unit": "vitest run test/unit",
+    "test:integration": "tsx test/integration/mcp-smoke.ts",
+    "compose:up": "docker compose -f docker-compose.yml up -d --build",
+    "compose:down": "docker compose -f docker-compose.yml down -v"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "express": "^5.2.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^26.1.1",
+    "tsx": "^4.23.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}

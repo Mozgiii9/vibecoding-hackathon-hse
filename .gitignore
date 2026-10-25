@@ -1,0 +1,19 @@
+# Local research and personal source material
+/.cache/
+/.venv/
+/research/
+/tmp/
+/Moscow 2.m4a
+/*.pdf
+.DS_Store
+
+# Runtime output and credentials
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+.runtime/
+*.log

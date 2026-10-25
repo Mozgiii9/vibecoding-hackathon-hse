@@ -1,0 +1,153 @@
+import { act, renderHook, waitFor } from "@testing-library/react";
+
+import type { Project, ProjectFile } from "@/types/ui";
+
+import { useProjects } from "./useProjects";
+
+const listProjectsMock = vi.fn<() => Promise<Project[]>>();
+const getProjectFilesMock = vi.fn<(projectId: string) => Promise<ProjectFile[]>>();
+const createProjectMock = vi.fn<(name: string) => Promise<Project>>();
+const deleteProjectMock = vi.fn<(id: string) => Promise<void>>();
+const renameProjectMock = vi.fn<(id: string, name: string) => Promise<void>>();
+const clearProjectConversationMock = vi.fn<(id: string) => Promise<void>>();
+
+vi.mock("@/api/gateway-adapter", () => ({
+  listProjects: () => listProjectsMock(),
+  getProjectFiles: (projectId: string) => getProjectFilesMock(projectId),
+  createProject: (name: string) => createProjectMock(name),
+  deleteProject: (id: string) => deleteProjectMock(id),
+  renameProject: (id: string, name: string) => renameProjectMock(id, name),
+  clearProjectConversation: (id: string) => clearProjectConversationMock(id),
+}));
+
+function deferred<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, resolve, reject };
+}
+
+const defaultProjects: Project[] = [
+  {
+    id: "your-agent",
+    name: "Your Agent",
+    icon: "sparkles",
+    conversationId: "conv-plus-one",
+  },
+  {
+    id: "finance",
+    name: "Finance",
+    icon: "dollar-sign",
+    conversationId: "conv-finance",
+  },
+];
+
+describe("useProjects", () => {
+  beforeEach(() => {
+    listProjectsMock.mockReset();
+    getProjectFilesMock.mockReset();
+    createProjectMock.mockReset();
+    deleteProjectMock.mockReset();
+    renameProjectMock.mockReset();
+    clearProjectConversationMock.mockReset();
+
+    listProjectsMock.mockResolvedValue(defaultProjects);
+    getProjectFilesMock.mockResolvedValue([]);
+    createProjectMock.mockResolvedValue(defaultProjects[1]!);
+    deleteProjectMock.mockResolvedValue();
+    renameProjectMock.mockResolvedValue();
+    clearProjectConversationMock.mockResolvedValue();
+  });
+
+  it("does not show projects loading state during background refreshes", async () => {
+    const { result } = renderHook(() => useProjects());
+
+    await waitFor(() => {
+      expect(result.current.isLoadingProjects).toBe(false);
+    });
+
+    const nextRefresh = deferred<Project[]>();
+    listProjectsMock.mockReturnValueOnce(nextRefresh.promise);
+
+    act(() => {
+      result.current.refreshProjects();
+    });
+
+    expect(result.current.isLoadingProjects).toBe(false);
+
+    nextRefresh.resolve(defaultProjects);
+
+    await waitFor(() => {
+      expect(listProjectsMock).toHaveBeenCalledTimes(2);
+    });
+  });
+
+  it("does not re-fetch files when selecting the active project", async () => {
+    const { result } = renderHook(() => useProjects());
+
+    await waitFor(() => {
+      expect(result.current.selectedProjectId).toBe("your-agent");
+      expect(result.current.isLoadingFiles).toBe(false);
+    });
+
+    expect(getProjectFilesMock).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      result.current.selectProject("your-agent");
+    });
+
+    expect(getProjectFilesMock).toHaveBeenCalledTimes(1);
+    expect(result.current.isLoadingFiles).toBe(false);
+  });
+
+  it("clears a selected project's conversation id after starting fresh", async () => {
+    const { result } = renderHook(() => useProjects());
+
+    await waitFor(() => {
+      expect(result.current.selectedProjectId).toBe("your-agent");
+    });
+
+    listProjectsMock.mockResolvedValue([
+      { ...defaultProjects[0]!, conversationId: null },
+      defaultProjects[1]!,
+    ]);
+
+    await act(async () => {
+      await result.current.clearProjectConversation("your-agent");
+    });
+
+    expect(clearProjectConversationMock).toHaveBeenCalledWith("your-agent");
+    await waitFor(() => {
+      expect(result.current.activeConversationId).toBeNull();
+    });
+  });
+
+  it("normalizes a legacy root agent project payload", async () => {
+    listProjectsMock.mockResolvedValue([
+      {
+        id: "braindrive-plus-one",
+        name: "Your Agent",
+        icon: "sparkles",
+        conversationId: "conv-legacy",
+      },
+      defaultProjects[1]!,
+    ]);
+
+    const { result } = renderHook(() => useProjects());
+
+    await waitFor(() => {
+      expect(result.current.selectedProjectId).toBe("your-agent");
+      expect(result.current.selectedProject?.id).toBe("your-agent");
+    });
+    expect(getProjectFilesMock).toHaveBeenCalledWith("your-agent");
+
+    await act(async () => {
+      await result.current.clearProjectConversation("braindrive-plus-one");
+    });
+
+    expect(clearProjectConversationMock).toHaveBeenCalledWith("your-agent");
+  });
+});

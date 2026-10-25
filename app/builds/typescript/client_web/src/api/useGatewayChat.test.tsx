@@ -1,0 +1,446 @@
+import { act, renderHook, waitFor } from "@testing-library/react";
+
+import type { ChatEvent } from "./types";
+import { resetGatewayChatRuntime, useGatewayChat } from "./useGatewayChat";
+
+const sendMessageMock = vi.fn<
+  (
+    conversationId: string | null,
+    content: string,
+    options?: {
+      signal?: AbortSignal;
+      metadata?: Record<string, unknown>;
+      onContextWarning?: (warning: {
+        estimated_tokens: number;
+        budget_tokens: number;
+        ratio: number;
+        threshold: number;
+        managed: boolean;
+        message: string;
+      }) => void;
+    }
+  ) => AsyncIterable<ChatEvent>
+>();
+
+const submitApprovalDecisionMock = vi.fn<
+  (requestId: string, decision: "approved" | "denied") => Promise<{ request_id: string; decision: "approved" | "denied" }>
+>();
+const listSkillsMock = vi.fn<
+  () => Promise<
+    Array<{
+      id: string;
+      name: string;
+      description: string;
+      scope: "global";
+      version: number;
+      status: "active" | "archived";
+      tags: string[];
+      updated_at: string;
+    }>
+  >
+>();
+const getConversationSkillsMock = vi.fn<(conversationId: string) => Promise<string[]>>();
+const updateConversationSkillsMock = vi.fn<
+  (conversationId: string, skillIds: string[], source?: "ui" | "slash" | "nl" | "api") => Promise<string[]>
+>();
+const getProjectSkillsMock = vi.fn<(projectId: string) => Promise<string[]>>();
+const updateProjectSkillsMock = vi.fn<
+  (projectId: string, skillIds: string[], source?: "ui" | "slash" | "nl" | "api") => Promise<string[]>
+>();
+
+vi.mock("./gateway-adapter", () => ({
+  sendMessage: (
+    conversationId: string | null,
+    content: string,
+    options?: {
+      signal?: AbortSignal;
+      metadata?: Record<string, unknown>;
+      onContextWarning?: (warning: {
+        estimated_tokens: number;
+        budget_tokens: number;
+        ratio: number;
+        threshold: number;
+        managed: boolean;
+        message: string;
+      }) => void;
+    }
+  ) => sendMessageMock(conversationId, content, options),
+  submitApprovalDecision: (requestId: string, decision: "approved" | "denied") =>
+    submitApprovalDecisionMock(requestId, decision),
+  listSkills: () => listSkillsMock(),
+  getConversationSkills: (conversationId: string) => getConversationSkillsMock(conversationId),
+  updateConversationSkills: (
+    conversationId: string,
+    skillIds: string[],
+    source?: "ui" | "slash" | "nl" | "api"
+  ) => updateConversationSkillsMock(conversationId, skillIds, source),
+  getProjectSkills: (projectId: string) => getProjectSkillsMock(projectId),
+  updateProjectSkills: (projectId: string, skillIds: string[], source?: "ui" | "slash" | "nl" | "api") =>
+    updateProjectSkillsMock(projectId, skillIds, source),
+}));
+
+async function* streamEvents(events: ChatEvent[]): AsyncIterable<ChatEvent> {
+  for (const event of events) {
+    await Promise.resolve();
+    yield event;
+  }
+}
+
+describe("useGatewayChat", () => {
+  beforeEach(() => {
+    sendMessageMock.mockReset();
+    submitApprovalDecisionMock.mockReset();
+    listSkillsMock.mockReset();
+    getConversationSkillsMock.mockReset();
+    updateConversationSkillsMock.mockReset();
+    getProjectSkillsMock.mockReset();
+    updateProjectSkillsMock.mockReset();
+    submitApprovalDecisionMock.mockResolvedValue({
+      request_id: "apr-default",
+      decision: "approved",
+    });
+  });
+
+  it("appends user and assistant messages while streaming", async () => {
+    sendMessageMock.mockImplementation(() =>
+      streamEvents([
+        { type: "text-delta", delta: "Hello" },
+        { type: "text-delta", delta: " world" },
+        {
+          type: "done",
+          finish_reason: "stop",
+          conversation_id: "conv-1"
+        }
+      ])
+    );
+
+    const { result } = renderHook(() => useGatewayChat());
+
+    act(() => {
+      result.current.append("Hi");
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.conversationId).toBe("conv-1");
+    expect(result.current.error).toBeNull();
+    expect(result.current.messages).toEqual([
+      { id: "message-1", role: "user", content: "Hi" },
+      { id: "message-2", role: "assistant", content: "Hello world" }
+    ]);
+  });
+
+  it("can replay a message without echoing a duplicate user message", async () => {
+    sendMessageMock.mockImplementation(() =>
+      streamEvents([
+        { type: "text-delta", delta: "Retried" },
+        {
+          type: "done",
+          finish_reason: "stop",
+          conversation_id: "conv-1"
+        }
+      ])
+    );
+
+    const { result } = renderHook(() => useGatewayChat());
+
+    act(() => {
+      result.current.append("Retry this", {
+        metadata: {
+          retry_of_message_id: "message-1",
+          retry_reason: "provider_error",
+        },
+        echoUserMessage: false,
+      });
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(sendMessageMock).toHaveBeenCalledWith(
+      null,
+      "Retry this",
+      expect.objectContaining({
+        metadata: {
+          retry_of_message_id: "message-1",
+          retry_reason: "provider_error",
+        },
+      })
+    );
+    expect(result.current.messages).toEqual([
+      { id: "message-2", role: "assistant", content: "Retried" }
+    ]);
+  });
+
+  it("handles a stream that only emits done", async () => {
+    sendMessageMock.mockImplementation(() =>
+      streamEvents([
+        {
+          type: "done",
+          finish_reason: "stop",
+          conversation_id: "conv-2"
+        }
+      ])
+    );
+
+    const { result } = renderHook(() => useGatewayChat());
+
+    act(() => {
+      result.current.append("Hello");
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.conversationId).toBe("conv-2");
+    expect(result.current.messages).toEqual([
+      { id: "message-1", role: "user", content: "Hello" }
+    ]);
+    expect(result.current.error).toBeNull();
+  });
+
+  it("surfaces gateway error events", async () => {
+    sendMessageMock.mockImplementation(() =>
+      streamEvents([
+        {
+          type: "error",
+          code: "provider_error",
+          message: "Provider unavailable"
+        }
+      ])
+    );
+
+    const { result } = renderHook(() => useGatewayChat());
+
+    act(() => {
+      result.current.append("Hello");
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.error?.message).toBe("Provider unavailable");
+    expect(result.current.errorCode).toBe("provider_error");
+    expect(result.current.messages).toEqual([
+      { id: "message-1", role: "user", content: "Hello" }
+    ]);
+  });
+
+  it("stores context overflow error code for overflow-specific UI actions", async () => {
+    sendMessageMock.mockImplementation(() =>
+      streamEvents([
+        {
+          type: "error",
+          code: "context_overflow",
+          message: "This session has gotten long. Start a new conversation to continue - all your work is saved.",
+        },
+      ])
+    );
+
+    const { result } = renderHook(() => useGatewayChat());
+
+    act(() => {
+      result.current.append("Hello");
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.errorCode).toBe("context_overflow");
+  });
+
+  it("stores context warning metadata passed from the gateway adapter", async () => {
+    sendMessageMock.mockImplementation((_conversationId, _content, options) =>
+      (async function* contextWarningStream() {
+        options?.onContextWarning?.({
+          estimated_tokens: 90_000,
+          budget_tokens: 100_000,
+          ratio: 0.9,
+          threshold: 0.8,
+          managed: true,
+          message: "This session is getting long. Earlier turns were compacted so you can keep chatting.",
+        });
+        yield {
+          type: "done",
+          finish_reason: "stop",
+          conversation_id: "conv-warning",
+        } as ChatEvent;
+      })()
+    );
+
+    const { result } = renderHook(() => useGatewayChat());
+
+    act(() => {
+      result.current.append("Hello");
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.contextWindowWarning).toEqual({
+      estimated_tokens: 90_000,
+      budget_tokens: 100_000,
+      ratio: 0.9,
+      threshold: 0.8,
+      managed: true,
+      message: "This session is getting long. Earlier turns were compacted so you can keep chatting.",
+    });
+  });
+
+  it("auto-approves approval requests during streaming", async () => {
+    sendMessageMock.mockImplementation(() =>
+      streamEvents([
+        {
+          type: "approval-request",
+          request_id: "apr-1",
+          tool_name: "memory_write",
+          summary: "Write documents/plan.md",
+        },
+        {
+          type: "approval-result",
+          request_id: "apr-1",
+          decision: "approved",
+        },
+        {
+          type: "done",
+          finish_reason: "stop",
+          conversation_id: "conv-3",
+        },
+      ])
+    );
+    submitApprovalDecisionMock.mockResolvedValue({
+      request_id: "apr-1",
+      decision: "approved",
+    });
+
+    const { result } = renderHook(() => useGatewayChat());
+
+    act(() => {
+      result.current.append("Please save this.");
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(submitApprovalDecisionMock).toHaveBeenCalledWith("apr-1", "approved");
+    expect(result.current.pendingApprovals).toEqual([]);
+    expect(result.current.activity.some((item) => item.type === "approval-request")).toBe(true);
+    expect(result.current.activity.some((item) => item.type === "approval-result")).toBe(true);
+  });
+
+  it("handles /skills slash command without invoking message streaming", async () => {
+    listSkillsMock.mockResolvedValue([
+      {
+        id: "plan",
+        name: "Plan",
+        description: "Planning helper",
+        scope: "global",
+        version: 1,
+        status: "active",
+        tags: [],
+        updated_at: "2026-03-24T00:00:00.000Z",
+      },
+    ]);
+
+    const { result } = renderHook(() => useGatewayChat({ conversationId: "conv-1" }));
+
+    act(() => {
+      result.current.append("/skills");
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(sendMessageMock).not.toHaveBeenCalled();
+    expect(result.current.messages).toEqual([
+      { id: "message-1", role: "user", content: "/skills" },
+      {
+        id: "message-2",
+        role: "assistant",
+        content: "Available skills:\n- plan: Plan",
+      },
+    ]);
+  });
+
+  it("maps /skill use to conversation skill bindings", async () => {
+    getConversationSkillsMock.mockResolvedValue(["interview"]);
+    updateConversationSkillsMock.mockResolvedValue(["interview", "plan"]);
+
+    const { result } = renderHook(() => useGatewayChat({ conversationId: "conv-1" }));
+
+    act(() => {
+      result.current.append("/skill use plan");
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(updateConversationSkillsMock).toHaveBeenCalledWith(
+      "conv-1",
+      ["interview", "plan"],
+      "slash"
+    );
+    expect(sendMessageMock).not.toHaveBeenCalled();
+    expect(result.current.messages[1]?.content).toBe("Conversation skills updated:\n- interview\n- plan");
+  });
+
+  it("maps /project-skill use to project skill bindings", async () => {
+    getProjectSkillsMock.mockResolvedValue([]);
+    updateProjectSkillsMock.mockResolvedValue(["plan"]);
+
+    const { result } = renderHook(() => useGatewayChat({ projectId: "project-1" }));
+
+    act(() => {
+      result.current.append("/project-skill use plan");
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(updateProjectSkillsMock).toHaveBeenCalledWith("project-1", ["plan"], "slash");
+    expect(sendMessageMock).not.toHaveBeenCalled();
+    expect(result.current.messages[1]?.content).toBe("Project skills updated:\n- plan");
+  });
+
+  it("clears transient chat runtime state when credentials are refreshed", async () => {
+    sendMessageMock.mockImplementation(() =>
+      streamEvents([
+        {
+          type: "error",
+          code: "provider_error",
+          message: "Provider credentials were rejected",
+        },
+      ])
+    );
+
+    const { result } = renderHook(() => useGatewayChat());
+
+    act(() => {
+      result.current.append("hello");
+    });
+
+    await waitFor(() => {
+      expect(result.current.error?.message).toBe("Provider credentials were rejected");
+    });
+
+    act(() => {
+      resetGatewayChatRuntime();
+    });
+
+    expect(result.current.error).toBeNull();
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.pendingApprovals).toEqual([]);
+    expect(result.current.activity).toEqual([]);
+  });
+});

@@ -1,0 +1,4 @@
+#!/bin/sh
+# Preserve upstream CRLF/blank EOF lines; reject other staged whitespace errors.
+set -eu
+git -c core.whitespace=trailing-space,space-before-tab,cr-at-eol,-blank-at-eof diff --cached --check

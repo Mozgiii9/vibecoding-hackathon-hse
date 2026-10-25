@@ -1,0 +1,156 @@
+{
+  "scenario": "Синтетический пример после подтверждения отправки резюме и первого интервью",
+  "goal": {
+    "id": "demo",
+    "title": "Подготовиться к ML-собеседованию",
+    "deadline": "2026-11-01T17:30:00+03:00",
+    "criteria": [
+      {
+        "id": "cv",
+        "description": "Отправить резюме",
+        "targetCount": 1,
+        "unit": "отправка"
+      },
+      {
+        "id": "mock",
+        "description": "Провести пробные интервью",
+        "targetCount": 2,
+        "unit": "интервью"
+      },
+      {
+        "id": "feedback",
+        "description": "Внести правки по обратной связи",
+        "targetCount": 1,
+        "unit": "исправление"
+      }
+    ],
+    "confirmedAt": "2026-10-25T13:30:00+03:00",
+    "revision": 1
+  },
+  "sources": [
+    {
+      "id": "source-1",
+      "goalId": "demo",
+      "kind": "text",
+      "title": "План на завтра",
+      "contentHash": "3573218a765f49e311367b524507171b5cb2f6e9a7ca75bde18ec4172314f1fe",
+      "text": "Завтра хочу отправить резюме.",
+      "capturedAt": "2026-10-25T13:30:00+03:00",
+      "createdAt": "2026-10-25T13:30:00+03:00",
+      "segments": []
+    },
+    {
+      "id": "source-2",
+      "goalId": "demo",
+      "kind": "text",
+      "title": "Сообщение рекрутера",
+      "contentHash": "d0c50adb7f219981aeba52aa2f2b1832771aba5ab7d99f17f95d51a66e61ff7b",
+      "text": "Резюме получил, приглашаем на интервью.",
+      "capturedAt": "2026-10-25T13:30:00+03:00",
+      "createdAt": "2026-10-25T13:30:00+03:00",
+      "segments": []
+    },
+    {
+      "id": "source-3",
+      "goalId": "demo",
+      "kind": "text",
+      "title": "Заметка после интервью",
+      "contentHash": "c11116c2cfe17fb102e12f83da5fd74cb36af87d2febd597961aae8711ec746b",
+      "text": "Провели первое пробное интервью.",
+      "capturedAt": "2026-10-25T13:30:00+03:00",
+      "createdAt": "2026-10-25T13:30:00+03:00",
+      "segments": []
+    }
+  ],
+  "evidence": [
+    {
+      "id": "evidence-1",
+      "goalId": "demo",
+      "sourceId": "source-1",
+      "criterionId": "cv",
+      "eventType": "intention",
+      "summary": "Завтра хочу отправить резюме.",
+      "quote": "Завтра хочу отправить резюме.",
+      "textStart": 0,
+      "textEnd": 29,
+      "startMs": null,
+      "endMs": null,
+      "eventKey": "382f4c43a1991398e8ce3af007781d266a494aa111823e36159d145cae4d8f1a",
+      "status": "proposed",
+      "revision": 1,
+      "createdAt": "2026-10-25T13:30:00+03:00"
+    },
+    {
+      "id": "evidence-2",
+      "goalId": "demo",
+      "sourceId": "source-2",
+      "criterionId": "cv",
+      "eventType": "completed_action",
+      "summary": "Резюме получил, приглашаем на интервью.",
+      "quote": "Резюме получил, приглашаем на интервью.",
+      "textStart": 0,
+      "textEnd": 39,
+      "startMs": null,
+      "endMs": null,
+      "eventKey": "ff1ff7c1dd20f148fb51bc067c2b2b71032191975cf3f285ff8d5deafed4dc1e",
+      "status": "confirmed",
+      "revision": 2,
+      "createdAt": "2026-10-25T13:30:00+03:00"
+    },
+    {
+      "id": "evidence-3",
+      "goalId": "demo",
+      "sourceId": "source-3",
+      "criterionId": "mock",
+      "eventType": "completed_action",
+      "summary": "Провели первое пробное интервью.",
+      "quote": "Провели первое пробное интервью.",
+      "textStart": 0,
+      "textEnd": 32,
+      "startMs": null,
+      "endMs": null,
+      "eventKey": "4742a5123d471d00fb7db6a2ebc453ee73dcf92bbf2ff34e0505d07df24b2aae",
+      "status": "confirmed",
+      "revision": 2,
+      "createdAt": "2026-10-25T13:30:00+03:00"
+    }
+  ],
+  "progress": {
+    "goalId": "demo",
+    "goalRevision": 1,
+    "criteria": [
+      {
+        "criterionId": "cv",
+        "confirmedCount": 1,
+        "targetCount": 1,
+        "complete": true,
+        "evidenceIds": [
+          "evidence-2"
+        ]
+      },
+      {
+        "criterionId": "mock",
+        "confirmedCount": 1,
+        "targetCount": 2,
+        "complete": false,
+        "evidenceIds": [
+          "evidence-3"
+        ]
+      },
+      {
+        "criterionId": "feedback",
+        "confirmedCount": 0,
+        "targetCount": 1,
+        "complete": false,
+        "evidenceIds": []
+      }
+    ],
+    "nextStep": {
+      "text": "Провести ещё одно пробное интервью",
+      "evidenceIds": [
+        "evidence-3"
+      ],
+      "kind": "rule"
+    }
+  }
+}

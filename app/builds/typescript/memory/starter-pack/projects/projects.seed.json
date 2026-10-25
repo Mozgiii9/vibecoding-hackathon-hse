@@ -1,0 +1,32 @@
+[
+  {
+    "id": "your-agent",
+    "name": "Your Agent",
+    "icon": "sparkles"
+  },
+  {
+    "id": "finance",
+    "name": "Finance",
+    "icon": "dollar-sign"
+  },
+  {
+    "id": "fitness",
+    "name": "Fitness",
+    "icon": "dumbbell"
+  },
+  {
+    "id": "career",
+    "name": "Career",
+    "icon": "briefcase"
+  },
+  {
+    "id": "relationships",
+    "name": "Relationships",
+    "icon": "users"
+  },
+  {
+    "id": "new-project",
+    "name": "Your New Project",
+    "icon": "folder-plus"
+  }
+]
