@@ -1,0 +1,37 @@
+{
+  "serviceSourceSha": "7d5c109c438fbc70657caff8dc29bf8ad01dda0f",
+  "remoteFiles": {
+    "services/stt/src/ryadom_stt/__init__.py": {
+      "sha256": "cde592bc5860390d1d2fabe818ebb770072f18e5ff538c8a601e6707589f3d00",
+      "matchesCommit": true
+    },
+    "services/stt/src/ryadom_stt/audio.py": {
+      "sha256": "f2b38b8efcfd8fdfa61c2d566766fd76149108a16c573fd184335981c8e9d27f",
+      "matchesCommit": true
+    },
+    "services/stt/src/ryadom_stt/core.py": {
+      "sha256": "6a9b2d103660604185f2d60aa40d2e301b594d564bc45f1a16656f78275c846b",
+      "matchesCommit": true
+    },
+    "services/stt/src/ryadom_stt/heavy_lock.py": {
+      "sha256": "bee35b90bc5e71a4eaa7b037d8f5df6e4651dd4a31a9343ba140ede94cbe3307",
+      "matchesCommit": true
+    },
+    "services/stt/src/ryadom_stt/model.py": {
+      "sha256": "181ccbd8a2e0a9ea18d4bb8cbd2ecb769a2f61970fbbb3e4fb8ae3878ff93937",
+      "matchesCommit": true
+    },
+    "services/stt/src/ryadom_stt/server.py": {
+      "sha256": "47d232d3bcd589edbbb010521a02352715195f946a321e4a22ee867a59eeba5e",
+      "matchesCommit": true
+    }
+  },
+  "allSourceBytesMatchCommit": true,
+  "pyav": "18.1.0",
+  "availableDecoders": {
+    "pcm_s16le": true,
+    "mp3": true,
+    "aac": true,
+    "opus": true
+  }
+}
