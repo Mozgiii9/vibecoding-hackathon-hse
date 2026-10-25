@@ -1,10 +1,12 @@
 import { lazy, Suspense, useEffect, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 
 import { logout } from "@/api/auth-adapter";
 import { getConfig } from "@/api/config-adapter";
 import AuthFlow from "@/components/auth/AuthFlow";
-import AppShell from "@/components/layout/AppShell";
 import GoalsPage from "@/features/goals/GoalsPage";
+import ContextChatPage from "@/features/context-chat/ContextChatPage";
+import { emptyChatDraft } from "@/features/context-chat/useContextChat";
 
 const GoalDesignPreview = import.meta.env.DEV
   ? lazy(() => import("@/features/goals/GoalDesignPreview"))
@@ -21,13 +23,10 @@ export default function App() {
 
 function AuthenticatedApp() {
   const [screen, setScreen] = useState<AppScreen>("loading");
-  const [surface, setSurface] = useState<"goals" | "assistant">("goals");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [chatDraft, setChatDraft] = useState(emptyChatDraft);
   const [deploymentMode, setDeploymentMode] = useState<"local" | "managed">("local");
-  const [installMode, setInstallMode] = useState<"dev" | "local" | "prod" | "unknown">(
-    "unknown"
-  );
-  const [installLocation, setInstallLocation] = useState<"local" | "managed" | "unknown">("unknown");
-  const [appVersion, setAppVersion] = useState<string>("unknown");
 
   useEffect(() => {
     let isCancelled = false;
@@ -36,9 +35,6 @@ function AuthenticatedApp() {
         return;
       }
       setDeploymentMode(config.mode);
-      setInstallMode(config.installMode);
-      setInstallLocation(config.installLocation);
-      setAppVersion(config.appVersion);
 
       if (config.mode === "managed") {
         // Managed mode: user is already authenticated via gateway proxy headers.
@@ -65,37 +61,30 @@ function AuthenticatedApp() {
   if (screen === "auth") {
     return (
       <AuthFlow mode={deploymentMode} onAuthenticated={() => {
-        setSurface("goals");
+        setChatDraft(emptyChatDraft());
         setScreen("main");
       }} />
     );
   }
 
   function handleLogout() {
+    // Unmount the conversation immediately so a previous session cannot publish
+    // a late reply or retain an unsent private draft while logout completes.
+    setScreen("loading");
+    setChatDraft(emptyChatDraft());
     void logout().finally(() => {
       if (deploymentMode === "managed") {
         window.location.href = "/api/gateway/auth/logout";
       } else {
+        navigate("/", { replace: true });
         setScreen("auth");
       }
     });
   }
 
-  if (surface === "goals") {
-    return <GoalsPage onLogout={handleLogout} onOpenAssistant={() => setSurface("assistant")} />;
+  if (location.pathname !== "/chat") {
+    return <GoalsPage onLogout={handleLogout} onOpenAssistant={() => navigate("/chat")} />;
   }
 
-  return <>
-    <button type="button" onClick={() => setSurface("goals")}
-      className="fixed right-5 top-4 z-50 rounded-full border border-bd-border bg-bd-bg-secondary px-4 py-2 text-sm text-bd-text-primary">
-      К моей цели
-    </button>
-    <AppShell
-      deploymentMode={deploymentMode}
-      installMode={installMode}
-      installLocation={installLocation}
-      appVersion={appVersion}
-      onLogout={handleLogout}
-    />
-  </>;
+  return <ContextChatPage goalId="demo" draft={chatDraft} onDraftChange={setChatDraft} onBack={() => navigate("/")} onLogout={handleLogout} />;
 }

@@ -75,6 +75,13 @@ describe("GoalWorkspaceView", () => {
     vi.unstubAllGlobals();
   });
 
+  it("exposes the context-chat entry through the supplied navigation callback", async () => {
+    const onOpenAssistant = vi.fn();
+    render(<GoalWorkspaceView workspace={createWorkspace()} onLogout={vi.fn()} onOpenAssistant={onOpenAssistant} />);
+    await userEvent.setup().click(screen.getByRole("button", { name: "Чат с агентом" }));
+    expect(onOpenAssistant).toHaveBeenCalledOnce();
+  });
+
   it("keeps intentions out of confirmation while allowing a human to reject them", async () => {
     const user = userEvent.setup();
     const workspace = createWorkspace();

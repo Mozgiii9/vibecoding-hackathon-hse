@@ -168,7 +168,7 @@ export default function GoalWorkspaceView({ workspace, onLogout, preview = false
     <header className="gw-topbar">
       <div className="gw-brand"><BrandMark /><span>Рядом<span className="gw-brand-description">Второй мозг</span></span></div>
       <div className="gw-topbar-actions">
-        {onOpenAssistant && <button type="button" className="gw-text-button gw-assistant" onClick={onOpenAssistant}><Sparkles size={16} />Помощник</button>}
+        {onOpenAssistant && <button type="button" className="gw-text-button gw-assistant" onClick={onOpenAssistant}><Sparkles size={16} aria-hidden="true" />Чат с агентом</button>}
         <button type="button" className="gw-button gw-button-primary" onClick={openImport} disabled={!goal?.confirmedAt || disabled}><Plus size={18} />Добавить контекст</button>
         <button type="button" className="gw-text-button gw-logout" onClick={onLogout}>Выйти</button>
       </div>
