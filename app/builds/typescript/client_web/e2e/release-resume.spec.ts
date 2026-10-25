@@ -15,7 +15,7 @@ test(`${mode.toUpperCase()} restart resume: ordinary login and identical persist
   await page.locator("#identifier").fill(process.env.RELEASE_USERNAME ?? "release-synthetic-owner");
   await page.locator("#password").fill(process.env.RELEASE_PASSWORD ?? "Synthetic-Release-2026!");
   const loggedIn = page.waitForResponse((response) => response.url().endsWith("/auth/login") && response.request().method() === "POST");
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await page.getByRole("button", { name: /^(?:Sign in|Войти)$/ }).click();
   expect((await loggedIn).status()).toBe(200);
   const [goal, evidence, progress] = await Promise.all(loaded.map(async (response) => (await response).json()));
   expect({ ...goal, ...evidence, ...progress }, "Server state must equal the successful pre-restart browser checkpoint, including IDs/revisions/status/progress").toEqual(expected);

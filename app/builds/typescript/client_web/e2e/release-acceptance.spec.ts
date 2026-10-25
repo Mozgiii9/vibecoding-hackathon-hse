@@ -9,6 +9,10 @@ const title = "Приёмка: подготовиться к ML-собеседо
 const intention = "Планирую отправить резюме на ML-стажировку завтра.";
 const completed = "Сегодня я отправил резюме на ML-стажировку в компанию Учебный пример.";
 const criteria = ["Отправить резюме", "Пройти пробные интервью", "Внести исправления по обратной связи"];
+// Exact English A / Russian C (670ec69) auth copy; no permissive fallback.
+const signupButton = /^(?:Create account|Создать аккаунт)$/;
+const loginButton = /^(?:Sign in|Войти)$/;
+const invalidCredentials = /^(?:Invalid username or password\.|Неверное имя пользователя или пароль\. Проверьте их и попробуйте снова\.)$/;
 
 test.describe.configure({ mode: "serial" });
 
@@ -25,13 +29,13 @@ async function authenticate(page: Page, allowSignup = false) {
     await page.locator("#new-password").fill(password);
     await page.locator("#confirm-password").fill(password);
     const response = page.waitForResponse((item) => item.url().endsWith("/auth/signup") && item.request().method() === "POST");
-    await page.getByRole("button", { name: "Create account", exact: true }).click();
+    await page.getByRole("button", { name: signupButton }).click();
     expect((await response).status()).toBe(201);
   } else {
     await page.locator("#identifier").fill(username);
     await page.locator("#password").fill(password);
     const response = page.waitForResponse((item) => item.url().endsWith("/auth/login") && item.request().method() === "POST");
-    await page.getByRole("button", { name: "Sign in", exact: true }).click();
+    await page.getByRole("button", { name: loginButton }).click();
     expect((await response).status()).toBe(200);
   }
   await expect(page.getByRole("button", { name: "Выйти", exact: true })).toBeVisible();
@@ -100,9 +104,9 @@ test(`${mode.toUpperCase()} ordinary signup/login → three criteria → intenti
   await page.locator("#identifier").fill(username);
   await page.locator("#password").fill("wrong-synthetic-password");
   const denied = page.waitForResponse((item) => item.url().endsWith("/auth/login") && item.request().method() === "POST");
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await page.getByRole("button", { name: loginButton }).click();
   expect((await denied).status()).toBe(401);
-  await expect(page.getByText("Invalid username or password.", { exact: true })).toBeVisible();
+  await expect(page.getByText(invalidCredentials)).toBeVisible();
   await expect(page.getByRole("heading", { name: title, exact: true })).toHaveCount(0);
   await authenticate(page);
 
