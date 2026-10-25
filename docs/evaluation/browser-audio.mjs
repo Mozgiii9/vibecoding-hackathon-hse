@@ -47,9 +47,8 @@ async function observedAudioResult(index) {
   // with the locally available Chromium revision. No request/response is replaced.
   await page.waitForFunction((index) => globalThis.__ryadomAudioResults?.length > index, index, { timeout });
   const observed = await page.evaluate((index) => globalThis.__ryadomAudioResults[index], index);
-  assert.equal(observed.status, 200, 'Real audio HTTP response failed');
   assert(!observed.invalidJson, 'Real audio response was not valid JSON');
-  return observed.body;
+  return observed;
 }
 async function screenshot(name) {
   await page.screenshot({ path: path.join(out, name), fullPage: true });
@@ -151,12 +150,33 @@ try {
   await page.getByRole('button', { name: 'Аудио', exact: true }).click();
   await page.getByLabel('Название источника', { exact: true }).fill('Синтетическая аудиопроверка ML');
   await page.getByLabel('Аудиофайл', { exact: true }).setInputFiles(audio);
-  const importedResponse = page.waitForResponse(responseIs('POST', '/api/context/audio'), { timeout });
-  stage = 'audio-submit';
-  await page.getByRole('button', { name: 'Найти события', exact: true }).click();
-  stage = 'audio-response-body';
-  assert((await importedResponse).ok(), 'Real audio upload HTTP status failed');
-  const imported = await observedAudioResult(0);
+  let audioResponseCount = 0;
+  let observed;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const importedResponse = page.waitForResponse(responseIs('POST', '/api/context/audio'), { timeout });
+    stage = 'audio-submit';
+    await page.getByRole('button', { name: 'Найти события', exact: true }).click();
+    stage = 'audio-response-body';
+    await importedResponse;
+    observed = await observedAudioResult(audioResponseCount++);
+    if (observed.status === 200) break;
+    const code = observed.body?.error?.code;
+    result.audioAttempts ??= [];
+    result.audioAttempts.push({ status: observed.status, code: typeof code === 'string' ? code : 'unknown' });
+    console.log(`Audio attempt returned HTTP ${observed.status}`);
+    assert(observed.status >= 500 && attempt < 2, 'Audio import failed without successful recovery');
+    await expect(page.locator('.gw-workspace-grid')).toHaveAttribute('aria-busy', 'false', { timeout });
+    await expect(page.locator('.gw-error')).toBeVisible();
+    const { progress } = await serverRead('/api/goals/demo/progress');
+    const { evidence } = await serverRead('/api/goals/demo/evidence');
+    assert.deepEqual(counts(progress), counts(before));
+    assert.equal(evidence.length, 0);
+    check('recoverable-audio-error-no-evidence-or-progress', { status: observed.status, code });
+    // A bounded operator retry through the same visible form, never a provider fallback.
+    await page.waitForTimeout(5000);
+  }
+  assert.equal(observed.status, 200);
+  const imported = observed.body;
   stage = 'audio-result-validation';
   assert.equal(imported.duplicate, false);
   assert.equal(imported.source.kind, 'audio');
@@ -202,7 +222,9 @@ try {
   const repeatedResponse = page.waitForResponse(responseIs('POST', '/api/context/audio'), { timeout });
   await page.getByRole('button', { name: 'Найти события', exact: true }).click();
   assert((await repeatedResponse).ok(), 'Real duplicate upload HTTP status failed');
-  const repeated = await observedAudioResult(1);
+  const repeatedObservation = await observedAudioResult(audioResponseCount++);
+  assert.equal(repeatedObservation.status, 200);
+  const repeated = repeatedObservation.body;
   assert.equal(repeated.duplicate, true);
   assert.equal(repeated.source.id, imported.source.id);
   assert.equal(repeated.source.contentHash, imported.source.contentHash);
