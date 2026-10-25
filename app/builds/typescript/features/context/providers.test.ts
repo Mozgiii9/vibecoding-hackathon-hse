@@ -63,6 +63,20 @@ describe("provider configuration", () => {
       .rejects.toMatchObject({ code: "stt_unconfigured", statusCode: 503 });
     expect(fetchMock).not.toHaveBeenCalled();
   });
+
+  it("wires the separately configured local STT service independently from extraction", async () => {
+    const transcript = { text: "Отправил резюме.", segments: [] };
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(transcript)));
+    vi.stubGlobal("fetch", fetchMock);
+    const providers = createContextProviders({ stt: {
+      baseUrl: "http://127.0.0.1:19000", model: "base", apiKey: "",
+    } });
+    await expect(providers.transcribe!({ bytes: new Uint8Array([1]), mimeType: "audio/wav" }))
+      .resolves.toEqual(transcript);
+    await expect(providers.extract({ goal, source })).rejects.toMatchObject({ code: "provider_unconfigured" });
+    expect(fetchMock).toHaveBeenCalledOnce();
+    expect(fetchMock.mock.calls[0][0]).toBe("http://127.0.0.1:19000/transcribe");
+  });
 });
 
 describe("confirmed OpenAI-compatible chat completions adapter", () => {

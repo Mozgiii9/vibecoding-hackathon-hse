@@ -1,6 +1,9 @@
 import { FeatureError, type ContextProviders } from "../contracts.js";
 import { prepareExtraction, parseExtractionResponse } from "./extraction.js";
 import { validateEvidence } from "./validation.js";
+import { createLocalSttTranscriber } from "./stt.js";
+
+export { createLocalSttTranscriber } from "./stt.js";
 
 export interface ContextProviderConfig {
   protocol?: "openai-compatible" | "gemini-native";
@@ -41,10 +44,7 @@ export function createContextProviders(config: ContextProviderConfig): ContextPr
         || first[0].finish_reason === "length") throw failed();
       return validateEvidence(parseExtractionResponse(first[0].message.content), input.goal, input.source);
     },
-    async transcribe() {
-      // No separately confirmed HTTP transcription endpoint; chat support does not imply STT.
-      throw new FeatureError("stt_unconfigured", 503, "Провайдер распознавания аудио не настроен");
-    },
+    transcribe: createLocalSttTranscriber(config.stt, timeoutMs),
   };
 }
 

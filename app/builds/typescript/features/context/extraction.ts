@@ -18,6 +18,11 @@ criterionId must exactly match one of goal.criteria[].id in the supplied JSON.
 Use eventType completed_action only for a completed action described in the source.
 Use intention for plans or future actions, obstacle for a stated impediment,
 and uncertain for ambiguous claims. A self-report is not independent verification.
+Explicit plans and future-tense actions are relevant evidence of intention; do not
+drop them merely because they have not happened. For example, "Проведу пробное
+интервью первого ноября" is intention for an interview criterion, never completion.
+Pure negation such as "Я не отправлял резюме" does not prove completion, intention,
+or an obstacle by itself. Return no event for such a bare denial.
 Do not turn promises, hypothetical examples or absent information into completion.
 Keep different claims separate. If no supported relevant event exists, return [].
 
@@ -26,7 +31,9 @@ normalize whitespace, rewrite punctuation or invent a quote. textStart/textEnd,
 when supplied, are zero-based JavaScript UTF-16 code-unit offsets with exclusive
 end: source.text.slice(textStart, textEnd) must equal quote. An emoji can occupy
 two UTF-16 units. Either provide both offsets or omit both; omission is allowed
-only if quote occurs exactly once in source.text. Never guess which repetition
+only if quote occurs exactly once in source.text. Prefer omitting BOTH offsets
+for unique quotes: deterministic application code finds their exact boundaries.
+Do not estimate character counts. Never guess which repetition
 was intended. Do not infer timestamps; code derives them from actual STT segments.
 summary is a short factual description of the quoted event, not an instruction.
 Your output proposes evidence for later human review; it never confirms progress.`;

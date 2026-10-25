@@ -1,0 +1,241 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-25T11:05:01.853Z",
+  "completedAt": "2026-10-25T11:05:01.856Z",
+  "sourceSha": "92cb8bc6ecacf1bf8f1bb1f3fbe62d195db3aa5a",
+  "mode": "parser-only",
+  "configuration": {
+    "protocol": null,
+    "providerConfigured": false,
+    "keyRecorded": false,
+    "endpointRecorded": false
+  },
+  "moduleSha256": {
+    "provider": "5d23588bd69748e879dc2a83a2e4f31e140464a32433cc8ba3abc65b84dfbb23",
+    "extraction": "c8acccb68052642fffbf335bf26facc434b2a98541654746c7e17b9ec95c4925",
+    "validation": "74aaf3be1b20c8d15e7e14e34ee2f14ef0f952a85fce31d0f299c1c1ca0ae7ab",
+    "config": "868ffc3c0843df8d9b4216bac4be1bb5a0b0c62276c02722fa0b8799e5aa7585"
+  },
+  "corpusSha256": "1cae55dd36e9d17539d06359f6fae79765a5c66c0f2c3a8fb7a128746f7e07d5",
+  "summary": {
+    "total": 8,
+    "passed": 8,
+    "failed": 0,
+    "liveCalls": 0
+  },
+  "limitations": [
+    "Synthetic acceptance only; not a general model-quality benchmark.",
+    "Strict quoteMatch can fail for another valid span; quoteValid and semanticMatch are reported separately.",
+    "Validation verifies structure and source spans, not semantic truth. Human review remains required.",
+    "No store mutation, UI acceptance, STT, persistence or progress claim is made by this runner."
+  ],
+  "results": [
+    {
+      "id": "ambiguous-quote-without-offsets",
+      "mode": "validation",
+      "category": "Повторяющаяся цитата без offsets",
+      "expected": {
+        "validation": "rejected",
+        "errorCode": "provider_failed",
+        "events": [
+          {
+            "criterionId": "cv",
+            "eventType": "completed_action",
+            "quote": "Отправил резюме."
+          }
+        ]
+      },
+      "actual": {
+        "validation": "rejected",
+        "errorCode": "provider_failed",
+        "events": []
+      },
+      "parserAccepted": true,
+      "quoteValid": null,
+      "semanticMatch": null,
+      "quoteMatch": null,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 1
+    },
+    {
+      "id": "invalid-json",
+      "mode": "validation",
+      "category": "Дополнительная parser/validation проверка",
+      "expected": {
+        "validation": "rejected",
+        "errorCode": "provider_failed"
+      },
+      "actual": {
+        "validation": "rejected",
+        "errorCode": "provider_failed",
+        "events": []
+      },
+      "parserAccepted": false,
+      "quoteValid": null,
+      "semanticMatch": null,
+      "quoteMatch": null,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 0
+    },
+    {
+      "id": "unknown-criterion",
+      "mode": "validation",
+      "category": "Дополнительная parser/validation проверка",
+      "expected": {
+        "validation": "rejected",
+        "errorCode": "provider_failed"
+      },
+      "actual": {
+        "validation": "rejected",
+        "errorCode": "provider_failed",
+        "events": []
+      },
+      "parserAccepted": true,
+      "quoteValid": null,
+      "semanticMatch": null,
+      "quoteMatch": null,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 0
+    },
+    {
+      "id": "fabricated-quote",
+      "mode": "validation",
+      "category": "Дополнительная parser/validation проверка",
+      "expected": {
+        "validation": "rejected",
+        "errorCode": "provider_failed"
+      },
+      "actual": {
+        "validation": "rejected",
+        "errorCode": "provider_failed",
+        "events": []
+      },
+      "parserAccepted": true,
+      "quoteValid": null,
+      "semanticMatch": null,
+      "quoteMatch": null,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 0
+    },
+    {
+      "id": "partial-offsets",
+      "mode": "validation",
+      "category": "Дополнительная parser/validation проверка",
+      "expected": {
+        "validation": "rejected",
+        "errorCode": "provider_failed"
+      },
+      "actual": {
+        "validation": "rejected",
+        "errorCode": "provider_failed",
+        "events": []
+      },
+      "parserAccepted": true,
+      "quoteValid": null,
+      "semanticMatch": null,
+      "quoteMatch": null,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 1
+    },
+    {
+      "id": "explicit-repeat-offsets",
+      "mode": "validation",
+      "category": "Дополнительная parser/validation проверка",
+      "expected": {
+        "validation": "accepted",
+        "events": [
+          {
+            "criterionId": "cv",
+            "eventType": "completed_action",
+            "quote": "Отправил резюме."
+          }
+        ]
+      },
+      "actual": {
+        "validation": "accepted",
+        "errorCode": null,
+        "events": [
+          {
+            "criterionId": "cv",
+            "eventType": "completed_action",
+            "quote": "Отправил резюме.",
+            "textStart": 17,
+            "textEnd": 33,
+            "startMs": null,
+            "endMs": null
+          }
+        ]
+      },
+      "parserAccepted": true,
+      "quoteValid": true,
+      "semanticMatch": true,
+      "quoteMatch": true,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 0
+    },
+    {
+      "id": "utf16-explicit",
+      "mode": "validation",
+      "category": "Дополнительная parser/validation проверка",
+      "expected": {
+        "validation": "accepted",
+        "events": [
+          {
+            "criterionId": "cv",
+            "eventType": "completed_action",
+            "quote": "Отправил резюме."
+          }
+        ]
+      },
+      "actual": {
+        "validation": "accepted",
+        "errorCode": null,
+        "events": [
+          {
+            "criterionId": "cv",
+            "eventType": "completed_action",
+            "quote": "Отправил резюме.",
+            "textStart": 3,
+            "textEnd": 19,
+            "startMs": null,
+            "endMs": null
+          }
+        ]
+      },
+      "parserAccepted": true,
+      "quoteValid": true,
+      "semanticMatch": true,
+      "quoteMatch": true,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 0
+    },
+    {
+      "id": "review-status-forbidden",
+      "mode": "validation",
+      "category": "Дополнительная parser/validation проверка",
+      "expected": {
+        "validation": "rejected",
+        "errorCode": "provider_failed"
+      },
+      "actual": {
+        "validation": "rejected",
+        "errorCode": "provider_failed",
+        "events": []
+      },
+      "parserAccepted": true,
+      "quoteValid": null,
+      "semanticMatch": null,
+      "quoteMatch": null,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 0
+    }
+  ]
+}
