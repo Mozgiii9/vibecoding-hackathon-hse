@@ -1,20 +1,20 @@
 # Статус A второй итерации
 
-- Состояние: READY_FOR_INTEGRATION A1 text/A2/A3; RUNNING A4 общий кандидат+audio. Поручение владельца активировано 25 октября 2026, около 14:04 МСК.
-- Ветка: codex/qa-release, создана без изменения старых веток; исходное рабочее дерево было чистым.
-- Base SHA: 484c396e71b3fbfe2ff65c04f6260e1899aa6bd1, origin/codex/integration-ui; содержит 92cb8bc.
-- Ready SHA: `83108ad3f7d42b08c089ad79043163baeba7a26d` (A3), `f0b849bb326689e1d3dd8496e15b494bb9600dcd` (source/Docker packaging), оба опубликованы в собственной ветке.
-- PASS: backend build, MCP build; focused goals/context 209/209; отдельные goals+memory backup 62/62.
-- PASS A3: реальный GoalsStore reload/отдельный процесс, backup включает hackathon/state.json, restore в новую synthetic копию, проверки checksum/path/symlink/overlap; детали готовятся в docs/release/ACCEPTANCE.md.
-- FAIL baseline: полный backend suite 411 PASS / 3 FAIL из 414; starter-pack lint (19 нарушений шаблонов), два desktop bridge теста первоначально заблокированы sandbox loopback EPERM. Отдельный desktop bridge rerun вне sandbox PASS 20/20; baseline lint остаётся открытым.
-- PASS: MCP suite 6/6.
-- Сервер осмотрен: 1 CPU, 1967 МБ RAM, около 24 ГБ свободно; Node/Docker глобально отсутствуют; чужая среда B сохраняется. В A установлен scoped Node v22.21.1 с проверкой checksum под общим flock.
-- Порты A: UI 127.0.0.1:15073, gateway 127.0.0.1:18787; на момент первичного осмотра свободны. MCP планируются только loopback, отдельные 18911–18913.
-- Gemini: локальный live UI clean проход PASS с desktop→390px mobile, intention/action/quote/confirm/duplicate/reject/reload; один предыдущий provider_failed честно показан UI и сохранён в KNOWN_ISSUES. Production source SHA ещё проверяется.
-- PASS: backend/MCP/web build; frontend suite 215/215; packaging static/proxy/env tests 3/3 и независимый read-only review.
-- Серверный clean source-build `f93536d` PASS exit0, Linux/x64 Node22.21.1, backend/MCP/frontend/typecheck. Первый f0b849b FAIL сохранён без патча; exporter/Docker context исправлены, regression2/2 PASS.
-- Production runtime A запущен: собственный instance demo-f935, supervisor81963, gateway82006, три MCP; loopback15073/18787/18911–13. PASS health/auth401/proxy/React/release SHA smoke. Все актуальные PID читать из instance/runtime.json после restart.
-- Production live Gemini browser PASS f93536d: main1PASS/6skipped; после реального restart resume1/1PASS; backup49файлов в новую synthetic copy, checksum state совпал; restored-instance resume1/1PASS. Исходный demo-f935 остановлен/сохранён; сейчас работает restored-f935, supervisor82655. Полные evidence в docs/release/evidence/source-f935-summary.json.
-- PASS browser protocol-fake: 6 сценариев, 1 audio skipped; timeout/503/invalid JSON, revision conflict, stt_unconfigured не дают ложного прогресса. Evidence summary: docs/release/evidence/local-browser-summary.json.
-- Blocker: STT пока не передан B; финальный интегрированный кандидат C ещё не принят. Docker route NOT_RUN, готовится source launcher без Docker.
-- Следующее: A4 общий source-built SHA C с русским auth+audio B, повтор live text/audio/restart, rollback к проверенному f93536d. B7d5c109 содержит service source/corpus, ожидается рабочий live STT handoff и интеграция C. Условное включение STT/corpus в source export готовится, отдельный Python backend не создаётся. C4ac9740 объединил раннюю A packaging f0; для clean build взять и исправление f93536d.
+Обновлено 25 октября 2026 около 15:15 МСК. **A1–A4 выполнены:** общий source-build, реальный text/audio, desktop/mobile, restart, backup и отдельный restore проверены. Audio имеет статус DIAGNOSTIC_RECOVERY_PASS; исходные FAIL сохранены.
+
+- Ветка `codex/qa-release`; base `484c396e71b3fbfe2ff65c04f6260e1899aa6bd1` integration-ui с 92cb8bc. Чужие ветки/brand output сохранены.
+- Принятый общий runtime C: `ef360ae0627e35ddfe615143b5409690ac222ed8`.
+- Ready packaging driver `7f79d255b175432685e9f1cf099489ceda0cb091`; frozen release harness `59041cc9cf71d3ac3e5d3ab0e2e89725eb26d2f0`. Последний включает усиленные ID/counts/revisions/source/timing проверки и passive audio response observer.
+- Latest C при сверке — f875d3df976688cf9aafe23612fcaa3f459dcdc3, уже содержит A7f; runtime/backend/frontend/STT code идентичен принятому ef, добавлены docs/evaluation/demo/packaging driver. Приёмка именно ef, runtime f875 не запускался.
+- PASS clean source-build ef: Linux/x64 Node22.21.1, backend/MCP/frontend ci/build/typecheck exit0. Archive SHA256 `436ae171af5f5b3d400c18f2c83d6b462282f5262252f289a08a34eef034fa47`; STT source/uv.lock/corpus/evaluation включены.
+- PASS production smoke: static React/release identity/direct+proxy health/bootstrap200/anonymous goals401; один gateway+три MCP,13assets без actual provider/master values.
+- PASS live text main1/1: ordinary Russian signup/login, три критерия, Gemini intention/action/exactquote, confirm1/duplicate1/reject0/reload, desktop1440/mobile390.
+- Audio: initial UI FAIL без partial commit; один upload retry HTTP200, harness FAIL из-за inspector body cache. Свежий audio source/hash/createdAt,9real segments,3grounded events проверены; продолжение UI без upload подтвердило cv action revision1→2/counts1/0/0/reload. Итог DIAGNOSTIC_RECOVERY_PASS, оба FAIL сохранены, root cause первого сбоя UNKNOWN. Fresh duplicate=false assertion тогда не исполнился; свежесть доказана audit chain.
+- PASS реальный post-audio restart и UI resume1/1. PASS backup49files со state.json, новая restored копия, byte-identical domain state, UI resume1/1 на desktop/mobile. State SHA256 `37e63c830b1672d40b4a97197a575adcc48d4870b4de255472611fb53ecb4bfb`.
+- Сейчас работает A `instances/restored-ef`, release `releases/ef360ae`, private env `release-restored-ef.env`. Актуальный PID в runtime.json. UI15073/gateway18787/MCP18911–18913 только loopback. Original full-ef сохранён/остановлен. B/C процессы не менялись.
+- PASS ef focused backend327/327; unchanged frontend unit scope имеет C4ac226/226 PASS. PASS final protocol-fake6/audio1skip, source packaging3/export2/optional1, MCP6, persistence guards и independent review.
+- Future audio observer local HTTP>1MiB regression/typecheck PASS; новый fresh live gate с ним NOT_RUN. Baseline full backend411PASS/3FAIL сохранён, starter-pack lint19issues открыт; Docker runtime NOT_RUN. Frontend bundle warning>500kB.
+- C defense:4 слайда/сценарий прочитаны,38 с text WebM имеет metadata COMPLETED_TEXT; A full video review/трёхминутный audio backup/человеческие репетиции NOT_RUN. Это отдельный остаток C, не новая функциональность A.
+- Следующий шаг интегратору: обычный merge опубликованной qa-release с финальными specs/evidence/docs, выбрать свой demo instance по RUNBOOK и завершить комплект защиты. Новые live uploads/функции A не требуются.
+
+[ACCEPTANCE](../release/ACCEPTANCE.md) · [RUNBOOK](../release/RUNBOOK.md) · [KNOWN_ISSUES](../release/KNOWN_ISSUES.md) · [handoff](../handoffs/agent-a-wave2.md)

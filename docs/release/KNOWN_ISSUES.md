@@ -1,26 +1,26 @@
-# Открытые пункты выпуска
+# Ограничения проверенного выпуска
 
-Base: `484c396e71b3fbfe2ff65c04f6260e1899aa6bd1`, 25 октября 2026.
+Принятый общий runtime SHA: `ef360ae0627e35ddfe615143b5409690ac222ed8`,25 октября 2026. Подробные доказательства: [ACCEPTANCE](ACCEPTANCE.md).
 
-## Блокирует полную приёмку
+## Реальная модель и аудиопроверка
 
-- Реальное STT в base не реализовано: `createContextProviders().transcribe` возвращает `stt_unconfigured`. Наличие audio UI/route и fake audio SourceDraft не закрывает требование. Владелец B, wiring C; A проверяет после передачи.
-- Общий кандидат C ещё не принят. Проверки отдельной qa-release ветки не заменяют повтор полного пути на интегрированном SHA.
-- Локальный живой Gemini UI прошёл повторный clean сценарий, production server source launch находится в работе.
-- Первый live UI прогон: намерение успешно, выполненное действие вернуло `provider_failed`; пользователь увидел ошибку без частичного прогресса. Точная причина ответа не диагностирована. Второй полный проход прошёл без fallback. Это ограничение надёжности живого provider/model response; не скрыто успешным повтором. При защите доступен повтор обработки и резервная реальная запись.
-- Первый clean source build `f0b849b` выявил ошибку A packaging: export включал app/scripts, но frontend preview импортирует `docs/contracts/demo-fixture.json` из корня. Backend и MCP собраны; frontend typecheck FAIL. Исправление exporter и Docker context опубликовано в `f93536d`, regression 2/2 PASS. Новый кандидат строится отдельно; старый не патчится и не объявляется готовым.
+- Audio functional acceptance — **DIAGNOSTIC_RECOVERY_PASS**. Первый UI audio FAIL не создал source/evidence/progress. Единственный upload retry вернул HTTP200 и свежий audio source, но Chrome inspector снова потерял response body. Отдельное продолжение через UI без upload проверило transcript/3quotes/timecodes/confirm/progress/reload; true restart и новая restored копия PASS. Оба ранних FAIL сохранены.
+- Точная причина первого audio provider/UI сбоя не установлена. Отдельная non-mutating STT/Gemini диагностика PASS не объясняет его задним числом. Ранее local live и C4ac initial main имели provider_failed; повторные успехи не доказывают устранение временной нестабильности endpoint/model response.
+- Future harness читает clone фактического fetch response в странице, сохраняя original response; local>1MiB regression и typecheck PASS. Новый fresh live audio E2E с этим reader NOT_RUN. В принятом audio свежесть подтверждена source hash/createdAt/new IDs, не неисполненным duplicate=false assertion.
+- STT base/ru ошибается в словах, его transcript не исправляется под эталон. Цитата показывает основание из распознанного текста; перед confirm пользователь проверяет событие. Таймкоды только из реальных STT segments.
+- Один активный native inference. При занятом shared heavy.lock/concurrent request STT возвращает busy; gateway не коммитит partial source. HTTP timeout/abort не убивает уже начатый native inference: он завершится под lock. Decode bounded120 с, hard process deadline отсутствует. Внешний flock вокруг STT HTTP caller запрещён: inference lock берёт сервис.
 
-## Baseline и среда
+## Сборка, baseline и среда
 
-- `memory/starter-pack-draft3-layout.test.ts` падает с 19 ошибками upstream шаблонов: optional overlays, placement rules, fitness starting-position adaptation. Вне области A; исправление/решение передаётся C. Воспроизведение: cwd `app/builds/typescript`, `npm test -- memory/starter-pack-draft3-layout.test.ts`.
-- Первый полный backend run: 411 PASS, 3 FAIL / 414. Два `desktop/bridge.test.ts` падали с `listen EPERM 127.0.0.1` из-за sandbox; отдельный разрешённый rerun даёт 20 PASS. Полный suite не назван зелёным.
-- Node и npm не были в обычном PATH локальной машины. Локально применён bundled Node v24.22.1 и временный npm 10.9.4. Сервер: scoped Node v22.21.1, без глобальных обновлений.
-- Docker отсутствует локально и на тестовом сервере. Docker packaging будет проверено статически; фактический запуск необходимо отмечать отдельно. Основной доступный вариант проверки — source build без Docker.
-- Frontend production build предупреждает о JS bundle >500 kB. Сборка успешна.
+- Полный исторический backend suite:411PASS/3FAIL из 414. Starter-pack lint падает с 19 upstream template issues. Два sandbox loopbackEPERM закрыты отдельным разрешённым bridge rerun20PASS; полный suite не назван зелёным. Текущий ef focused backend327/327 PASS.
+- Docker Engine отсутствует: Docker build/runtime/container→host STT topology **NOT_RUN**. Рабочий принятый вариант — clean source-build нашего SHA. Docker packaging проверен статически и regression tests.
+- Frontend production bundle>500kB warning; build successful.
+- Первый source release f0b849b FAIL из-за отсутствующего docs/contracts fixture; сохранён без патча. Исправление f93536d и optional export7f79d25 включены в C f875; ef построен полным архивом с актуальным driver без изменения source files.
+- Git SSH иногда закрывает соединение до auth. Общие C Git objects получены read-only через API и проверены hashes; origin tracking ref может отставать. Задержка наблюдения SSH не означает остановку процесса: проверять PID/READY/health перед новым запуском.
 
-## Восстановление
+## Сохранность и демонстрация
 
-- Release backup намеренно исключает secrets/vault/master-key, `.env*`, `.git`, exports и backup archives. Он сохраняет доменную память, включая `hackathon/state.json`, и auth-state в preferences, но не переносит ключи провайдера/секретное хранилище. Ключи подключаются отдельным private env. Не использовать memory export API с реальными секретами для публичной передачи.
-- Для согласованной multi-file копии перед backup остановить только собственный gateway/launcher. Скрипт backup сам процессы не останавливает.
-- Restore принимает только новую synthetic копию; существующая пользовательская память не перезаписывается. Нужен запуск отдельной среды на восстановленном root.
-- Upstream Docker backup/restore не использовать: они ссылаются на общие `braindrive_memory`/`braindrive_secrets`.
+- Backup включает domain state и разрешённую память/auth preferences, исключает secret store/vault/master key/env/.git/exports/backup archives. Для decrypt/provider нужны отдельные приватные secrets/master key/env. Их нельзя включать в публичные материалы.
+- Для согласованной multi-file копии сначала остановить только свой supervisor. Restore только в новый synthetic root; original память никогда не перезаписывается. Использование upstream backup/restore с общими braindrive_* volumes для этой проверки запрещено.
+- Текущий A restored-ef runtime проверен; original full-ef и старые candidates сохранены/остановлены. Перед управлением читать актуальный runtime.json, historical PID не использовать автоматически.
+- C имеет 4 слайда/сценарий и опубликованный 38 с text WebM COMPLETED_TEXT. Полный просмотр A, трёхминутный резервный text+audio показ и человеческие репетиции **NOT_RUN**. Это отдельный остаток комплекта защиты C; A source/text/audio/restart/restore приёмка завершена.
