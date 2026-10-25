@@ -1,0 +1,6 @@
+// Empty until the integrator supplies the real HTTPS application URL.
+// Local.xcconfig is ignored by Git. Use https:/$()/host/ to escape xcconfig comments.
+RYADOM_APP_URL =
+PRODUCT_BUNDLE_IDENTIFIER = ru.mozgiii9.ryadom.iosdemo
+DEVELOPMENT_TEAM =
+#include? "Local.xcconfig"
