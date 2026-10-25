@@ -1,17 +1,17 @@
 # syntax=docker/dockerfile:1.7
 ARG NODE_IMAGE
 FROM ${NODE_IMAGE} AS runtime-build
-WORKDIR /src/builds/typescript
-COPY builds/typescript/package.json builds/typescript/package-lock.json builds/typescript/tsconfig.json ./
+WORKDIR /src/app/builds/typescript
+COPY app/builds/typescript/package.json app/builds/typescript/package-lock.json app/builds/typescript/tsconfig.json ./
 RUN npm ci
-COPY builds/typescript/ ./
+COPY app/builds/typescript/ ./
 RUN npm run build && npm prune --omit=dev
 
 FROM ${NODE_IMAGE} AS mcp-build
-WORKDIR /src/builds/mcp_release
-COPY builds/mcp_release/package.json builds/mcp_release/package-lock.json builds/mcp_release/tsconfig.json ./
+WORKDIR /src/app/builds/mcp_release
+COPY app/builds/mcp_release/package.json app/builds/mcp_release/package-lock.json app/builds/mcp_release/tsconfig.json ./
 RUN npm ci
-COPY builds/mcp_release/ ./
+COPY app/builds/mcp_release/ ./
 RUN npm run build && npm prune --omit=dev
 
 FROM ${NODE_IMAGE}
@@ -22,17 +22,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates
     && rm -rf /var/lib/apt/lists/* \
     && groupadd --gid 10001 ryadom && useradd --uid 10001 --gid 10001 --no-create-home ryadom
 ENV NODE_ENV=production PAA_STARTER_PACK_DIR=/app/typescript/memory/starter-pack
-COPY --from=runtime-build /src/builds/typescript/package*.json /app/typescript/
-COPY --from=runtime-build /src/builds/typescript/node_modules /app/typescript/node_modules
-COPY --from=runtime-build /src/builds/typescript/dist /app/typescript/dist
-COPY --from=runtime-build /src/builds/typescript/config.json /app/typescript/config.json
-COPY --from=runtime-build /src/builds/typescript/adapters /app/typescript/adapters
-COPY --from=runtime-build /src/builds/typescript/mcp /app/typescript/mcp
-COPY --from=runtime-build /src/builds/typescript/memory/starter-pack /app/typescript/memory/starter-pack
-COPY --from=mcp-build /src/builds/mcp_release/package*.json /app/mcp_release/
-COPY --from=mcp-build /src/builds/mcp_release/node_modules /app/mcp_release/node_modules
-COPY --from=mcp-build /src/builds/mcp_release/dist /app/mcp_release/dist
-COPY installer/hackathon/entrypoint.sh installer/hackathon/healthcheck.mjs /usr/local/lib/ryadom/
+COPY --from=runtime-build /src/app/builds/typescript/package*.json /app/typescript/
+COPY --from=runtime-build /src/app/builds/typescript/node_modules /app/typescript/node_modules
+COPY --from=runtime-build /src/app/builds/typescript/dist /app/typescript/dist
+COPY --from=runtime-build /src/app/builds/typescript/config.json /app/typescript/config.json
+COPY --from=runtime-build /src/app/builds/typescript/adapters /app/typescript/adapters
+COPY --from=runtime-build /src/app/builds/typescript/mcp /app/typescript/mcp
+COPY --from=runtime-build /src/app/builds/typescript/memory/starter-pack /app/typescript/memory/starter-pack
+COPY --from=mcp-build /src/app/builds/mcp_release/package*.json /app/mcp_release/
+COPY --from=mcp-build /src/app/builds/mcp_release/node_modules /app/mcp_release/node_modules
+COPY --from=mcp-build /src/app/builds/mcp_release/dist /app/mcp_release/dist
+COPY app/installer/hackathon/entrypoint.sh app/installer/hackathon/healthcheck.mjs /usr/local/lib/ryadom/
 RUN chmod +x /usr/local/lib/ryadom/entrypoint.sh \
     && mkdir -p /data/memory /run/paa-secrets \
     && chown -R ryadom:ryadom /app /data/memory /run/paa-secrets

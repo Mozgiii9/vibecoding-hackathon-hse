@@ -39,8 +39,10 @@ node scripts/release/launch-source.mjs /srv/ryadom-hackathon/agent-a/private.env
 
 Если Git checkout только локально: выполнить `export` локально и перенести
 полученную папку в свой workspace сервера; затем выполнить `build` уже там.
-Archive берёт только tracked файлы указанного коммита. Не переносить местные
-node_modules между macOS и Linux. Запустить builder из перенесённого release
+Archive берёт только tracked файлы указанного коммита.
+В экспорт включены `docs/contracts` — frontend импортирует оттуда demo fixture;
+repository-relative layout сохраняется и в Docker build context.
+Не переносить местные node_modules между macOS и Linux. Запустить builder из перенесённого release
 можно командой `node RELEASE/scripts/release/build-source.mjs build RELEASE`.
 
 Launcher работает в foreground; при необходимости перенаправить stdout/stderr
@@ -110,6 +112,11 @@ read-only mount именно своего volume; upstream backup scripts с о�
 `node --test scripts/release/smoke-packaging.test.mjs` проверяет private env,
 owner isolation и production HTTP edge: static files, release SHA, proxy path,
 Authorization/status/cookies и traversal protection.
+`node --test scripts/release/smoke-source-export.test.mjs` экспортирует текущий
+committed SHA в отдельную папку и запускает настоящий frontend typecheck на
+экспортированных файлах и отдельно на результате COPY шагов Docker edge.
+Для этого focused regression используются уже установленные compiler libraries;
+он не подменяет clean `npm ci` и реальный Docker build.
 `smoke-hackathon.mjs` одинаков для source/Docker: UI, release SHA, direct/proxied
 health/auth bootstrap, отказ анонимному goals API; данные не пишет.
 Это не заменяет authenticated пользовательскую приёмку, live LLM/STT,

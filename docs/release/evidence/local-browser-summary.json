@@ -1,0 +1,159 @@
+{
+  "implementationBase": "484c396e71b3fbfe2ff65c04f6260e1899aa6bd1",
+  "runtime": "isolated buildServer auth/gateway/store with Vite UI, no MCP; source-server candidate not covered",
+  "livePriorFailure": "First completed-action import returned provider_failed. UI displayed error and progress stayed zero; exact provider response cause not captured.",
+  "runs": [
+    {
+      "mode": "fake",
+      "stats": {
+        "startTime": "2026-10-25T11:14:37.060Z",
+        "duration": 8597.287,
+        "expected": 6,
+        "skipped": 1,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "specs": [
+        {
+          "title": "FAKE ordinary signup/login → three criteria → intention/action/quote/confirm → mobile duplicate/reject/reload",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 2581
+            }
+          ]
+        },
+        {
+          "title": "FAKE fault RELEASE_TIMEOUT: no success, evidence or progress increase",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 1442
+            }
+          ]
+        },
+        {
+          "title": "FAKE fault RELEASE_UNAVAILABLE: no success, evidence or progress increase",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 801
+            }
+          ]
+        },
+        {
+          "title": "FAKE fault RELEASE_INVALID: no success, evidence or progress increase",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 801
+            }
+          ]
+        },
+        {
+          "title": "FAKE setup, real revision conflict: refresh server state without false confirmation",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 648
+            }
+          ]
+        },
+        {
+          "title": "FAKE setup, unconfigured STT: upload reports error without transcript or progress",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 746
+            }
+          ]
+        },
+        {
+          "title": "LIVE audio: file → STT transcript → exact quote → confirm",
+          "results": [
+            {
+              "status": "skipped",
+              "durationMs": 91
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "live",
+      "stats": {
+        "startTime": "2026-10-25T11:11:52.012Z",
+        "duration": 30444.772,
+        "expected": 1,
+        "skipped": 6,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "specs": [
+        {
+          "title": "LIVE ordinary signup/login → three criteria → intention/action/quote/confirm → mobile duplicate/reject/reload",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 23009
+            }
+          ]
+        },
+        {
+          "title": "FAKE fault RELEASE_TIMEOUT: no success, evidence or progress increase",
+          "results": [
+            {
+              "status": "skipped",
+              "durationMs": 93
+            }
+          ]
+        },
+        {
+          "title": "FAKE fault RELEASE_UNAVAILABLE: no success, evidence or progress increase",
+          "results": [
+            {
+              "status": "skipped",
+              "durationMs": 89
+            }
+          ]
+        },
+        {
+          "title": "FAKE fault RELEASE_INVALID: no success, evidence or progress increase",
+          "results": [
+            {
+              "status": "skipped",
+              "durationMs": 89
+            }
+          ]
+        },
+        {
+          "title": "FAKE setup, real revision conflict: refresh server state without false confirmation",
+          "results": [
+            {
+              "status": "skipped",
+              "durationMs": 88
+            }
+          ]
+        },
+        {
+          "title": "FAKE setup, unconfigured STT: upload reports error without transcript or progress",
+          "results": [
+            {
+              "status": "skipped",
+              "durationMs": 86
+            }
+          ]
+        },
+        {
+          "title": "LIVE audio: file → STT transcript → exact quote → confirm",
+          "results": [
+            {
+              "status": "skipped",
+              "durationMs": 86
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
