@@ -1,4 +1,6 @@
 import { FeatureError, type ContextProviders } from "../contracts.js";
+import { prepareExtraction, parseExtractionResponse } from "./extraction.js";
+import { validateEvidence } from "./validation.js";
 
 export interface ContextProviderConfig {
   protocol?: "openai-compatible" | "gemini-native";
@@ -9,13 +11,38 @@ export interface ContextProviderConfig {
   stt?: { baseUrl: string; model: string; apiKey: string };
 }
 
-/** Provider-specific wiring awaits the owner's confirmed protocol and endpoint. */
-export function createContextProviders(_config: ContextProviderConfig): ContextProviders {
+function chatEndpoint(config: ContextProviderConfig): string | null {
+  if (config.protocol !== "openai-compatible" || !config.baseUrl?.trim()
+    || !config.model?.trim() || !config.apiKey?.trim() || /[\r\n]/.test(config.apiKey)) return null;
+  try {
+    const url = new URL(config.baseUrl);
+    if (!["http:", "https:"].includes(url.protocol) || url.search || url.hash || url.username || url.password) return null;
+    url.pathname = `${url.pathname.replace(/\/+$/, "")}/chat/completions`;
+    return url.toString();
+  } catch { return null; }
+}
+
+/** The owner confirmed OpenAI-compatible chat completions; no provider/model defaults or fallback. */
+export function createContextProviders(config: ContextProviderConfig): ContextProviders {
+  const endpoint = chatEndpoint(config);
+  const { apiKey, model, timeoutMs } = config;
   return {
-    async extract() {
-      throw new FeatureError("provider_unconfigured", 503, "Провайдер извлечения не настроен");
+    async extract(input) {
+      if (!endpoint) throw new FeatureError("provider_unconfigured", 503, "Провайдер извлечения не настроен");
+      const response = await requestProviderJson({
+        url: endpoint,
+        headers: { Authorization: `Bearer ${apiKey}` },
+        body: { model, messages: prepareExtraction(input), stream: false },
+        signal: input.signal,
+        timeoutMs,
+      });
+      const first = (response as { choices?: Array<{ message?: { content?: unknown }; finish_reason?: unknown }> } | null)?.choices;
+      if (!Array.isArray(first) || typeof first[0]?.message?.content !== "string"
+        || first[0].finish_reason === "length") throw failed();
+      return validateEvidence(parseExtractionResponse(first[0].message.content), input.goal, input.source);
     },
     async transcribe() {
+      // No separately confirmed HTTP transcription endpoint; chat support does not imply STT.
       throw new FeatureError("stt_unconfigured", 503, "Провайдер распознавания аудио не настроен");
     },
   };
@@ -33,7 +60,7 @@ interface JsonRequest {
 
 const failed = () => new FeatureError("provider_failed", 502, "Ошибка ответа провайдера");
 
-/** Shared transport for a future confirmed adapter; no fallback or automatic retries. */
+/** Shared bounded transport; no fallback or automatic retries. */
 export async function requestProviderJson(input: JsonRequest): Promise<unknown> {
   const timeoutMs = input.timeoutMs ?? 30_000;
   const maxBytes = input.maxResponseBytes ?? 262_144;

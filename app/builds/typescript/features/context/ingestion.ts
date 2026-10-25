@@ -6,8 +6,8 @@ export const AUDIO_MIME_TYPES = new Set(["audio/wav", "audio/mpeg", "audio/mp4",
 export type ContextDependencies = { store: ContextStore; providers: ContextProviders };
 
 export function contentHash(kind: SourceDraft["kind"], bytes: Uint8Array): string {
-  // API_V1 specifies the literal backslash + zero separator (bytes 5c 30).
-  return createHash("sha256").update(kind).update("\\0").update(bytes).digest("hex");
+  // NUL separator matches all canonical demo-fixture contentHash vectors.
+  return createHash("sha256").update(kind).update("\0").update(bytes).digest("hex");
 }
 
 function parseInput<T>(result: { success: true; data: T } | { success: false }): T {
