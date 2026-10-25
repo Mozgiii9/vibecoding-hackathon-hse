@@ -57,6 +57,9 @@ async function createGoal(page: Page) {
 async function progress(page: Page, counts: number[]) {
   for (let index = 0; index < counts.length; index++) {
     await expect(page.getByRole("progressbar", { name: criteria[index], exact: true })).toHaveAttribute("aria-valuenow", String(counts[index]));
+    // The progressbar caps aria-valuenow at targetCount; the numeric label must
+    // also remain exact, otherwise duplicate overcounting could be hidden.
+    await expect(page.locator(".gw-criteria > li").nth(index).locator(".gw-criterion-count strong")).toHaveText(String(counts[index]));
   }
 }
 
@@ -78,7 +81,9 @@ async function checkpointAfterReload(page: Page) {
   const responses = paths.map((suffix) => page.waitForResponse((response) => response.url().endsWith(suffix) && response.request().method() === "GET" && response.ok()));
   await page.reload();
   const [goal, evidence, progress] = await Promise.all(responses.map(async (response) => (await response).json()));
-  await writeFile(process.env.RELEASE_STATE_FILE ?? `/private/tmp/ryadom-release-browser-state-${mode}.json`, JSON.stringify({ ...goal, ...evidence, ...progress }, null, 2), { mode: 0o600 });
+  const checkpoint = { ...goal, ...evidence, ...progress };
+  await writeFile(process.env.RELEASE_STATE_FILE ?? `/private/tmp/ryadom-release-browser-state-${mode}.json`, JSON.stringify(checkpoint, null, 2), { mode: 0o600 });
+  return checkpoint;
 }
 
 test(`${mode.toUpperCase()} ordinary signup/login → three criteria → intention/action/quote/confirm → mobile duplicate/reject/reload`, async ({ page }, info) => {
@@ -123,7 +128,10 @@ test(`${mode.toUpperCase()} ordinary signup/login → three criteria → intenti
   await expect(page.locator("#gw-source .gw-source-timecode")).toHaveCount(0);
   const reviewed = page.waitForResponse((item) => item.url().endsWith(`/evidence/${action.id}`) && item.request().method() === "PATCH");
   await card.getByRole("button", { name: "Подтвердить", exact: true }).click();
-  expect((await reviewed).ok()).toBe(true);
+  const confirmedResponse = await reviewed;
+  expect(confirmedResponse.ok()).toBe(true);
+  const confirmed = (await confirmedResponse.json()).evidence;
+  expect(confirmed).toMatchObject({ id: action.id, sourceId: action.sourceId, status: "confirmed", revision: action.revision + 1 });
   await progress(page, [1, 0, 0]);
 
   await page.setViewportSize({ width: 390, height: 844 });
@@ -131,16 +139,26 @@ test(`${mode.toUpperCase()} ordinary signup/login → three criteria → intenti
   const countBefore = await page.locator(".gw-event").count();
   const repeated = await importText(page, "Повтор исходного действия", completed);
   expect(repeated.ok()).toBe(true);
-  expect((await repeated.json()).duplicate).toBe(true);
+  const duplicate = await repeated.json();
+  expect(duplicate.duplicate).toBe(true);
+  expect(duplicate.source.id).toBe(payload.source.id);
+  expect(duplicate.source.contentHash).toBe(payload.source.contentHash);
+  expect(duplicate.evidence.map((item: { id: string }) => item.id).sort()).toEqual(payload.evidence.map((item: { id: string }) => item.id).sort());
   await expect(page.getByText("Этот источник уже импортирован. Повторные события не добавлены.", { exact: true })).toBeVisible();
   await expect(page.locator(".gw-event")).toHaveCount(countBefore);
   await progress(page, [1, 0, 0]);
   await card.getByRole("button", { name: /Посмотреть источник|Источник открыт/ }).click();
   await expect(page.locator("#gw-source mark")).toHaveText(action.quote);
+  const rejection = page.waitForResponse((item) => item.url().endsWith(`/evidence/${action.id}`) && item.request().method() === "PATCH");
   await card.getByRole("button", { name: "Отклонить", exact: true }).click();
+  const rejectedResponse = await rejection;
+  expect(rejectedResponse.ok()).toBe(true);
+  const rejected = (await rejectedResponse.json()).evidence;
+  expect(rejected).toMatchObject({ id: action.id, sourceId: action.sourceId, status: "rejected", revision: confirmed.revision + 1 });
   await expect(card.getByText("Отклонено", { exact: true })).toBeVisible();
   await progress(page, [0, 0, 0]);
-  await checkpointAfterReload(page);
+  const persisted = await checkpointAfterReload(page);
+  expect(persisted.evidence.find((item: { id: string }) => item.id === action.id)).toEqual(rejected);
   await expect(page.getByRole("heading", { name: title, exact: true })).toBeVisible();
   await expect(card.getByText("Отклонено", { exact: true })).toBeVisible();
   await expect(page.locator(".gw-event")).toHaveCount(countBefore);

@@ -23,9 +23,10 @@ test(`${mode.toUpperCase()} restart resume: ordinary login and identical persist
   await expect(page.locator(".gw-event")).toHaveCount(expected.evidence.length);
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
-    for (const criterion of expected.goal.criteria) {
+    for (const [index, criterion] of expected.goal.criteria.entries()) {
       const count = expected.progress.criteria.find((entry: { criterionId: string }) => entry.criterionId === criterion.id);
       await expect(page.getByRole("progressbar", { name: criterion.description, exact: true })).toHaveAttribute("aria-valuenow", String(Math.min(count.confirmedCount, count.targetCount)));
+      await expect(page.locator(".gw-criteria > li").nth(index).locator(".gw-criterion-count strong")).toHaveText(String(count.confirmedCount));
     }
     for (const item of expected.evidence) {
       const card = page.locator(".gw-event").filter({ has: page.getByRole("heading", { name: item.summary, exact: true }) });
