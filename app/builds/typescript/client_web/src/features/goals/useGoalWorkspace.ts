@@ -15,6 +15,8 @@ export interface GoalWorkspace {
   progress: Progress | null;
   source: Source | null;
   selectedEvidenceId: string | null;
+  /** True after this goal's first successful load, including an absent goal. */
+  hasLoaded: boolean;
   status: GoalWorkspaceStatus;
   busy: GoalWorkspaceBusy;
   error: string | null;
@@ -44,7 +46,7 @@ interface RequestScope {
 function emptyState(goalId: string): WorkspaceState {
   return {
     goalId, version: 0, goal: null, evidence: [], progress: null, source: null,
-    selectedEvidenceId: null, status: "loading", busy: null, error: null, notice: null,
+    selectedEvidenceId: null, hasLoaded: false, status: "loading", busy: null, error: null, notice: null,
   };
 }
 
@@ -90,7 +92,7 @@ export function useGoalWorkspace(goalId: string): GoalWorkspace {
       scope.selectedEvidenceId = evidence.some((item) => item.id === scope.selectedEvidenceId)
         ? scope.selectedEvidenceId : null;
       setState((previous) => ({
-        ...previous, goalId, goal, evidence, progress, status: "ready", error: null,
+        ...previous, goalId, goal, evidence, progress, hasLoaded: true, status: "ready", error: null,
         source: null, version: previous.version + 1,
         selectedEvidenceId: scope.selectedEvidenceId,
       }));
@@ -208,7 +210,7 @@ export function useGoalWorkspace(goalId: string): GoalWorkspace {
 
   return {
     goal: current.goal, evidence: current.evidence, progress: current.progress,
-    source: current.source, selectedEvidenceId: current.selectedEvidenceId,
+    source: current.source, selectedEvidenceId: current.selectedEvidenceId, hasLoaded: current.hasLoaded,
     status: current.status, busy: current.busy, error: current.error, notice: current.notice,
     refresh, saveGoal, importText, importAudio, reviewEvidence, selectEvidence,
   };

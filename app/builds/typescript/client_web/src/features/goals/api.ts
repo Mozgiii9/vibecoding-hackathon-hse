@@ -206,7 +206,7 @@ export async function reviewEvidence(evidenceId: string, input: ReviewEvidenceIn
 export async function importText(input: TextImportInput, signal?: AbortSignal): Promise<ImportResult> {
   encodedId(input.goalId);
   validateTimestamp(input.capturedAt);
-  if (!input.text.trim() || input.text.length > 50_000 || input.title.length > 200) {
+  if (!input.text.trim() || input.text.length > 50_000 || !input.title.trim() || input.title.length > 200) {
     throw new GoalsApiError("invalid_request", 400);
   }
   return requestImport("/context/import", {
@@ -217,7 +217,7 @@ export async function importText(input: TextImportInput, signal?: AbortSignal): 
 export async function importAudio(input: AudioImportInput, signal?: AbortSignal): Promise<ImportResult> {
   encodedId(input.goalId);
   validateTimestamp(input.capturedAt);
-  if (input.title.length > 200 || input.file.size === 0) throw new GoalsApiError("invalid_request", 400);
+  if (!input.title.trim() || input.title.length > 200 || input.file.size === 0) throw new GoalsApiError("invalid_request", 400);
   if (input.file.size > MAX_AUDIO_BYTES) throw new GoalsApiError("file_too_large", 413);
   if (!(AUDIO_MIME_TYPES as readonly string[]).includes(input.file.type)) {
     throw new GoalsApiError("unsupported_media_type", 415);

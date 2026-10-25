@@ -44,7 +44,7 @@ const progress: Progress = {
 function createWorkspace(overrides: Partial<GoalWorkspace> = {}): GoalWorkspace {
   return {
     goal, evidence: [completed, intention], progress, source: null, selectedEvidenceId: null,
-    status: "ready", busy: null, error: null, notice: null,
+    hasLoaded: true, status: "ready", busy: null, error: null, notice: null,
     refresh: vi.fn<GoalWorkspace["refresh"]>().mockResolvedValue(undefined),
     saveGoal: vi.fn<GoalWorkspace["saveGoal"]>().mockResolvedValue(undefined),
     importText: vi.fn<GoalWorkspace["importText"]>().mockResolvedValue(undefined),
@@ -154,6 +154,51 @@ describe("GoalWorkspaceView", () => {
       ],
       confirm: true, expectedRevision: null,
     });
+  });
+
+  it("offers retry without exposing goal creation after a failed initial load", async () => {
+    const user = userEvent.setup();
+    const workspace = createWorkspace({
+      goal: null, evidence: [], progress: null, hasLoaded: false,
+      status: "error", error: "Не удалось связаться с сервером.",
+    });
+    const { rerender } = render(<GoalWorkspaceView workspace={workspace} onLogout={vi.fn()} />);
+
+    expect(screen.getByRole("alert")).toHaveTextContent(workspace.error!);
+    expect(screen.queryByLabelText("Моя цель")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Подтвердить цель и критерии" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Обновить данные" }));
+    expect(workspace.refresh).toHaveBeenCalledOnce();
+    expect(workspace.saveGoal).not.toHaveBeenCalled();
+
+    rerender(<GoalWorkspaceView workspace={{ ...workspace, hasLoaded: true, status: "ready", error: null }} onLogout={vi.fn()} />);
+    expect(screen.getByLabelText("Моя цель")).toBeVisible();
+  });
+
+  it("keeps the goal draft mounted after a failed save and during retry", async () => {
+    const user = userEvent.setup();
+    const workspace = createWorkspace({ goal: null, evidence: [], progress: null });
+    const { rerender } = render(<GoalWorkspaceView workspace={workspace} onLogout={vi.fn()} />);
+    await user.click(screen.getByRole("button", { name: /Заполнить пример/ }));
+    const title = screen.getByLabelText("Моя цель");
+    await user.clear(title);
+    await user.type(title, "Мой сохранённый черновик");
+    await user.click(screen.getByRole("button", { name: "Подтвердить цель и критерии" }));
+
+    rerender(<GoalWorkspaceView workspace={{ ...workspace, status: "error", error: "Не удалось связаться с сервером." }} onLogout={vi.fn()} />);
+    expect(screen.getByLabelText("Моя цель")).toBe(title);
+    expect(title).toHaveValue("Мой сохранённый черновик");
+    expect(title).toBeEnabled();
+
+    rerender(<GoalWorkspaceView workspace={{ ...workspace, status: "loading" }} onLogout={vi.fn()} />);
+    expect(screen.getByLabelText("Моя цель")).toBe(title);
+    expect(title).toHaveValue("Мой сохранённый черновик");
+    expect(title).toBeDisabled();
+
+    rerender(<GoalWorkspaceView workspace={workspace} onLogout={vi.fn()} />);
+    await user.click(screen.getByRole("button", { name: "Подтвердить цель и критерии" }));
+    expect(workspace.saveGoal).toHaveBeenCalledTimes(2);
+    expect(workspace.saveGoal).toHaveBeenLastCalledWith(expect.objectContaining({ title: "Мой сохранённый черновик" }));
   });
 
   it("imports the raw draft with the real goal ID and preserves it after a provider error", async () => {

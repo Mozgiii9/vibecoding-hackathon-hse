@@ -29,7 +29,7 @@ export default function GoalDesignPreview() {
   const workspace: GoalWorkspace = {
     goal, evidence, progress: fixture.progress as Progress,
     source: sources.find((source) => source.id === selectedEvidence?.sourceId) ?? null,
-    selectedEvidenceId: selectedId, status: "ready", busy: null, error: null,
+    selectedEvidenceId: selectedId, hasLoaded: true, status: "ready", busy: null, error: null,
     notice: null, refresh: readOnly, saveGoal: readOnly, importText: readOnly,
     importAudio: readOnly, reviewEvidence: readOnly, selectEvidence: setSelectedId,
   };

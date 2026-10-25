@@ -67,11 +67,36 @@ describe("useGoalWorkspace", () => {
 
     await waitFor(() => expect(result.current.status).toBe("ready"));
     expect(result.current).toMatchObject({
-      goal: null, evidence: [], progress: null, source: null, selectedEvidenceId: null, error: null,
+      goal: null, hasLoaded: true, evidence: [], progress: null, source: null, selectedEvidenceId: null, error: null,
     });
     expect(api.listEvidence).not.toHaveBeenCalled();
     expect(api.getProgress).not.toHaveBeenCalled();
     expect(api.getSource).not.toHaveBeenCalled();
+  });
+
+  it("distinguishes a failed initial load from a failed save after loading an empty goal", async () => {
+    vi.mocked(api.getGoal).mockRejectedValueOnce(new api.GoalsApiError("network_error", 0));
+    const { result } = renderHook(() => useGoalWorkspace("demo"));
+    await waitFor(() => expect(result.current.status).toBe("error"));
+    expect(result.current.hasLoaded).toBe(false);
+
+    vi.mocked(api.getGoal).mockResolvedValue(null);
+    await act(async () => result.current.refresh());
+    expect(result.current).toMatchObject({ goal: null, hasLoaded: true, status: "ready" });
+
+    vi.mocked(api.saveGoal).mockRejectedValueOnce(new api.GoalsApiError("network_error", 0));
+    await act(async () => result.current.saveGoal({ ...goalWrite, expectedRevision: null }));
+    expect(result.current).toMatchObject({ goal: null, hasLoaded: true, status: "error", busy: null });
+  });
+
+  it("clears the loaded state when switching to a goal whose initial load fails", async () => {
+    const { result, rerender } = renderHook(({ id }) => useGoalWorkspace(id), { initialProps: { id: "demo" } });
+    await waitFor(() => expect(result.current.hasLoaded).toBe(true));
+
+    vi.mocked(api.getGoal).mockRejectedValueOnce(new api.GoalsApiError("network_error", 0));
+    rerender({ id: "next" });
+    await waitFor(() => expect(result.current.status).toBe("error"));
+    expect(result.current).toMatchObject({ goal: null, hasLoaded: false });
   });
 
   it("ignores a late source response after selection changes, even when the transport ignores abort", async () => {

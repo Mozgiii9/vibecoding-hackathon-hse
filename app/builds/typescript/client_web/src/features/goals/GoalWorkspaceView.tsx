@@ -138,7 +138,7 @@ export default function GoalWorkspaceView({ workspace, onLogout, preview = false
   const [importOpen, setImportOpen] = useState(false);
   const sourceRef = useRef<HTMLElement>(null);
   const importRef = useRef<HTMLDivElement>(null);
-  const { goal, evidence, progress, source, selectedEvidenceId, busy, status, error, notice } = workspace;
+  const { goal, evidence, progress, source, selectedEvidenceId, hasLoaded, busy, status, error, notice } = workspace;
   const selectedEvidence = evidence.find((item) => item.id === selectedEvidenceId);
   const reviewCount = evidence.filter((item) => item.status === "proposed" || item.status === "disputed").length;
   const visibleEvidence = filter === "all" ? evidence : evidence.filter((item) => item.status === "proposed" || item.status === "disputed");
@@ -180,7 +180,7 @@ export default function GoalWorkspaceView({ workspace, onLogout, preview = false
         {notice && <p className="gw-notice">{notice}</p>}
         {busy && <p className="gw-busy"><span className="gw-busy-dot" />{busy === "importing" ? "Ищем события в источнике. Это может занять немного времени." : busy === "reviewing" ? "Сохраняем проверку и обновляем прогресс…" : "Сохраняем вашу цель…"}</p>}
       </div>}
-      {!goal && status === "loading" ? <div className="gw-loading" aria-label="Загружаем цель" role="status"><span>Собираем ваш контекст…</span><div className="gw-skeleton gw-skeleton-heading" /><div className="gw-skeleton-columns">{[0, 1, 2].map((item) => <div className="gw-skeleton" key={item} />)}</div></div> : !goal ? status === "ready" || error ? <GoalForm workspace={workspace} disabled={disabled} /> : null : <>
+      {!goal && !hasLoaded && status === "loading" ? <div className="gw-loading" aria-label="Загружаем цель" role="status"><span>Собираем ваш контекст…</span><div className="gw-skeleton gw-skeleton-heading" /><div className="gw-skeleton-columns">{[0, 1, 2].map((item) => <div className="gw-skeleton" key={item} />)}</div></div> : !goal ? hasLoaded ? <GoalForm workspace={workspace} disabled={disabled} /> : null : <>
         <div className="gw-greeting"><p>Маленькие шаги тоже считаются</p><span className="gw-greeting-line" /><span className="gw-greeting-caption">Ваш путь к важному</span></div>
         <div ref={importRef} hidden={!importOpen}><ImportForm workspace={workspace} goal={goal} preview={preview} onClose={() => setImportOpen(false)} /></div>
         {!goal.confirmedAt && <section className="gw-confirm-goal"><div><h2>Подтвердим точку назначения?</h2><p>Проверьте цель и три критерия ниже. После подтверждения можно добавить контекст.</p></div><button type="button" className="gw-button gw-button-primary" disabled={disabled} onClick={() => void workspace.saveGoal({ title: goal.title, deadline: goal.deadline, criteria: goal.criteria, confirm: true, expectedRevision: goal.revision })}>Подтвердить цель <Check size={16} /></button></section>}

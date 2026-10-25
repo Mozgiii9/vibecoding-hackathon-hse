@@ -129,6 +129,17 @@ describe("goal API adapter", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it.each(["", " \n\t "])("rejects a blank source title before sending text or audio: %j", async (title) => {
+    fetchMock.mockResolvedValue(reply(result));
+    const file = new File(["synthetic audio"], "note.wav", { type: "audio/wav" });
+
+    await expect(importText({ goalId: "demo", title, text: "Действие выполнено." }))
+      .rejects.toMatchObject({ code: "invalid_request", status: 400 });
+    await expect(importAudio({ goalId: "demo", title, file }))
+      .rejects.toMatchObject({ code: "invalid_request", status: 400 });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("surfaces provider/conflict codes without leaking upstream messages or stacks", async () => {
     for (const [code, status] of [["stt_unconfigured", 503], ["revision_conflict", 409], ["provider_failed", 502]] as const) {
       fetchMock.mockResolvedValueOnce(reply({ error: { code, message: "SECRET upstream trace", stack: "SECRET" } }, status));
