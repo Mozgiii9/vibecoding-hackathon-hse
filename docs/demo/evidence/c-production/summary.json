@@ -119,12 +119,11 @@
       }
     },
     "physicalIphone": {
-      "status": "DEVICE_LOGIN_PENDING_RECHECK",
-      "tlsAndLoginScreen": "CONFIRMED_BY_OWNER",
-      "ordinaryLogin": "ERROR_REPORTED_BY_OWNER",
-      "textAudioOnDevice": "NOT_RUN",
-      "resultFile": "https-iphone-status.json",
-      "sameCredentialsFreshPublicChromeLogin": "PASS"
+      "status": "PHONE_AUTH_AND_WORKSPACE_CONFIRMED",
+      "ordinaryLogin": "CONFIRMED_BY_OWNER",
+      "goalAndEvents": "CONFIRMED_BY_OWNER",
+      "textAudioOnDevice": "PENDING_OWNER_CHECK",
+      "resultFile": "https-iphone-status.json"
     }
   }
 }

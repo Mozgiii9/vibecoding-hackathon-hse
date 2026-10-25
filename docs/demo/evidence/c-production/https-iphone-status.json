@@ -1,12 +1,15 @@
 {
-  "updatedAt": "2026-10-25T13:23:10.333Z",
+  "updatedAt": "2026-10-25T13:27:42.915Z",
   "origin": "https://77.239.111.64",
   "physicalDevice": {
     "tlsAndLoginScreen": "CONFIRMED_BY_OWNER",
-    "ordinaryLogin": "ERROR_REPORTED_BY_OWNER",
+    "ordinaryLogin": "CONFIRMED_BY_OWNER",
     "reportedError": "Ошибка неверное имя пользователя или пароль",
     "text": "NOT_RUN",
-    "audio": "NOT_RUN"
+    "audio": "NOT_RUN",
+    "goalAndEvents": "CONFIRMED_BY_OWNER",
+    "ownerReport": "Да, на iPhone вижу цель и события",
+    "ownerImportCheckReport": "Пока не проверял"
   },
   "integratorRecheck": {
     "providedCredentialsMatchPrivateTestEnv": true,
@@ -20,8 +23,8 @@
     "identifierAutoCapitalization": "NOT_SUPPORTED_BY_OBSERVED_FAILURES",
     "basis": "Recent failed logins passed identifier comparison and failed password verification."
   },
-  "nextStep": "Owner confirms whether subsequent successful login at 16:19 MSK was the physical iPhone, then tests text/audio. No password reset, auth bypass or app restart.",
-  "status": "DEVICE_LOGIN_PENDING_RECHECK",
+  "nextStep": "Owner tests text import and selecting/uploading a short test audio file on iPhone. No password reset, auth bypass or application restart.",
+  "status": "PHONE_AUTH_AND_WORKSPACE_CONFIRMED",
   "audit": {
     "source": "Own restored C memory diagnostics/audit",
     "retainedFieldsOnly": [

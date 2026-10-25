@@ -1,6 +1,6 @@
 # Готовность полноценного MVP «Рядом»
 
-Проверка входа на iPhone: после сообщения владельца об ошибке интегратор повторно вошёл через публичный Chrome с теми же демоданными. В собственном audit C недавние отказы имеют причину `password_mismatch`; логин совпадал. В 16:19 МСК зафиксирован последующий успешный вход, его принадлежность телефону ожидает подтверждения владельца. Физические text/audio пока NOT_RUN. [Текущий результат устройства](../demo/evidence/c-production/https-iphone-status.json).
+Физический iPhone: владелец подтвердил обычный вход и отображение цели с событиями — **PHONE_AUTH_AND_WORKSPACE_CONFIRMED**, login **PASS_BY_OWNER**. Предшествовавшие отказы имели причину `password_mismatch`; аккаунт и приложение не менялись. Импорт текста и выбор/загрузка аудио на устройстве — **PENDING_OWNER_CHECK**. [Текущий результат устройства](../demo/evidence/c-production/https-iphone-status.json).
 
 **Основной MVP ACCEPTED интегратором, 25 октября 2026, 15:24 МСК.** Production source **eba453c** прошёл C-проверки текста, реального аудио, review/duplicate, reload, backup и старта восстановленной копии; mobile390 без переполнения. [Точные доказательства](../demo/evidence/c-production/summary.json), [handoff C](../handoffs/agent-c-wave2.md), [запуск](../demo/OPERATIONS.md).
 
@@ -10,7 +10,7 @@
 
 Публичный реальный text-сценарий **COMPLETED_TEXT**: новый источник, точная цитата, confirm и mock **1→2**, [проверки публичного текста](../demo/defense/recordings/https-eba453c/metadata.json) и [проверенная HTTPS-запись](../demo/defense/recordings/https-eba453c/completed-text/demo.webm). Независимое декодирование: **11,20 с, 1440×900**, реальный UI в начале/середине/конце; небольшое серое поле, как у оригинала. Белое изображение было артефактом Chrome media viewer; QA файла закрыта. Прежняя production-текстовая запись также остаётся резервом.
 
-Свежая публичная аудиопроверка **PASS_FRESH_AUDIO**: [6 проверок за 82,23 с](../demo/evidence/c-production/https-audio-results.json), обычный вход, старый WAV duplicate с прежними ID/counts, свежий WAV с изменёнными байтами и реальными STT/Gemini, точные цитаты и таймкоды, proposals без роста; confirm cv1→2, повтор с теми же ID/counts, reload сохраняет auth/данные. Итог **cv2/mock2/feedback0**. Владелец сообщил: «Приложение открылось, требуется вход». Физический iPhone **PHONE_LOGIN_SCREEN_CONFIRMED**, обычная авторизация, текст и аудио на устройстве ещё не проверены. Основной MVP принят, вся расширенная цель остаётся ACTIVE.
+Свежая публичная аудиопроверка **PASS_FRESH_AUDIO**: [6 проверок за 82,23 с](../demo/evidence/c-production/https-audio-results.json), обычный вход, старый WAV duplicate с прежними ID/counts, свежий WAV с изменёнными байтами и реальными STT/Gemini, точные цитаты и таймкоды, proposals без роста; confirm cv1→2, повтор с теми же ID/counts, reload сохраняет auth/данные. Итог **cv2/mock2/feedback0**. Новое сообщение владельца: «Да, на iPhone вижу цель и события». Физический iPhone **PHONE_AUTH_AND_WORKSPACE_CONFIRMED**, login **PASS_BY_OWNER**. Прежние отказы password_mismatch сохраняются как история, аккаунт и приложение не менялись. Импорт текста и выбор/загрузка аудио на устройстве — **PENDING_OWNER_CHECK**. Основной MVP принят, вся расширенная цель остаётся ACTIVE.
 
 Согласованный основной объём включает текст **и** короткое аудио. Ручная форма цели и следующий шаг по правилу допустимы в v1. LLM-интервью/модельный коучинг, continuous recording и OAuth не входят в текущую реализацию.
 
@@ -24,7 +24,7 @@
 | Надёжность и ошибки | Атомарный JSON-store, bounded transport, состояния ошибок | Restart/restore PASS. A отдельно проверил protocol-fake негативные сценарии, это не live provider quality | A+B+C |
 | Наш воспроизводимый выпуск | Source-built Linux/x64 Node22.21.1, без Vite/upstream images | PASS C: manifest/release identity, backup49files, restore только в новую synthetic копию, совпадение core-state SHA256 | A; общий выпуск C |
 | Интерфейс | Тёплый тёмный responsive React | PASS C: desktop/mobile390, точный source/quote и counts после restore. A-authored resume на точном C выполнен C, PASS1/1 | C; независимо A на ef360ae |
-| Публичный HTTPS | Отдельный TLS proxy на 443, source UI/API eba453c неизменён, HTTP landing сохранён | PUBLIC_HTTPS_READY: trusted IP SAN/TLS1.3, UI/assets/SHA и auth guard PASS; реальный text COMPLETED_TEXT, mock1→2; public audio PASS_FRESH_AUDIO 6/6, cv1→2; физический iPhone PHONE_LOGIN_SCREEN_CONFIRMED, auth/text/audio pending | C; независимая HTTP(S)-проверка C2; устройство проверяет владелец |
+| Публичный HTTPS | Отдельный TLS proxy на 443, source UI/API eba453c неизменён, HTTP landing сохранён | PUBLIC_HTTPS_READY: trusted IP SAN/TLS1.3, UI/assets/SHA и auth guard PASS; реальный text COMPLETED_TEXT, mock1→2; public audio PASS_FRESH_AUDIO 6/6, cv1→2; физический iPhone PHONE_AUTH_AND_WORKSPACE_CONFIRMED, login PASS_BY_OWNER; device text/audio imports PENDING_OWNER_CHECK | C; независимая HTTP(S)-проверка C2; устройство проверяет владелец |
 | Защита | Четыре экрана, script, synthetic корпус и короткие text WebM | Материалы есть. Полный трёхминутный text+audio ролик, человеческие репетиции и физический проектор NOT_RUN | B корпус; C комплект |
 
 ## Сквозной сценарий приёмки
@@ -40,7 +40,7 @@
 
 ## Что остаётся после core-приёмки
 
-- Публичный HTTPS — PUBLIC_HTTPS_READY; свежий public audio — PASS_FRESH_AUDIO. На физическом iPhone подтверждён только экран входа: PHONE_LOGIN_SCREEN_CONFIRMED; обычная авторизация, текст и аудио pending. Расширенная цель ACTIVE, не COMPLETE.
+- Публичный HTTPS — PUBLIC_HTTPS_READY; свежий public audio — PASS_FRESH_AUDIO. На физическом iPhone подтверждены вход и рабочая область: PHONE_AUTH_AND_WORKSPACE_CONFIRMED, login PASS_BY_OWNER. Импорт текста и выбор/загрузка аудио на устройстве PENDING_OWNER_CHECK. Расширенная цель ACTIVE, не COMPLETE.
 - Сертификат shortlived действует до 2026-11-01T03:48:08Z. Автопродление и старт proxy после перезагрузки не настроены, см. HTTPS_PLAN.md.
 - Команда: две человеческие репетиции, физический проектор и полный резервный text+audio ролик, без фиктивных отметок PASS.
 - Ограничения: Docker runtime не запускался, полный backend suite не объявлен зелёным из-за документированного baseline. Sidecar B не отменяет native inference при клиентском abort.

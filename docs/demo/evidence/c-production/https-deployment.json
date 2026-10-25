@@ -38,7 +38,7 @@
     "liveText": "COMPLETED_TEXT",
     "freshAudio": "PASS_FRESH_AUDIO (6 checks)"
   },
-  "physicalIphone": "Login screen confirmed; invalid-credentials error reported; same credentials fresh public Chrome UI PASS; device recheck pending",
+  "physicalIphone": "Owner confirmed ordinary login and goal/events visible after earlier password mismatch; device text/audio pending",
   "initialHarnessAttempt": {
     "status": "FAIL",
     "stage": "ordinary-ui-auth",
