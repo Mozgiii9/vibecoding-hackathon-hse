@@ -1,0 +1,45 @@
+{
+  "sourceCommit": "7427469091fa1d562661cf245cac414050ff42e2",
+  "sourceReport": "docs/evaluation/common-candidate-artifacts/results.json",
+  "status": "PASS",
+  "testedSha": "ef360ae0627e35ddfe615143b5409690ac222ed8",
+  "startedAt": "2026-10-25T11:38:07.522Z",
+  "finishedAt": "2026-10-25T11:38:59.386Z",
+  "checks": [
+    {
+      "name": "ordinary-ui-clean-signup",
+      "status": "PASS"
+    },
+    {
+      "name": "ordinary-ui-logout-login",
+      "status": "PASS"
+    },
+    {
+      "name": "ui-goal-confirmed-zero-server-progress",
+      "status": "PASS"
+    },
+    {
+      "name": "real-ui-audio-stt-extraction-exact-quotes",
+      "status": "PASS"
+    },
+    {
+      "name": "ui-source-open-manual-confirm-server-progress",
+      "status": "PASS"
+    },
+    {
+      "name": "duplicate-audio-same-source-evidence-no-progress-growth",
+      "status": "PASS"
+    },
+    {
+      "name": "browser-reload-preserves-auth-goal-evidence-progress",
+      "status": "PASS"
+    }
+  ],
+  "limitations": [
+    "Browser acceptance does not prove process restart, backup/restore, or all MVP criteria.",
+    "Duplicate identity/progress is observed. STT/extraction call counts require independent service telemetry."
+  ],
+  "originalScreenshot": "docs/evaluation/common-candidate-artifacts/03-duplicate-and-reload.png",
+  "publishedScreenshot": "landing/assets/product-audio-verified.png",
+  "screenshotSha256": "f96fe83b4b1a904ac6ce4cf0e3ba46b5392b6a3d11f57dad707fcce12d924ea4"
+}

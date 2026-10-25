@@ -1,0 +1,38 @@
+{
+  "checkedAt": "2026-10-25T12:02:20.756Z",
+  "sourceSha": "c4e5cb59c26c87a54c1758a92364844522e348b8",
+  "baseUrl": "http://77.239.111.64/",
+  "metadata": "PASS",
+  "exactPublicFileMatch": [
+    {
+      "file": "index.html",
+      "bytes": 19932,
+      "sha256": "725d2cc6558c82da0fee5e9a6080560cd4465b4916c8cc3294dfba60b15d935a"
+    },
+    {
+      "file": "styles.css",
+      "bytes": 18792,
+      "sha256": "239476f278ca418ebad54068322227ccb5c059aab0aee7e5d03f7d2854d592cf"
+    },
+    {
+      "file": "app.js",
+      "bytes": 7490,
+      "sha256": "b5a7eac5448dfaff320630d540345a5f5b85c2952ec79a901c6d580ebc05a012"
+    },
+    {
+      "file": "config.js",
+      "bytes": 194,
+      "sha256": "60e22c01626671c1ac5044e63bb2b0fb2adf23d8b9bec88c2cf5727f3daaefb5"
+    },
+    {
+      "file": "assets/favicon.svg",
+      "bytes": 295,
+      "sha256": "9ab00211959864f061e4f524185f3a2694cd01421c60c8e45d9742b6e65d6afd"
+    },
+    {
+      "file": "assets/og-image.png",
+      "bytes": 62134,
+      "sha256": "4de7792c79769960b7028b8a5f65da879b2088f2bf6177d4a27844887f2c6ddd"
+    }
+  ]
+}

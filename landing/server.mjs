@@ -13,6 +13,10 @@ const files = new Map([
   ["/app.js", ["app.js", "text/javascript; charset=utf-8"]],
   ["/assets/favicon.svg", ["assets/favicon.svg", "image/svg+xml"]],
   ["/assets/og-image.png", ["assets/og-image.png", "image/png"]],
+  [
+    "/assets/product-audio-verified.png",
+    ["assets/product-audio-verified.png", "image/png"],
+  ],
 ]);
 const port = Number(process.env.PORT || 4178);
 const host = process.env.HOST || "127.0.0.1";

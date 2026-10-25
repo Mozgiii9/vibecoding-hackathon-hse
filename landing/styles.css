@@ -809,6 +809,43 @@ summary:hover {
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+.product-section {
+  padding-top: 0;
+}
+.product-figure {
+  margin-top: 32px;
+}
+.product-figure > a {
+  display: block;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.product-figure img {
+  width: 100%;
+  height: auto;
+}
+.product-figure figcaption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding-top: 12px;
+  text-align: left;
+}
+.product-caption {
+  color: var(--muted);
+  font-size: 13px;
+  max-width: 78ch;
+  margin-top: 12px;
+}
+@media (max-width: 760px) {
+  .product-figure figcaption {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+}
 @media (min-width: 1600px) {
   .hero {
     padding-top: 100px;

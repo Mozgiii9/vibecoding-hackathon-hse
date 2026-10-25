@@ -1,0 +1,92 @@
+{
+  "checkedAt": "2026-10-25T12:03:07.651Z",
+  "baseUrl": "http://77.239.111.64/",
+  "method": "WCAG sRGB contrast, computed CSS colors composited over ancestor backgrounds; representative visible text, 390px",
+  "results": [
+    {
+      "selector": ".hero h1",
+      "fontSize": 47,
+      "ratio": 14.87
+    },
+    {
+      "selector": ".hero-description",
+      "fontSize": 15,
+      "ratio": 7.78
+    },
+    {
+      "selector": ".hero .eyebrow",
+      "fontSize": 12,
+      "ratio": 7.78
+    },
+    {
+      "selector": ".pending",
+      "fontSize": 12,
+      "ratio": 6.5
+    },
+    {
+      "selector": ".text-link",
+      "fontSize": 13,
+      "ratio": 14.87
+    },
+    {
+      "selector": ".source-note>p",
+      "fontSize": 21,
+      "ratio": 10.77
+    },
+    {
+      "selector": ".source-note mark",
+      "fontSize": 21,
+      "ratio": 8.98
+    },
+    {
+      "selector": "figcaption",
+      "fontSize": 12,
+      "ratio": 7.32
+    },
+    {
+      "selector": ".demo-disclosure",
+      "fontSize": 12,
+      "ratio": 7.32
+    },
+    {
+      "selector": ".demo-goal h3",
+      "fontSize": 21,
+      "ratio": 14.87
+    },
+    {
+      "selector": ".goal-footnote",
+      "fontSize": 12,
+      "ratio": 7.78
+    },
+    {
+      "selector": ".state-tag",
+      "fontSize": 12,
+      "ratio": 9.33
+    },
+    {
+      "selector": ".demo-explanation p",
+      "fontSize": 13,
+      "ratio": 7.78
+    },
+    {
+      "selector": ".button-primary",
+      "fontSize": 12,
+      "ratio": 9.75
+    },
+    {
+      "selector": ".demo-status",
+      "fontSize": 12,
+      "ratio": 8.46
+    },
+    {
+      "selector": ".release-date",
+      "fontSize": 12,
+      "ratio": 7.32
+    },
+    {
+      "selector": ".site-footer .attribution",
+      "fontSize": 12,
+      "ratio": 7.78
+    }
+  ]
+}
