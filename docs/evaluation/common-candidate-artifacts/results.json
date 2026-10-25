@@ -1,0 +1,220 @@
+{
+  "status": "PASS",
+  "startedAt": "2026-10-25T11:38:07.522Z",
+  "baseUrl": "http://127.0.0.1:16073",
+  "gitSha": "ef360ae0627e35ddfe615143b5409690ac222ed8",
+  "trackedTreeDirty": false,
+  "runnerSha256": "fb20e14c782f17eed3814dc8235f9f55356e9b5cf970a56c6cad2ccad9a47cbc",
+  "audioSha256": "889c89021c3a64f384a6056a7307b32faae3394dbae44882d5109561359b1577",
+  "checks": [
+    {
+      "name": "ordinary-ui-clean-signup",
+      "status": "PASS"
+    },
+    {
+      "name": "ordinary-ui-logout-login",
+      "status": "PASS"
+    },
+    {
+      "name": "ui-goal-confirmed-zero-server-progress",
+      "status": "PASS",
+      "goalId": "demo",
+      "criteria": [
+        {
+          "id": "cv",
+          "description": "Отправить резюме",
+          "targetCount": 1,
+          "unit": "отправка"
+        },
+        {
+          "id": "mock",
+          "description": "Пройти пробные интервью",
+          "targetCount": 2,
+          "unit": "интервью"
+        },
+        {
+          "id": "feedback",
+          "description": "Внести исправления по обратной связи",
+          "targetCount": 1,
+          "unit": "исправление"
+        }
+      ],
+      "counts": {
+        "cv": 0,
+        "mock": 0,
+        "feedback": 0
+      }
+    },
+    {
+      "name": "real-ui-audio-stt-extraction-exact-quotes",
+      "status": "PASS",
+      "source": {
+        "kind": "audio",
+        "title": "Синтетическая аудиопроверка ML",
+        "contentHash": "914abb335f921ba97e3ca227b726a72b7196f2253c8a7ed8dbf162be6957c73a",
+        "text": "Это учебная запись для демонстрации помощника. Сегодня я отправил резюме на стажировку. Рекрутир подтвердил, что получил резюме. Сегодня мы также провели первые пробные интервью с другом. Во время интервью я ответил на вопросы промашенные обучения. После встречи я записал замечание, но правки по обратной связи пока не внес. Завтра хочу повторить сложные темы и подготовить исправление. Второй пробное интервью еще не проводили. Мне нужно сначала разобрать ошибки, а затем договориться о новой встрече.",
+        "capturedAt": null,
+        "segments": [
+          {
+            "startMs": 0,
+            "endMs": 4980,
+            "textStart": 0,
+            "textEnd": 46
+          },
+          {
+            "startMs": 4980,
+            "endMs": 9220,
+            "textStart": 47,
+            "textEnd": 87
+          },
+          {
+            "startMs": 9220,
+            "endMs": 13720,
+            "textStart": 88,
+            "textEnd": 128
+          },
+          {
+            "startMs": 13720,
+            "endMs": 19320,
+            "textStart": 129,
+            "textEnd": 187
+          },
+          {
+            "startMs": 19320,
+            "endMs": 25380,
+            "textStart": 188,
+            "textEnd": 248
+          },
+          {
+            "startMs": 25380,
+            "endMs": 32380,
+            "textStart": 249,
+            "textEnd": 325
+          },
+          {
+            "startMs": 32380,
+            "endMs": 38380,
+            "textStart": 326,
+            "textEnd": 387
+          },
+          {
+            "startMs": 38380,
+            "endMs": 43380,
+            "textStart": 388,
+            "textEnd": 429
+          },
+          {
+            "startMs": 43380,
+            "endMs": 50380,
+            "textStart": 430,
+            "textEnd": 503
+          }
+        ],
+        "id": "bf7ceb66-5949-4014-aa4f-3f98c2d7b835",
+        "goalId": "demo",
+        "createdAt": "2026-10-25T11:38:57.978Z"
+      },
+      "evidence": [
+        {
+          "criterionId": "cv",
+          "eventType": "completed_action",
+          "summary": "Отправил резюме на стажировку",
+          "quote": "Сегодня я отправил резюме на стажировку.",
+          "textStart": 47,
+          "textEnd": 87,
+          "startMs": 4980,
+          "endMs": 9220,
+          "id": "6ca78b6d-566b-4b1d-940f-25bac1dd9fc0",
+          "goalId": "demo",
+          "sourceId": "bf7ceb66-5949-4014-aa4f-3f98c2d7b835",
+          "eventKey": "86194d5bb58082ca90673ea4c98f8f882a9ef346f543342be48c022edac28bde",
+          "status": "proposed",
+          "revision": 1,
+          "createdAt": "2026-10-25T11:38:57.978Z"
+        },
+        {
+          "criterionId": "mock",
+          "eventType": "completed_action",
+          "summary": "Провел первое пробное интервью с другом",
+          "quote": "Сегодня мы также провели первые пробные интервью с другом.",
+          "textStart": 129,
+          "textEnd": 187,
+          "startMs": 13720,
+          "endMs": 19320,
+          "id": "a16c0719-2a3e-436d-b343-e4fe6fe7ca28",
+          "goalId": "demo",
+          "sourceId": "bf7ceb66-5949-4014-aa4f-3f98c2d7b835",
+          "eventKey": "f2ee5b0e9426f998a7fb0222db785c682e4e3aa682a062e613cc5df417b77e2a",
+          "status": "proposed",
+          "revision": 1,
+          "createdAt": "2026-10-25T11:38:57.978Z"
+        },
+        {
+          "criterionId": "feedback",
+          "eventType": "intention",
+          "summary": "Планирует повторить сложные темы и подготовить исправления завтра",
+          "quote": "Завтра хочу повторить сложные темы и подготовить исправление.",
+          "textStart": 326,
+          "textEnd": 387,
+          "startMs": 32380,
+          "endMs": 38380,
+          "id": "9410c7f8-e7f9-4128-9f47-d6f3ae79370f",
+          "goalId": "demo",
+          "sourceId": "bf7ceb66-5949-4014-aa4f-3f98c2d7b835",
+          "eventKey": "e2e520e87c375fce7ff959074de8a9be74c90d7d6e8669d7353f97fdbcad8d56",
+          "status": "proposed",
+          "revision": 1,
+          "createdAt": "2026-10-25T11:38:57.978Z"
+        }
+      ],
+      "proposedCounts": {
+        "cv": 0,
+        "mock": 0,
+        "feedback": 0
+      }
+    },
+    {
+      "name": "ui-source-open-manual-confirm-server-progress",
+      "status": "PASS",
+      "evidenceId": "6ca78b6d-566b-4b1d-940f-25bac1dd9fc0",
+      "quote": "Сегодня я отправил резюме на стажировку.",
+      "criterionId": "cv",
+      "counts": {
+        "cv": 1,
+        "mock": 0,
+        "feedback": 0
+      }
+    },
+    {
+      "name": "duplicate-audio-same-source-evidence-no-progress-growth",
+      "status": "PASS",
+      "sourceId": "bf7ceb66-5949-4014-aa4f-3f98c2d7b835",
+      "evidenceCount": 3,
+      "counts": {
+        "cv": 1,
+        "mock": 0,
+        "feedback": 0
+      },
+      "sttCallCount": "NOT_OBSERVABLE_FROM_BROWSER"
+    },
+    {
+      "name": "browser-reload-preserves-auth-goal-evidence-progress",
+      "status": "PASS",
+      "counts": {
+        "cv": 1,
+        "mock": 0,
+        "feedback": 0
+      }
+    }
+  ],
+  "screenshots": [
+    "01-real-transcript-exact-quote.png",
+    "02-manually-confirmed-server-progress.png",
+    "03-duplicate-and-reload.png"
+  ],
+  "limitations": [
+    "Browser acceptance does not prove process restart, backup/restore, or all MVP criteria.",
+    "Duplicate identity/progress is observed. STT/extraction call counts require independent service telemetry."
+  ],
+  "finishedAt": "2026-10-25T11:38:59.386Z"
+}

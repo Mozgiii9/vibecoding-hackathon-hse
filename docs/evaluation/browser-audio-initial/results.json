@@ -1,0 +1,61 @@
+{
+  "status": "FAIL",
+  "startedAt": "2026-10-25T11:21:08.784Z",
+  "baseUrl": "http://127.0.0.1:16073",
+  "gitSha": "7d5c109c438fbc70657caff8dc29bf8ad01dda0f",
+  "trackedTreeDirty": false,
+  "runnerSha256": "1abbdfda4e1627f5449c7a3e8eba33c9bee7236654deca1a53343269795658d4",
+  "audioSha256": "889c89021c3a64f384a6056a7307b32faae3394dbae44882d5109561359b1577",
+  "checks": [
+    {
+      "name": "ordinary-ui-clean-signup",
+      "status": "PASS"
+    },
+    {
+      "name": "ordinary-ui-logout-login",
+      "status": "PASS"
+    },
+    {
+      "name": "ui-goal-confirmed-zero-server-progress",
+      "status": "PASS",
+      "goalId": "demo",
+      "criteria": [
+        {
+          "id": "cv",
+          "description": "Отправить резюме",
+          "targetCount": 1,
+          "unit": "отправка"
+        },
+        {
+          "id": "mock",
+          "description": "Пройти пробные интервью",
+          "targetCount": 2,
+          "unit": "интервью"
+        },
+        {
+          "id": "feedback",
+          "description": "Внести исправления по обратной связи",
+          "targetCount": 1,
+          "unit": "исправление"
+        }
+      ],
+      "counts": {
+        "cv": 0,
+        "mock": 0,
+        "feedback": 0
+      }
+    }
+  ],
+  "screenshots": [
+    "failure-after-auth.png"
+  ],
+  "limitations": [
+    "Browser acceptance does not prove process restart, backup/restore, or all MVP criteria.",
+    "Duplicate identity/progress is observed. STT/extraction call counts require independent service telemetry."
+  ],
+  "failure": {
+    "stage": "real-audio-upload",
+    "type": "BROWSER_OR_RUNTIME_FAILED"
+  },
+  "finishedAt": "2026-10-25T11:21:54.624Z"
+}
