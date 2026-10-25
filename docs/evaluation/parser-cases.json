@@ -1,0 +1,11 @@
+{
+  "cases": [
+    { "id": "invalid-json", "text": "Отправил резюме.", "rawResponse": "```json\n[]\n```", "expected": { "validation": "rejected", "errorCode": "provider_failed" } },
+    { "id": "unknown-criterion", "text": "Отправил резюме.", "proposals": [{ "criterionId": "invented", "eventType": "completed_action", "summary": "Отправлено", "quote": "Отправил резюме." }], "expected": { "validation": "rejected", "errorCode": "provider_failed" } },
+    { "id": "fabricated-quote", "text": "Хочу отправить резюме.", "proposals": [{ "criterionId": "cv", "eventType": "completed_action", "summary": "Отправлено", "quote": "Отправил резюме." }], "expected": { "validation": "rejected", "errorCode": "provider_failed" } },
+    { "id": "partial-offsets", "text": "Отправил резюме.", "proposals": [{ "criterionId": "cv", "eventType": "completed_action", "summary": "Отправлено", "quote": "Отправил резюме.", "textStart": 0 }], "expected": { "validation": "rejected", "errorCode": "provider_failed" } },
+    { "id": "explicit-repeat-offsets", "text": "Отправил резюме. Отправил резюме.", "proposals": [{ "criterionId": "cv", "eventType": "completed_action", "summary": "Отправлено", "quote": "Отправил резюме.", "textStart": 17, "textEnd": 33 }], "expected": { "validation": "accepted", "events": [{ "criterionId": "cv", "eventType": "completed_action", "quote": "Отправил резюме." }] } },
+    { "id": "utf16-explicit", "text": "😀 Отправил резюме.", "proposals": [{ "criterionId": "cv", "eventType": "completed_action", "summary": "Отправлено", "quote": "Отправил резюме.", "textStart": 3, "textEnd": 19 }], "expected": { "validation": "accepted", "events": [{ "criterionId": "cv", "eventType": "completed_action", "quote": "Отправил резюме." }] } },
+    { "id": "review-status-forbidden", "text": "Отправил резюме.", "proposals": [{ "criterionId": "cv", "eventType": "completed_action", "summary": "Отправлено", "quote": "Отправил резюме.", "status": "confirmed" }], "expected": { "validation": "rejected", "errorCode": "provider_failed" } }
+  ]
+}

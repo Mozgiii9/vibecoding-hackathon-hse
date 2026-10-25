@@ -1,0 +1,1 @@
+"""Internal speech transcription sidecar."""

@@ -1,0 +1,542 @@
+{
+  "schemaVersion": 1,
+  "startedAt": "2026-10-25T11:10:13.963Z",
+  "completedAt": "2026-10-25T11:11:00.913Z",
+  "sourceSha": "92cb8bc6ecacf1bf8f1bb1f3fbe62d195db3aa5a",
+  "mode": "live-and-parser",
+  "configuration": {
+    "protocol": "openai-compatible",
+    "providerConfigured": true,
+    "keyRecorded": false,
+    "endpointRecorded": false
+  },
+  "moduleSha256": {
+    "provider": "5d23588bd69748e879dc2a83a2e4f31e140464a32433cc8ba3abc65b84dfbb23",
+    "extraction": "3e798c3fa8f21b80f39f52c68870c2048feaeb120359790412457359ab87efca",
+    "validation": "74aaf3be1b20c8d15e7e14e34ee2f14ef0f952a85fce31d0f299c1c1ca0ae7ab",
+    "config": "868ffc3c0843df8d9b4216bac4be1bb5a0b0c62276c02722fa0b8799e5aa7585"
+  },
+  "corpusSha256": "1cae55dd36e9d17539d06359f6fae79765a5c66c0f2c3a8fb7a128746f7e07d5",
+  "summary": {
+    "total": 17,
+    "passed": 17,
+    "failed": 0,
+    "liveCalls": 9
+  },
+  "limitations": [
+    "Synthetic acceptance only; not a general model-quality benchmark.",
+    "Strict quoteMatch can fail for another valid span; quoteValid and semanticMatch are reported separately.",
+    "Validation verifies structure and source spans, not semantic truth. Human review remains required.",
+    "No store mutation, UI acceptance, STT, persistence or progress claim is made by this runner."
+  ],
+  "results": [
+    {
+      "id": "completed-action",
+      "mode": "live",
+      "category": "Выполненное действие",
+      "expected": {
+        "validation": "accepted",
+        "events": [
+          {
+            "criterionId": "cv",
+            "eventType": "completed_action",
+            "quote": "Отправил резюме."
+          }
+        ]
+      },
+      "actual": {
+        "validation": "accepted",
+        "errorCode": null,
+        "events": [
+          {
+            "criterionId": "cv",
+            "eventType": "completed_action",
+            "quote": "Отправил резюме.",
+            "textStart": 0,
+            "textEnd": 16,
+            "startMs": null,
+            "endMs": null
+          }
+        ]
+      },
+      "parserAccepted": null,
+      "quoteValid": true,
+      "semanticMatch": true,
+      "quoteMatch": true,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 5177
+    },
+    {
+      "id": "intention",
+      "mode": "live",
+      "category": "Намерение",
+      "expected": {
+        "validation": "accepted",
+        "events": [
+          {
+            "criterionId": "cv",
+            "eventType": "intention",
+            "quote": "Хочу отправить резюме."
+          }
+        ]
+      },
+      "actual": {
+        "validation": "accepted",
+        "errorCode": null,
+        "events": [
+          {
+            "criterionId": "cv",
+            "eventType": "intention",
+            "quote": "Хочу отправить резюме.",
+            "textStart": 0,
+            "textEnd": 22,
+            "startMs": null,
+            "endMs": null
+          }
+        ]
+      },
+      "parserAccepted": null,
+      "quoteValid": true,
+      "semanticMatch": true,
+      "quoteMatch": true,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 5316
+    },
+    {
+      "id": "negation",
+      "mode": "live",
+      "category": "Отрицание не создаёт факт выполнения",
+      "expected": {
+        "validation": "accepted",
+        "events": []
+      },
+      "actual": {
+        "validation": "accepted",
+        "errorCode": null,
+        "events": []
+      },
+      "parserAccepted": null,
+      "quoteValid": true,
+      "semanticMatch": true,
+      "quoteMatch": true,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 2946
+    },
+    {
+      "id": "future-date",
+      "mode": "live",
+      "category": "Будущая дата",
+      "expected": {
+        "validation": "accepted",
+        "events": [
+          {
+            "criterionId": "mock",
+            "eventType": "intention",
+            "quote": "Первого ноября 2026 года проведу пробное интервью."
+          }
+        ]
+      },
+      "actual": {
+        "validation": "accepted",
+        "errorCode": null,
+        "events": [
+          {
+            "criterionId": "mock",
+            "eventType": "intention",
+            "quote": "Первого ноября 2026 года проведу пробное интервью.",
+            "textStart": 0,
+            "textEnd": 50,
+            "startMs": null,
+            "endMs": null
+          }
+        ]
+      },
+      "parserAccepted": null,
+      "quoteValid": true,
+      "semanticMatch": true,
+      "quoteMatch": true,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 5074
+    },
+    {
+      "id": "obstacle",
+      "mode": "live",
+      "category": "Препятствие",
+      "expected": {
+        "validation": "accepted",
+        "events": [
+          {
+            "criterionId": "mock",
+            "eventType": "obstacle",
+            "quote": "Не могу провести пробное интервью: партнёр заболел."
+          }
+        ]
+      },
+      "actual": {
+        "validation": "accepted",
+        "errorCode": null,
+        "events": [
+          {
+            "criterionId": "mock",
+            "eventType": "obstacle",
+            "quote": "Не могу провести пробное интервью: партнёр заболел.",
+            "textStart": 0,
+            "textEnd": 51,
+            "startMs": null,
+            "endMs": null
+          }
+        ]
+      },
+      "parserAccepted": null,
+      "quoteValid": true,
+      "semanticMatch": true,
+      "quoteMatch": true,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 6248
+    },
+    {
+      "id": "uncertain",
+      "mode": "live",
+      "category": "Неизвестность",
+      "expected": {
+        "validation": "accepted",
+        "events": [
+          {
+            "criterionId": "cv",
+            "eventType": "uncertain",
+            "quote": "Не уверен, отправил ли резюме."
+          }
+        ]
+      },
+      "actual": {
+        "validation": "accepted",
+        "errorCode": null,
+        "events": [
+          {
+            "criterionId": "cv",
+            "eventType": "uncertain",
+            "quote": "Не уверен, отправил ли резюме.",
+            "textStart": 0,
+            "textEnd": 30,
+            "startMs": null,
+            "endMs": null
+          }
+        ]
+      },
+      "parserAccepted": null,
+      "quoteValid": true,
+      "semanticMatch": true,
+      "quoteMatch": true,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 6910
+    },
+    {
+      "id": "similar-criterion",
+      "mode": "live",
+      "category": "Правки резюме отличаются от отправки резюме",
+      "expected": {
+        "validation": "accepted",
+        "events": [
+          {
+            "criterionId": "feedback",
+            "eventType": "completed_action",
+            "quote": "Внёс правки в резюме по обратной связи."
+          }
+        ]
+      },
+      "actual": {
+        "validation": "accepted",
+        "errorCode": null,
+        "events": [
+          {
+            "criterionId": "feedback",
+            "eventType": "completed_action",
+            "quote": "Внёс правки в резюме по обратной связи.",
+            "textStart": 0,
+            "textEnd": 39,
+            "startMs": null,
+            "endMs": null
+          }
+        ]
+      },
+      "parserAccepted": null,
+      "quoteValid": true,
+      "semanticMatch": true,
+      "quoteMatch": true,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 6087
+    },
+    {
+      "id": "ambiguous-quote-without-offsets",
+      "mode": "validation",
+      "category": "Повторяющаяся цитата без offsets",
+      "expected": {
+        "validation": "rejected",
+        "errorCode": "provider_failed",
+        "events": [
+          {
+            "criterionId": "cv",
+            "eventType": "completed_action",
+            "quote": "Отправил резюме."
+          }
+        ]
+      },
+      "actual": {
+        "validation": "rejected",
+        "errorCode": "provider_failed",
+        "events": []
+      },
+      "parserAccepted": true,
+      "quoteValid": null,
+      "semanticMatch": null,
+      "quoteMatch": null,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 0
+    },
+    {
+      "id": "instructions-in-source",
+      "mode": "live",
+      "category": "Инструкция внутри источника",
+      "expected": {
+        "validation": "accepted",
+        "events": []
+      },
+      "actual": {
+        "validation": "accepted",
+        "errorCode": null,
+        "events": []
+      },
+      "parserAccepted": null,
+      "quoteValid": true,
+      "semanticMatch": true,
+      "quoteMatch": true,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 3642
+    },
+    {
+      "id": "unicode-quote",
+      "mode": "live",
+      "category": "Кириллица и emoji / UTF-16",
+      "expected": {
+        "validation": "accepted",
+        "events": [
+          {
+            "criterionId": "mock",
+            "eventType": "completed_action",
+            "quote": "Провели первое пробное интервью."
+          }
+        ]
+      },
+      "actual": {
+        "validation": "accepted",
+        "errorCode": null,
+        "events": [
+          {
+            "criterionId": "mock",
+            "eventType": "completed_action",
+            "quote": "Провели первое пробное интервью.",
+            "textStart": 3,
+            "textEnd": 35,
+            "startMs": null,
+            "endMs": null
+          }
+        ]
+      },
+      "parserAccepted": null,
+      "quoteValid": true,
+      "semanticMatch": true,
+      "quoteMatch": true,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 5548
+    },
+    {
+      "id": "invalid-json",
+      "mode": "validation",
+      "category": "Дополнительная parser/validation проверка",
+      "expected": {
+        "validation": "rejected",
+        "errorCode": "provider_failed"
+      },
+      "actual": {
+        "validation": "rejected",
+        "errorCode": "provider_failed",
+        "events": []
+      },
+      "parserAccepted": false,
+      "quoteValid": null,
+      "semanticMatch": null,
+      "quoteMatch": null,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 0
+    },
+    {
+      "id": "unknown-criterion",
+      "mode": "validation",
+      "category": "Дополнительная parser/validation проверка",
+      "expected": {
+        "validation": "rejected",
+        "errorCode": "provider_failed"
+      },
+      "actual": {
+        "validation": "rejected",
+        "errorCode": "provider_failed",
+        "events": []
+      },
+      "parserAccepted": true,
+      "quoteValid": null,
+      "semanticMatch": null,
+      "quoteMatch": null,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 0
+    },
+    {
+      "id": "fabricated-quote",
+      "mode": "validation",
+      "category": "Дополнительная parser/validation проверка",
+      "expected": {
+        "validation": "rejected",
+        "errorCode": "provider_failed"
+      },
+      "actual": {
+        "validation": "rejected",
+        "errorCode": "provider_failed",
+        "events": []
+      },
+      "parserAccepted": true,
+      "quoteValid": null,
+      "semanticMatch": null,
+      "quoteMatch": null,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 0
+    },
+    {
+      "id": "partial-offsets",
+      "mode": "validation",
+      "category": "Дополнительная parser/validation проверка",
+      "expected": {
+        "validation": "rejected",
+        "errorCode": "provider_failed"
+      },
+      "actual": {
+        "validation": "rejected",
+        "errorCode": "provider_failed",
+        "events": []
+      },
+      "parserAccepted": true,
+      "quoteValid": null,
+      "semanticMatch": null,
+      "quoteMatch": null,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 0
+    },
+    {
+      "id": "explicit-repeat-offsets",
+      "mode": "validation",
+      "category": "Дополнительная parser/validation проверка",
+      "expected": {
+        "validation": "accepted",
+        "events": [
+          {
+            "criterionId": "cv",
+            "eventType": "completed_action",
+            "quote": "Отправил резюме."
+          }
+        ]
+      },
+      "actual": {
+        "validation": "accepted",
+        "errorCode": null,
+        "events": [
+          {
+            "criterionId": "cv",
+            "eventType": "completed_action",
+            "quote": "Отправил резюме.",
+            "textStart": 17,
+            "textEnd": 33,
+            "startMs": null,
+            "endMs": null
+          }
+        ]
+      },
+      "parserAccepted": true,
+      "quoteValid": true,
+      "semanticMatch": true,
+      "quoteMatch": true,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 0
+    },
+    {
+      "id": "utf16-explicit",
+      "mode": "validation",
+      "category": "Дополнительная parser/validation проверка",
+      "expected": {
+        "validation": "accepted",
+        "events": [
+          {
+            "criterionId": "cv",
+            "eventType": "completed_action",
+            "quote": "Отправил резюме."
+          }
+        ]
+      },
+      "actual": {
+        "validation": "accepted",
+        "errorCode": null,
+        "events": [
+          {
+            "criterionId": "cv",
+            "eventType": "completed_action",
+            "quote": "Отправил резюме.",
+            "textStart": 3,
+            "textEnd": 19,
+            "startMs": null,
+            "endMs": null
+          }
+        ]
+      },
+      "parserAccepted": true,
+      "quoteValid": true,
+      "semanticMatch": true,
+      "quoteMatch": true,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 0
+    },
+    {
+      "id": "review-status-forbidden",
+      "mode": "validation",
+      "category": "Дополнительная parser/validation проверка",
+      "expected": {
+        "validation": "rejected",
+        "errorCode": "provider_failed"
+      },
+      "actual": {
+        "validation": "rejected",
+        "errorCode": "provider_failed",
+        "events": []
+      },
+      "parserAccepted": true,
+      "quoteValid": null,
+      "semanticMatch": null,
+      "quoteMatch": null,
+      "outcomeMatch": true,
+      "passed": true,
+      "latencyMs": 1
+    }
+  ]
+}
