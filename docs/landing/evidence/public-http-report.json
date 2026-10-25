@@ -1,0 +1,71 @@
+{
+  "checkedAt": "2026-10-25T11:57:39.084Z",
+  "baseUrl": "http://77.239.111.64",
+  "checks": [
+    {
+      "path": "/",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/styles.css",
+      "method": "HEAD",
+      "status": 200
+    },
+    {
+      "path": "/config.js",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/app.js",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/assets/favicon.svg",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/assets/og-image.png",
+      "method": "HEAD",
+      "status": 200
+    },
+    {
+      "path": "/.git/config",
+      "method": "GET",
+      "status": 404
+    },
+    {
+      "path": "/README.md",
+      "method": "GET",
+      "status": 404
+    },
+    {
+      "path": "/server.mjs",
+      "method": "GET",
+      "status": 404
+    },
+    {
+      "path": "/assets/og-source.svg",
+      "method": "GET",
+      "status": 404
+    },
+    {
+      "path": "/%2e%2e%2fREADME.md",
+      "method": "GET",
+      "status": 404
+    },
+    {
+      "path": "/missing",
+      "method": "GET",
+      "status": 404
+    },
+    {
+      "path": "/",
+      "method": "POST",
+      "status": 405
+    }
+  ]
+}

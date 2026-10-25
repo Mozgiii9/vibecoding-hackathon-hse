@@ -1,0 +1,74 @@
+{
+  "checkedAt": "2026-10-25T11:57:18.579Z",
+  "baseUrl": "http://77.239.111.64/",
+  "browser": "headless Chrome",
+  "widths": [
+    {
+      "viewport": 320,
+      "document": 320
+    },
+    {
+      "viewport": 390,
+      "document": 390
+    },
+    {
+      "viewport": 760,
+      "document": 760
+    },
+    {
+      "viewport": 1024,
+      "document": 1024
+    },
+    {
+      "viewport": 1440,
+      "document": 1440
+    },
+    {
+      "viewport": 1920,
+      "document": 1920
+    }
+  ],
+  "keyboardFocus": {
+    "outline": "solid",
+    "width": "3px",
+    "top": 12
+  },
+  "flow": [
+    {
+      "step": "01 / Намерение",
+      "count": "0 из 3",
+      "focused": "demo-next"
+    },
+    {
+      "step": "02 / Предложение AI",
+      "count": "0 из 3",
+      "focused": "demo-next"
+    },
+    {
+      "step": "03 / Подтверждение",
+      "count": "1 из 3",
+      "focused": "demo-next"
+    },
+    {
+      "step": "04 / Повторный импорт",
+      "count": "1 из 3",
+      "focused": "demo-reject"
+    },
+    {
+      "step": "05 / Пересмотр",
+      "count": "0 из 3",
+      "focused": "demo-reset"
+    },
+    {
+      "step": "01 / Намерение",
+      "count": "0 из 3",
+      "focused": "demo-next"
+    }
+  ],
+  "mobileFlow": "0 → 0 → 1 → 1 → 0 PASS",
+  "reducedMotion": "PASS",
+  "anchors": "PASS",
+  "errors": [],
+  "failedResources": [],
+  "externalRequests": []
+}
