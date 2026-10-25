@@ -14,7 +14,7 @@ try {
     execFileSync('git', ['cat-file', '-e', `${sha}:app/installer/hackathon/source-runtime.mjs`], { cwd: repositoryRoot, stdio: 'pipe' });
     mkdirSync(destination, { recursive: true, mode: 0o700 });
     const archive = path.join(destination, 'source.tar');
-    execFileSync('git', ['archive', '--format=tar', `--output=${archive}`, sha, 'app', 'scripts/release'], { cwd: repositoryRoot, stdio: 'inherit' });
+    execFileSync('git', ['archive', '--format=tar', `--output=${archive}`, sha, 'app', 'scripts/release', 'docs/contracts'], { cwd: repositoryRoot, stdio: 'inherit' });
     const archiveSha = createHash('sha256').update(readFileSync(archive)).digest('hex');
     execFileSync('tar', ['-xf', archive, '-C', destination], { stdio: 'inherit' });
     rmSync(archive);

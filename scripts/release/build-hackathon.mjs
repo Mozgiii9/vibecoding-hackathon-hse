@@ -28,13 +28,14 @@ try {
   const edgeImage = pinBase(process.env.HACKATHON_EDGE_IMAGE || 'caddy:2.8-alpine');
   staging = mkdtempSync(path.join(tmpdir(), 'ryadom-source-'));
   const archive = path.join(staging, 'source.tar');
-  git(['archive', '--format=tar', `--output=${archive}`, sha, 'app']);
+  git(['archive', '--format=tar', `--output=${archive}`, sha, 'app', 'docs/contracts']);
   execFileSync('tar', ['-xf', archive, '-C', staging], { stdio: 'inherit' });
-  const context = path.join(staging, 'app');
+  rmSync(archive);
+  const context = staging;
   const images = {};
   for (const kind of ['app', 'edge']) {
     const tag = `ryadom-${owner}/${kind}:${sha}`;
-    docker(['build', '--file', path.join(context, 'installer/hackathon', `Dockerfile.${kind === 'app' ? 'gateway' : 'edge'}`),
+    docker(['build', '--file', path.join(context, 'app/installer/hackathon', `Dockerfile.${kind === 'app' ? 'gateway' : 'edge'}`),
       '--build-arg', `NODE_IMAGE=${nodeImage}`, '--build-arg', `EDGE_IMAGE=${edgeImage}`,
       '--build-arg', `SOURCE_SHA=${sha}`, '--tag', tag, context], { stdio: 'inherit' });
     images[kind] = { tag, id: docker(['image', 'inspect', tag, '--format', '{{.Id}}']).trim() };
