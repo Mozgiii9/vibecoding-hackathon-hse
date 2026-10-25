@@ -9,6 +9,7 @@ type SignupPageProps = {
   }) => Promise<void> | void;
   onNavigateToLogin: () => void;
   isSubmitting?: boolean;
+  showLoginAction?: boolean;
   error?: string | null;
 };
 
@@ -17,6 +18,7 @@ export default function SignupPage({
   onSignup,
   onNavigateToLogin,
   isSubmitting = false,
+  showLoginAction = true,
   error
 }: SignupPageProps) {
   const [username, setUsername] = useState("");
@@ -38,7 +40,7 @@ export default function SignupPage({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!isValid) return;
+    if (!isValid || isSubmitting) return;
 
     if (mode === "local") {
       onSignup({ username: username.trim(), password });
@@ -48,22 +50,18 @@ export default function SignupPage({
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-bd-bg-primary px-4">
+    <div className="flex min-h-dvh items-center justify-center bg-bd-bg-primary px-4 py-8">
       <div className="w-full max-w-[400px]">
         <div className="mb-10 flex flex-col items-center">
-          <img
-            src="/braindrive-logo.svg"
-            alt="BrainDrive"
-            className="mb-6 h-10 w-auto"
-          />
+          <h1 className="text-3xl font-semibold text-bd-text-heading">Рядом</h1>
           <p className="mt-2 text-center text-lg text-bd-text-secondary">
-            Setup Your Login
+            Создайте вход в своё пространство
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} autoComplete="off" className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="rounded-lg border border-bd-danger-border bg-bd-danger-bg px-4 py-3 text-sm text-bd-danger">
+            <div role="alert" className="rounded-lg border border-bd-danger-border bg-bd-danger-bg px-4 py-3 text-sm text-bd-danger">
               {error}
             </div>
           )}
@@ -74,15 +72,15 @@ export default function SignupPage({
                 htmlFor="username"
                 className="mb-1.5 block text-sm font-medium text-bd-text-secondary"
               >
-                Username
+                Имя пользователя
               </label>
               <input
                 id="username"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Choose a username"
-                autoComplete="off"
+                placeholder="Придумайте имя пользователя"
+                autoComplete="username"
                 autoFocus
                 required
                 className="h-11 w-full rounded-lg border border-bd-border bg-bd-bg-tertiary px-4 text-sm text-bd-text-primary outline-none placeholder:text-bd-text-muted focus:border-bd-amber"
@@ -94,7 +92,7 @@ export default function SignupPage({
                 htmlFor="email"
                 className="mb-1.5 block text-sm font-medium text-bd-text-secondary"
               >
-                Email
+                Электронная почта
               </label>
               <input
                 id="email"
@@ -102,7 +100,7 @@ export default function SignupPage({
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                autoComplete="off"
+                autoComplete="email"
                 autoFocus
                 required
                 className="h-11 w-full rounded-lg border border-bd-border bg-bd-bg-tertiary px-4 text-sm text-bd-text-primary outline-none placeholder:text-bd-text-muted focus:border-bd-amber"
@@ -115,15 +113,15 @@ export default function SignupPage({
               htmlFor="new-password"
               className="mb-1.5 block text-sm font-medium text-bd-text-secondary"
             >
-              Password
+              Пароль
             </label>
             <input
               id="new-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="At least 8 characters"
-              autoComplete="off"
+              placeholder="Не меньше 8 символов"
+              autoComplete="new-password"
               required
               minLength={8}
               className="h-11 w-full rounded-lg border border-bd-border bg-bd-bg-tertiary px-4 text-sm text-bd-text-primary outline-none placeholder:text-bd-text-muted focus:border-bd-amber"
@@ -135,15 +133,17 @@ export default function SignupPage({
               htmlFor="confirm-password"
               className="mb-1.5 block text-sm font-medium text-bd-text-secondary"
             >
-              Confirm password
+              Повторите пароль
             </label>
             <input
               id="confirm-password"
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Re-enter your password"
-              autoComplete="off"
+              placeholder="Введите пароль ещё раз"
+              aria-invalid={passwordMismatch}
+              aria-describedby={passwordMismatch ? "password-mismatch" : undefined}
+              autoComplete="new-password"
               required
               className={[
                 "h-11 w-full rounded-lg border bg-bd-bg-tertiary px-4 text-sm text-bd-text-primary outline-none placeholder:text-bd-text-muted focus:border-bd-amber",
@@ -151,8 +151,8 @@ export default function SignupPage({
               ].join(" ")}
             />
             {passwordMismatch && (
-              <p className="mt-1.5 text-xs text-bd-danger">
-                Passwords don't match
+              <p id="password-mismatch" role="status" className="mt-1.5 text-xs text-bd-danger">
+                Пароли не совпадают
               </p>
             )}
           </div>
@@ -162,25 +162,24 @@ export default function SignupPage({
             disabled={!isValid || isSubmitting}
             className="h-11 w-full rounded-xl bg-bd-amber text-sm font-medium text-bd-bg-primary transition-colors duration-200 hover:bg-bd-amber-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isSubmitting ? "Creating account..." : "Create account"}
+            {isSubmitting ? "Создаём аккаунт…" : "Создать аккаунт"}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-bd-text-muted">
-          Already have an account?{" "}
+        {showLoginAction && <p className="mt-6 text-center text-sm text-bd-text-muted">
+          Уже есть аккаунт?{" "}
           <button
             type="button"
             onClick={onNavigateToLogin}
             className="text-bd-amber transition-colors hover:text-bd-amber-hover"
           >
-            Sign in
+            Войти
           </button>
-        </p>
+        </p>}
 
         {mode === "local" && (
           <p className="mt-4 text-center text-xs text-bd-text-muted">
-            Your credentials are stored locally on your computer. No data
-            leaves your machine.
+            Аккаунт создаётся на сервере этого приложения. После входа вы зададите цель и три критерия прогресса.
           </p>
         )}
       </div>

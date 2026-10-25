@@ -64,7 +64,10 @@ function AuthenticatedApp() {
 
   if (screen === "auth") {
     return (
-      <AuthFlow mode={deploymentMode} onAuthenticated={() => setScreen("main")} />
+      <AuthFlow mode={deploymentMode} onAuthenticated={() => {
+        setSurface("goals");
+        setScreen("main");
+      }} />
     );
   }
 

@@ -22,33 +22,30 @@ export default function LoginPage({
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
 
-  const identifierLabel = mode === "local" ? "Username" : "Email";
+  const identifierLabel = mode === "local" ? "Имя пользователя" : "Электронная почта";
   const identifierPlaceholder =
-    mode === "local" ? "Enter your username" : "you@example.com";
+    mode === "local" ? "Введите имя пользователя" : "you@example.com";
   const identifierType = mode === "local" ? "text" : "email";
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    onLogin({ identifier, password });
+    if (isSubmitting || !identifier.trim() || !password) return;
+    onLogin({ identifier: identifier.trim(), password });
   }
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-bd-bg-primary px-4">
+    <div className="flex min-h-dvh items-center justify-center bg-bd-bg-primary px-4 py-8">
       <div className="w-full max-w-[400px]">
         <div className="mb-10 flex flex-col items-center">
-          <img
-            src="/braindrive-logo.svg"
-            alt="BrainDrive"
-            className="mb-6 h-10 w-auto"
-          />
+          <h1 className="text-3xl font-semibold text-bd-text-heading">Рядом</h1>
           <p className="mt-2 text-lg text-bd-text-secondary">
-            Welcome back to your BrainDrive.
+            Вернёмся к вашей цели
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} autoComplete="off" className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
           {error && (
-            <div className="rounded-lg border border-bd-danger-border bg-bd-danger-bg px-4 py-3 text-sm text-bd-danger">
+            <div role="alert" className="rounded-lg border border-bd-danger-border bg-bd-danger-bg px-4 py-3 text-sm text-bd-danger">
               {error}
             </div>
           )}
@@ -66,7 +63,7 @@ export default function LoginPage({
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
               placeholder={identifierPlaceholder}
-              autoComplete="off"
+              autoComplete="username"
               autoFocus
               required
               className="h-11 w-full rounded-lg border border-bd-border bg-bd-bg-tertiary px-4 text-sm text-bd-text-primary outline-none placeholder:text-bd-text-muted focus:border-bd-amber"
@@ -79,14 +76,14 @@ export default function LoginPage({
                 htmlFor="password"
                 className="text-sm font-medium text-bd-text-secondary"
               >
-                Password
+                Пароль
               </label>
               <button
                 type="button"
                 onClick={onNavigateToForgotPassword}
                 className="text-xs text-bd-text-muted transition-colors hover:text-bd-amber"
               >
-                Forgot password?
+                Забыли пароль?
               </button>
             </div>
             <input
@@ -94,8 +91,8 @@ export default function LoginPage({
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              autoComplete="off"
+              placeholder="Введите пароль"
+              autoComplete="current-password"
               required
               className="h-11 w-full rounded-lg border border-bd-border bg-bd-bg-tertiary px-4 text-sm text-bd-text-primary outline-none placeholder:text-bd-text-muted focus:border-bd-amber"
             />
@@ -106,19 +103,19 @@ export default function LoginPage({
             disabled={!identifier.trim() || !password || isSubmitting}
             className="h-11 w-full rounded-xl bg-bd-amber text-sm font-medium text-bd-bg-primary transition-colors duration-200 hover:bg-bd-amber-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isSubmitting ? "Signing in..." : "Sign in"}
+            {isSubmitting ? "Входим…" : "Войти"}
           </button>
         </form>
 
         {showSignupAction && (
           <p className="mt-6 text-center text-sm text-bd-text-muted">
-            Don't have an account?{" "}
+            Ещё нет аккаунта?{" "}
             <button
               type="button"
               onClick={onNavigateToSignup}
               className="text-bd-amber transition-colors hover:text-bd-amber-hover"
             >
-              Create account
+              Создать аккаунт
             </button>
           </p>
         )}

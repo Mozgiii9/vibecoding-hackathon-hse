@@ -101,9 +101,9 @@ describe("App", () => {
   it("shows login screen on first load", async () => {
     renderApp();
 
-    expect(await screen.findByText("Welcome back to your BrainDrive.")).toBeInTheDocument();
-    expect(screen.getByLabelText("Username")).toBeInTheDocument();
-    expect(screen.getByLabelText("Password")).toBeInTheDocument();
+    expect(await screen.findByText("Вернёмся к вашей цели")).toBeInTheDocument();
+    expect(screen.getByLabelText("Имя пользователя")).toBeInTheDocument();
+    expect(screen.getByLabelText("Пароль")).toBeInTheDocument();
   });
 
   it("navigates to main interface after login", async () => {
@@ -111,9 +111,9 @@ describe("App", () => {
 
     renderApp();
 
-    await user.type(await screen.findByLabelText("Username"), "testuser");
-    await user.type(screen.getByLabelText("Password"), "password123");
-    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    await user.type(await screen.findByLabelText("Имя пользователя"), "testuser");
+    await user.type(screen.getByLabelText("Пароль"), "password123");
+    await user.click(screen.getByRole("button", { name: "Войти" }));
 
     expect(await screen.findByText("Goal workspace")).toBeInTheDocument();
   });
