@@ -1,0 +1,678 @@
+{
+  "status": "PASS",
+  "mode": "live-provider/operator-configured",
+  "startedAt": "2026-10-25T13:31:35.990Z",
+  "sourceSha": "af900fe70b16005fe83ee017f8a2950bc63219ba",
+  "checks": [
+    {
+      "name": "ordinary synthetic signup",
+      "status": "PASS"
+    },
+    {
+      "name": "no context gives explicit insufficient-context response",
+      "status": "PASS"
+    },
+    {
+      "name": "goal and actual context import via UI",
+      "status": "PASS",
+      "extractedEvidence": 0
+    },
+    {
+      "name": "actual model selects exact saved source and citation opens",
+      "status": "PASS"
+    },
+    {
+      "name": "out-of-context question refuses without external facts",
+      "status": "PASS"
+    },
+    {
+      "name": "deep-link reload restores server history exactly",
+      "status": "PASS",
+      "messages": 6
+    },
+    {
+      "name": "draft survives back/return; mobile and landscape fit; reduced motion",
+      "status": "PASS"
+    },
+    {
+      "name": "no unrestricted general-agent request",
+      "status": "PASS"
+    }
+  ],
+  "generalAgentRequests": 0,
+  "finishedAt": "2026-10-25T13:31:51.828Z",
+  "firstHarnessFailure": {
+    "report": "/private/tmp/ryadom-context-chat/results.json",
+    "stage": "goal-and-context-through-ui",
+    "kind": "QA selector timeout before model calls",
+    "productCodeChangedForRetry": false
+  },
+  "unitAndBuildChecks": {
+    "backendNewTests": 45,
+    "backendExistingGatewayTests": 28,
+    "backendTotalPassed": 73,
+    "backendBuild": "PASS",
+    "frontendTotalPassed": 245,
+    "frontendFiles": 22,
+    "frontendTypecheck": "PASS",
+    "frontendBuild": "PASS",
+    "independentReview": "NO_BLOCKING_FINDINGS"
+  },
+  "frontendSecretScan": {
+    "files": 13,
+    "actualPrivateKeyMatches": 0
+  },
+  "finalUiCommit": "943f4aad5bb6301bb10d50843d5c5da528d3985e",
+  "finalUiVerification": {
+    "result": "PASS",
+    "checkedAt": "2026-10-25T13:36:38.298070+00:00",
+    "scope": "Read-only existing synthetic account conversation; no chat/import/review/provider POST. Only ordinary login and automatic auth refresh POST. Existing history/citation rendered from GET.",
+    "capture": "viewport only; fonts.ready plus two requestAnimationFrame after resize; fresh context; mobile reload also checked",
+    "geometry": [
+      {
+        "label": "desktop",
+        "inner": {
+          "width": 1440,
+          "height": 1000
+        },
+        "visual": {
+          "width": 1440,
+          "height": 1000,
+          "offsetTop": 0
+        },
+        "headerCount": 1,
+        "headers": 1,
+        "document": {
+          "height": 1000,
+          "top": 0
+        },
+        "body": {
+          "height": 1000,
+          "top": 0
+        },
+        "root": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 1000,
+          "bottom": 1000,
+          "scrollHeight": 1000,
+          "scrollTop": 0
+        },
+        "chat": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 1000,
+          "bottom": 1000,
+          "scrollHeight": 1000,
+          "scrollTop": 0
+        },
+        "main": {
+          "x": 310,
+          "y": 79.484375,
+          "width": 820,
+          "height": 920.515625,
+          "bottom": 1000,
+          "scrollHeight": 921,
+          "scrollTop": 0
+        },
+        "conversation": {
+          "x": 338,
+          "y": 239.5,
+          "width": 764,
+          "height": 531.90625,
+          "bottom": 771.40625,
+          "scrollHeight": 1016,
+          "scrollTop": 484
+        },
+        "composer": {
+          "x": 338,
+          "y": 771.40625,
+          "width": 764,
+          "height": 228.59375,
+          "bottom": 1000,
+          "scrollHeight": 229,
+          "scrollTop": 0
+        },
+        "send": {
+          "x": 1041,
+          "y": 898,
+          "width": 44,
+          "height": 44,
+          "bottom": 942,
+          "scrollHeight": 44,
+          "scrollTop": 0
+        },
+        "sendHit": true
+      },
+      {
+        "label": "desktop-citation",
+        "inner": {
+          "width": 1440,
+          "height": 1000
+        },
+        "visual": {
+          "width": 1440,
+          "height": 1000,
+          "offsetTop": 0
+        },
+        "headerCount": 1,
+        "headers": 1,
+        "document": {
+          "height": 1000,
+          "top": 0
+        },
+        "body": {
+          "height": 1000,
+          "top": 0
+        },
+        "root": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 1000,
+          "bottom": 1000,
+          "scrollHeight": 1000,
+          "scrollTop": 0
+        },
+        "chat": {
+          "x": 0,
+          "y": 0,
+          "width": 1440,
+          "height": 1000,
+          "bottom": 1000,
+          "scrollHeight": 1000,
+          "scrollTop": 0
+        },
+        "main": {
+          "x": 310,
+          "y": 79.484375,
+          "width": 820,
+          "height": 920.515625,
+          "bottom": 1000,
+          "scrollHeight": 921,
+          "scrollTop": 0
+        },
+        "conversation": {
+          "x": 338,
+          "y": 239.5,
+          "width": 764,
+          "height": 531.90625,
+          "bottom": 771.40625,
+          "scrollHeight": 1154,
+          "scrollTop": 484
+        },
+        "composer": {
+          "x": 338,
+          "y": 771.40625,
+          "width": 764,
+          "height": 228.59375,
+          "bottom": 1000,
+          "scrollHeight": 229,
+          "scrollTop": 0
+        },
+        "send": {
+          "x": 1041,
+          "y": 898,
+          "width": 44,
+          "height": 44,
+          "bottom": 942,
+          "scrollHeight": 44,
+          "scrollTop": 0
+        },
+        "sendHit": true
+      },
+      {
+        "label": "mobile-resized",
+        "inner": {
+          "width": 375,
+          "height": 844
+        },
+        "visual": {
+          "width": 375,
+          "height": 844,
+          "offsetTop": 0
+        },
+        "headerCount": 1,
+        "headers": 1,
+        "document": {
+          "height": 844,
+          "top": 0
+        },
+        "body": {
+          "height": 844,
+          "top": 0
+        },
+        "root": {
+          "x": 0,
+          "y": 0,
+          "width": 375,
+          "height": 844,
+          "bottom": 844,
+          "scrollHeight": 844,
+          "scrollTop": 0
+        },
+        "chat": {
+          "x": 0,
+          "y": 0,
+          "width": 375,
+          "height": 844,
+          "bottom": 844,
+          "scrollHeight": 844,
+          "scrollTop": 0
+        },
+        "main": {
+          "x": 0,
+          "y": 65,
+          "width": 375,
+          "height": 779,
+          "bottom": 844,
+          "scrollHeight": 779,
+          "scrollTop": 0
+        },
+        "conversation": {
+          "x": 16,
+          "y": 225.46875,
+          "width": 343,
+          "height": 389.9375,
+          "bottom": 615.40625,
+          "scrollHeight": 1324,
+          "scrollTop": 484
+        },
+        "composer": {
+          "x": 16,
+          "y": 615.40625,
+          "width": 343,
+          "height": 228.59375,
+          "bottom": 844,
+          "scrollHeight": 229,
+          "scrollTop": 0
+        },
+        "send": {
+          "x": 298,
+          "y": 742,
+          "width": 44,
+          "height": 44,
+          "bottom": 786,
+          "scrollHeight": 44,
+          "scrollTop": 0
+        },
+        "sendHit": true
+      },
+      {
+        "label": "landscape-resized",
+        "inner": {
+          "width": 812,
+          "height": 375
+        },
+        "visual": {
+          "width": 812,
+          "height": 375,
+          "offsetTop": 0
+        },
+        "headerCount": 1,
+        "headers": 1,
+        "document": {
+          "height": 375,
+          "top": 0
+        },
+        "body": {
+          "height": 375,
+          "top": 0
+        },
+        "root": {
+          "x": 0,
+          "y": 0,
+          "width": 812,
+          "height": 375,
+          "bottom": 375,
+          "scrollHeight": 375,
+          "scrollTop": 0
+        },
+        "chat": {
+          "x": 0,
+          "y": 0,
+          "width": 812,
+          "height": 375,
+          "bottom": 375,
+          "scrollHeight": 375,
+          "scrollTop": 0
+        },
+        "main": {
+          "x": 0,
+          "y": 59.484375,
+          "width": 812,
+          "height": 315.515625,
+          "bottom": 375,
+          "scrollHeight": 316,
+          "scrollTop": 0
+        },
+        "conversation": {
+          "x": 28,
+          "y": 138.015625,
+          "width": 756,
+          "height": 52.390625,
+          "bottom": 190.40625,
+          "scrollHeight": 1118,
+          "scrollTop": 484
+        },
+        "composer": {
+          "x": 28,
+          "y": 190.40625,
+          "width": 756,
+          "height": 184.59375,
+          "bottom": 375,
+          "scrollHeight": 185,
+          "scrollTop": 0
+        },
+        "send": {
+          "x": 723,
+          "y": 289,
+          "width": 44,
+          "height": 44,
+          "bottom": 333,
+          "scrollHeight": 44,
+          "scrollTop": 0
+        },
+        "sendHit": true
+      },
+      {
+        "label": "mobile-reloaded",
+        "inner": {
+          "width": 375,
+          "height": 844
+        },
+        "visual": {
+          "width": 375,
+          "height": 844,
+          "offsetTop": 0
+        },
+        "headerCount": 1,
+        "headers": 1,
+        "document": {
+          "height": 844,
+          "top": 0
+        },
+        "body": {
+          "height": 844,
+          "top": 0
+        },
+        "root": {
+          "x": 0,
+          "y": 0,
+          "width": 375,
+          "height": 844,
+          "bottom": 844,
+          "scrollHeight": 844,
+          "scrollTop": 0
+        },
+        "chat": {
+          "x": 0,
+          "y": 0,
+          "width": 375,
+          "height": 844,
+          "bottom": 844,
+          "scrollHeight": 844,
+          "scrollTop": 0
+        },
+        "main": {
+          "x": 0,
+          "y": 65,
+          "width": 375,
+          "height": 779,
+          "bottom": 844,
+          "scrollHeight": 779,
+          "scrollTop": 0
+        },
+        "conversation": {
+          "x": 16,
+          "y": 225.46875,
+          "width": 343,
+          "height": 389.9375,
+          "bottom": 615.40625,
+          "scrollHeight": 1160,
+          "scrollTop": 770
+        },
+        "composer": {
+          "x": 16,
+          "y": 615.40625,
+          "width": 343,
+          "height": 228.59375,
+          "bottom": 844,
+          "scrollHeight": 229,
+          "scrollTop": 0
+        },
+        "send": {
+          "x": 298,
+          "y": 742,
+          "width": 44,
+          "height": 44,
+          "bottom": 786,
+          "scrollHeight": 44,
+          "scrollTop": 0
+        },
+        "sendHit": true
+      },
+      {
+        "label": "mobile-reloaded-citation",
+        "inner": {
+          "width": 375,
+          "height": 844
+        },
+        "visual": {
+          "width": 375,
+          "height": 844,
+          "offsetTop": 0
+        },
+        "headerCount": 1,
+        "headers": 1,
+        "document": {
+          "height": 844,
+          "top": 0
+        },
+        "body": {
+          "height": 844,
+          "top": 0
+        },
+        "root": {
+          "x": 0,
+          "y": 0,
+          "width": 375,
+          "height": 844,
+          "bottom": 844,
+          "scrollHeight": 844,
+          "scrollTop": 0
+        },
+        "chat": {
+          "x": 0,
+          "y": 0,
+          "width": 375,
+          "height": 844,
+          "bottom": 844,
+          "scrollHeight": 844,
+          "scrollTop": 0
+        },
+        "main": {
+          "x": 0,
+          "y": 65,
+          "width": 375,
+          "height": 779,
+          "bottom": 844,
+          "scrollHeight": 779,
+          "scrollTop": 0
+        },
+        "conversation": {
+          "x": 16,
+          "y": 225.46875,
+          "width": 343,
+          "height": 389.9375,
+          "bottom": 615.40625,
+          "scrollHeight": 1324,
+          "scrollTop": 505
+        },
+        "composer": {
+          "x": 16,
+          "y": 615.40625,
+          "width": 343,
+          "height": 228.59375,
+          "bottom": 844,
+          "scrollHeight": 229,
+          "scrollTop": 0
+        },
+        "send": {
+          "x": 298,
+          "y": 742,
+          "width": 44,
+          "height": 44,
+          "bottom": 786,
+          "scrollHeight": 44,
+          "scrollTop": 0
+        },
+        "sendHit": true
+      }
+    ],
+    "observedWrites": [
+      {
+        "method": "POST",
+        "path": "/api/auth/refresh"
+      },
+      {
+        "method": "POST",
+        "path": "/api/auth/login"
+      },
+      {
+        "method": "POST",
+        "path": "/api/auth/refresh"
+      },
+      {
+        "method": "POST",
+        "path": "/api/auth/refresh"
+      },
+      {
+        "method": "POST",
+        "path": "/api/auth/login"
+      }
+    ],
+    "layoutChecks": [
+      {
+        "case": "desktop",
+        "pass": true
+      },
+      {
+        "case": "desktop-citation",
+        "pass": true
+      },
+      {
+        "case": "mobile-resized",
+        "pass": true
+      },
+      {
+        "case": "landscape-resized",
+        "pass": true
+      },
+      {
+        "case": "mobile-reloaded",
+        "pass": true
+      },
+      {
+        "case": "mobile-reloaded-citation",
+        "pass": true
+      }
+    ],
+    "contrast": [
+      {
+        "name": "bubble",
+        "textColor": "oklch(0.93 0.014 78)",
+        "backgroundColor": "oklch(0.255 0.014 58)",
+        "textRGB": [
+          237,
+          231,
+          222
+        ],
+        "backgroundRGB": [
+          40,
+          33,
+          28
+        ],
+        "opacity": "1",
+        "contrastRatio": 12.899674214490641,
+        "pass": true
+      },
+      {
+        "name": "muted-label",
+        "textColor": "oklch(0.735 0.023 65)",
+        "backgroundColor": "oklch(0.224 0.013 58)",
+        "textRGB": [
+          180,
+          167,
+          155
+        ],
+        "backgroundRGB": [
+          32,
+          26,
+          22
+        ],
+        "opacity": "1",
+        "contrastRatio": 7.32451000628979,
+        "pass": true
+      },
+      {
+        "name": "placeholder",
+        "textColor": "oklch(0.645 0.022 65)",
+        "backgroundColor": "oklch(0.224 0.013 58)",
+        "textRGB": [
+          151,
+          139,
+          128
+        ],
+        "backgroundRGB": [
+          32,
+          26,
+          22
+        ],
+        "opacity": "1",
+        "contrastRatio": 5.177610427031869,
+        "pass": true
+      }
+    ],
+    "sourceFingerprints": {
+      "app/builds/typescript/client_web/src/features/context-chat/context-chat.css": "a62e5ea40263d0a1ea870d299b22c3e7f6f5d85f34c899c60e619d8e1fc0e8a8",
+      "app/builds/typescript/client_web/src/features/context-chat/api.ts": "69425ed674d73d48f7158ba8d771e9acc744fab32835aa58119d66937e1c0620",
+      "app/builds/typescript/client_web/src/features/context-chat/ContextChatPage.tsx": "093ed4f0e58eb43b17b1b4dc2051dacf16f8ac5ebf9f8456badc2adf3f65d777",
+      "app/builds/typescript/client_web/src/features/context-chat/useContextChat.ts": "b555df3d5ddfc4644d089dc6e26e3d610e7578a3c77c8eaae902ad7b752813d1"
+    },
+    "viewportScreenshots": {
+      "mobile-resized.png": {
+        "path": "/private/tmp/ryadom-context-chat-layout-final/mobile-resized.png",
+        "sha256": "db795baa80ee1f68275ac1849334cc90003d9dc71ce6654d251194d5023649bb"
+      },
+      "mobile-reloaded-citation.png": {
+        "path": "/private/tmp/ryadom-context-chat-layout-final/mobile-reloaded-citation.png",
+        "sha256": "c75d8a3e584514ab1e210542391e7b6f627c897c65199f8e9be81b3a1e6c354c"
+      },
+      "landscape-resized.png": {
+        "path": "/private/tmp/ryadom-context-chat-layout-final/landscape-resized.png",
+        "sha256": "b5f7f704c9f701d8b26595cdd37ddfe04ad6e19b9f2d353cf392155bde69173b"
+      },
+      "desktop.png": {
+        "path": "/private/tmp/ryadom-context-chat-layout-final/desktop.png",
+        "sha256": "1f7cfd78e4cc36a02100ac6aa9d9815576ec0ba51b62d4088e280b0f6caa8b35"
+      }
+    },
+    "priorGeometry": "/private/tmp/ryadom-context-chat-layout/geometry.json",
+    "findings": [
+      "No duplicate header in DOM or normal viewport captures after fonts and two animation frames, both resize and reload. Initial duplicate-header capture not reproduced.",
+      "Fixed actual landscape composer overflow from 8.796875px to 0px with only compact-height conversation padding and textarea height.",
+      "Provider error copy now explicitly says text remains in field; no server-history persistence promise."
+    ],
+    "verification": {
+      "focusedFrontend": "2 files, 15 tests PASS",
+      "typecheck": "PASS",
+      "build": "PASS, 1911 modules, main JS311.85kB"
+    },
+    "limitation": "Chrome desktop emulated viewport; physical keyboard/real mobile browser not tested",
+    "noNewFunctionalLiveGate": "Original functional Gemini gate remains historical af900fe; this pass checks read-only layout/citation display and final CSS/copy."
+  },
+  "runnerEvolution": "After historical live PASS, added fonts/two-animation-frame wait and strict composer bounds checks. No later full live functional run; separate read-only final layout pass covers those bounds."
+}
