@@ -1,18 +1,18 @@
 {
-  "checkedAt": "2026-10-25T12:02:20.756Z",
-  "sourceSha": "c4e5cb59c26c87a54c1758a92364844522e348b8",
+  "checkedAt": "2026-10-25T12:11:37.024Z",
+  "sourceSha": "7a3b82f8ab9bb736149998fe14a029e6d6d03918",
   "baseUrl": "http://77.239.111.64/",
   "metadata": "PASS",
   "exactPublicFileMatch": [
     {
       "file": "index.html",
-      "bytes": 19932,
-      "sha256": "725d2cc6558c82da0fee5e9a6080560cd4465b4916c8cc3294dfba60b15d935a"
+      "bytes": 22435,
+      "sha256": "d60f8cf06024bb39f608c48ad4e899d4d0e25aa22113b7ca46c67de5003555f9"
     },
     {
       "file": "styles.css",
-      "bytes": 18792,
-      "sha256": "239476f278ca418ebad54068322227ccb5c059aab0aee7e5d03f7d2854d592cf"
+      "bytes": 19441,
+      "sha256": "43ed028ef254cb156a602ea764aaf4b89f694a00bc77bad4704def01cb67d633"
     },
     {
       "file": "app.js",
@@ -33,6 +33,11 @@
       "file": "assets/og-image.png",
       "bytes": 62134,
       "sha256": "4de7792c79769960b7028b8a5f65da879b2088f2bf6177d4a27844887f2c6ddd"
+    },
+    {
+      "file": "assets/product-audio-verified.png",
+      "bytes": 97953,
+      "sha256": "f96fe83b4b1a904ac6ce4cf0e3ba46b5392b6a3d11f57dad707fcce12d924ea4"
     }
   ]
 }
