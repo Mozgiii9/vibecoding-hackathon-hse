@@ -36,9 +36,9 @@ Base SHA: `484c396e71b3fbfe2ff65c04f6260e1899aa6bd1` из `origin/codex/integrat
 | Live Gemini intention/action и точная цитата | PASS локально, один предшествующий FAIL | Повторный clean прогон 14:11:52–14:12:22 МСК; 1 passed / 6 skipped, `/private/tmp/ryadom-release-browser-live.json`; реальная модель, без response mocks |
 | UI confirm/progress/duplicate/reject/reload | PASS локально | Live intention0 → action proposed0 → quote → confirm1 → duplicate1 → reject0 → reload0, подтверждён API ответами |
 | Узкий мобильный экран | PASS локально | Тот же live сценарий на 390×844, нет горизонтального overflow |
-| Таймаут/ошибка без ложного успеха | NOT_RUN | Отдельный protocol-fake браузерный прогон; live outage не имитируется как live quality |
+| Таймаут/ошибка без ложного успеха | PASS protocol-fake | 6 passed / 1 skipped, 14:14:37–14:14:46 МСК: timeout, HTTP503, invalid JSON, реальный revision conflict, stt_unconfigured; `/private/tmp/ryadom-release-browser-fake.json`; live outage не имитируется как live quality |
 | Реальный audio upload/STT/evidence/confirm | NOT_RUN | B ещё не передал реальный adapter в проверенную ветку |
-| Fixed SHA source-build и чистый запуск | NOT_RUN | Упаковка в разработке |
+| Fixed SHA source-build и чистый запуск | FAIL первого кандидата | Серверный clean build f0b849b: backend/MCP PASS, frontend typecheck не нашёл docs/contracts/demo-fixture.json, отсутствующий в source export. Ошибка нашей упаковки исправляется, candidate не запущен и не принят |
 | Серверный health/auth smoke нашего SHA | NOT_RUN | Изолированный A source launcher, Docker отсутствует |
 | HTTP restart с сохранённой UI-целью | NOT_RUN | Отдельно от PASS unit/process persistence |
 | Приёмка финального общего SHA C | NOT_RUN | SHA/кандидат C ещё не передан |
