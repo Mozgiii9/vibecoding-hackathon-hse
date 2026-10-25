@@ -1,0 +1,153 @@
+{
+  "sourceSha": "f93536db9091f10236221aba5901fbbdd0486f59",
+  "sourceArchiveSha256": "ea04f24d0e26817c1218c94737f7bfeff611e11071572dfc818c95b21a5c3aa5",
+  "node": "v22.21.1",
+  "platform": "linux/x64",
+  "backup": {
+    "files": 49,
+    "includes": "hackathon/state.json",
+    "stateSha256": "0522b2dbed62784e7fabffcdd21766ccb669b4d1f743388eda0a2a45808388a6",
+    "restore": "separate synthetic memory; own synthetic secrets copied privately, provider/master key never in report"
+  },
+  "audio": "NOT_RUN: STT not yet integrated into this SHA",
+  "runs": [
+    {
+      "kind": "main",
+      "metadata": {
+        "providerMode": "live",
+        "candidateSha": "f93536db9091f10236221aba5901fbbdd0486f59",
+        "runtime": "external operator runtime",
+        "actualWorkers": 1
+      },
+      "stats": {
+        "startTime": "2026-10-25T11:21:11.219Z",
+        "duration": 43294.733,
+        "expected": 1,
+        "skipped": 6,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "specs": [
+        {
+          "title": "LIVE ordinary signup/login → three criteria → intention/action/quote/confirm → mobile duplicate/reject/reload",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 41725
+            }
+          ]
+        },
+        {
+          "title": "FAKE fault RELEASE_TIMEOUT: no success, evidence or progress increase",
+          "results": [
+            {
+              "status": "skipped",
+              "durationMs": 99
+            }
+          ]
+        },
+        {
+          "title": "FAKE fault RELEASE_UNAVAILABLE: no success, evidence or progress increase",
+          "results": [
+            {
+              "status": "skipped",
+              "durationMs": 93
+            }
+          ]
+        },
+        {
+          "title": "FAKE fault RELEASE_INVALID: no success, evidence or progress increase",
+          "results": [
+            {
+              "status": "skipped",
+              "durationMs": 93
+            }
+          ]
+        },
+        {
+          "title": "FAKE setup, real revision conflict: refresh server state without false confirmation",
+          "results": [
+            {
+              "status": "skipped",
+              "durationMs": 86
+            }
+          ]
+        },
+        {
+          "title": "FAKE setup, unconfigured STT: upload reports error without transcript or progress",
+          "results": [
+            {
+              "status": "skipped",
+              "durationMs": 85
+            }
+          ]
+        },
+        {
+          "title": "LIVE audio: file → STT transcript → exact quote → confirm",
+          "results": [
+            {
+              "status": "skipped",
+              "durationMs": 94
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "restart",
+      "metadata": {
+        "providerMode": "live",
+        "candidateSha": "f93536db9091f10236221aba5901fbbdd0486f59",
+        "runtime": "external operator runtime",
+        "actualWorkers": 1
+      },
+      "stats": {
+        "startTime": "2026-10-25T11:23:24.172Z",
+        "duration": 5391.615,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "specs": [
+        {
+          "title": "LIVE restart resume: ordinary login and identical persisted workspace",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4449
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "restore",
+      "metadata": {
+        "providerMode": "live",
+        "candidateSha": "f93536db9091f10236221aba5901fbbdd0486f59",
+        "runtime": "external operator runtime",
+        "actualWorkers": 1
+      },
+      "stats": {
+        "startTime": "2026-10-25T11:24:55.318Z",
+        "duration": 5870.208,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "specs": [
+        {
+          "title": "LIVE restart resume: ordinary login and identical persisted workspace",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 4847
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

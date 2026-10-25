@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync, rmSync } from 'node:fs';
 import path from 'node:path';
 import { cleanEnvironment, fullSha, repositoryRoot } from './launch-lib.mjs';
+import { sourceArchivePaths } from './build-source-paths.mjs';
 
 try {
   const [action, first, second] = process.argv.slice(2);
@@ -14,11 +15,12 @@ try {
     execFileSync('git', ['cat-file', '-e', `${sha}:app/installer/hackathon/source-runtime.mjs`], { cwd: repositoryRoot, stdio: 'pipe' });
     mkdirSync(destination, { recursive: true, mode: 0o700 });
     const archive = path.join(destination, 'source.tar');
-    execFileSync('git', ['archive', '--format=tar', `--output=${archive}`, sha, 'app', 'scripts/release', 'docs/contracts'], { cwd: repositoryRoot, stdio: 'inherit' });
+    const exportPaths = sourceArchivePaths(sha);
+    execFileSync('git', ['archive', '--format=tar', `--output=${archive}`, sha, ...exportPaths], { cwd: repositoryRoot, stdio: 'inherit' });
     const archiveSha = createHash('sha256').update(readFileSync(archive)).digest('hex');
     execFileSync('tar', ['-xf', archive, '-C', destination], { stdio: 'inherit' });
     rmSync(archive);
-    writeFileSync(path.join(destination, 'source-manifest.json'), JSON.stringify({ source_sha: sha, git_archive_sha256: archiveSha }, null, 2) + '\n', { mode: 0o600 });
+    writeFileSync(path.join(destination, 'source-manifest.json'), JSON.stringify({ source_sha: sha, git_archive_sha256: archiveSha, export_paths: exportPaths }, null, 2) + '\n', { mode: 0o600 });
     console.log(`Exported committed source ${sha}: ${destination}`);
   } else if (action === 'build') {
     if (!first) throw new Error('Usage: build-source.mjs build <exported-release-directory>');

@@ -43,7 +43,8 @@
 - PASS A3: настоящий store reload/отдельный процесс; source/evidence/review/revisions/progress; existing export включает state; новый backup/restore в synthetic copy; checksum/inventory/path guards; clean demo без удаления памяти.
 - PASS локальный browser protocol-fake6: обычная авторизация, точные server counts/IDs/revisions, timeout/503/invalid JSON, conflict, unconfigured STT. Не live LLM/STT.
 - PASS локальный live Gemini desktop/mobile390: intention0 → action/quote → confirm1 → duplicate1 → reject0 → reload. Один первоначальный provider_failed сохранён как известная нестабильность; повтор без fallback успешен.
-- Production browser через SSH tunnel к source candidate выполняется; restart/resume будет следующим шагом. Результаты dev runtime не подменяют production evidence.
+- Production live browser f93536d PASS main1/6skipped (14:21 МСК), реальные Gemini вызовы, точные counts/IDs/revisions, desktop/mobile390. После реального stop/restart того же instance resume1/1PASS (14:23). Backup49файлов, новая restored memory и отдельная приватная копия собственных synthetic secrets; SHA256 state совпал. Restored-instance UI resume1/1PASS (14:24), те же IDs/revisions/status/counts/quotes. Evidence: `docs/release/evidence/source-f935-summary.json`.
+- Сейчас работает отдельный restored-f935 supervisor82655; original demo-f935 остановлен/сохранён. PID в handoff исторический, для управления читать runtime.json соответствующего instance.
 
 ## Ошибка первого candidate и исправление
 
@@ -51,7 +52,7 @@
 
 ## Что требуется C/B
 
-1. C объединяет A обычным merge в свою integration-ui и передаёт конкретный общий SHA для A4. Новые русские auth/draft changes C670ec69 ещё не входят в f93536d. Release specs поддерживают точные English/Russian auth labels.
+1. C4ac9740 уже объединил раннюю A packaging f0. Для clean source build также взять исправление f93536d и последующие release specs/status обычным merge qa-release. Новые русские auth/draft changes C670ec69 ещё не входят в принятую A text f93536d. Release specs поддерживают точные English/Russian auth labels. Нужен конкретный общий SHA с B audio для A4.
 2. B передаёт рабочую STT реализацию/service source и synthetic audio; пока её отдельный health/adapter не означает audio UI PASS. Сначала source runtime→loopback STT, затем audio upload/transcript/quote/confirm/restart на общем SHA.
 3. После передачи STT включить services/stt в source package и описать scoped запуск. Docker topology STT отдельно не проверена; container loopback не достигает host STT.
 4. Финальный общий кандидат, четыре слайда и реальное резервное видео C ещё требуют проверки A. Полная цель остаётся активной.

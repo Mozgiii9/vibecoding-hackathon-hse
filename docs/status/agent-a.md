@@ -1,6 +1,6 @@
 # Статус A второй итерации
 
-- Состояние: RUNNING, A1/A2/A3; поручение владельца активировано 25 октября 2026, около 14:04 МСК.
+- Состояние: READY_FOR_INTEGRATION A1 text/A2/A3; RUNNING A4 общий кандидат+audio. Поручение владельца активировано 25 октября 2026, около 14:04 МСК.
 - Ветка: codex/qa-release, создана без изменения старых веток; исходное рабочее дерево было чистым.
 - Base SHA: 484c396e71b3fbfe2ff65c04f6260e1899aa6bd1, origin/codex/integration-ui; содержит 92cb8bc.
 - Ready SHA: `83108ad3f7d42b08c089ad79043163baeba7a26d` (A3), `f0b849bb326689e1d3dd8496e15b494bb9600dcd` (source/Docker packaging), оба опубликованы в собственной ветке.
@@ -14,6 +14,7 @@
 - PASS: backend/MCP/web build; frontend suite 215/215; packaging static/proxy/env tests 3/3 и независимый read-only review.
 - Серверный clean source-build `f93536d` PASS exit0, Linux/x64 Node22.21.1, backend/MCP/frontend/typecheck. Первый f0b849b FAIL сохранён без патча; exporter/Docker context исправлены, regression2/2 PASS.
 - Production runtime A запущен: собственный instance demo-f935, supervisor81963, gateway82006, три MCP; loopback15073/18787/18911–13. PASS health/auth401/proxy/React/release SHA smoke. Все актуальные PID читать из instance/runtime.json после restart.
+- Production live Gemini browser PASS f93536d: main1PASS/6skipped; после реального restart resume1/1PASS; backup49файлов в новую synthetic copy, checksum state совпал; restored-instance resume1/1PASS. Исходный demo-f935 остановлен/сохранён; сейчас работает restored-f935, supervisor82655. Полные evidence в docs/release/evidence/source-f935-summary.json.
 - PASS browser protocol-fake: 6 сценариев, 1 audio skipped; timeout/503/invalid JSON, revision conflict, stt_unconfigured не дают ложного прогресса. Evidence summary: docs/release/evidence/local-browser-summary.json.
 - Blocker: STT пока не передан B; финальный интегрированный кандидат C ещё не принят. Docker route NOT_RUN, готовится source launcher без Docker.
-- Следующее: production live Gemini browser main→restart/resume, backup настоящей synthetic UI-памяти в новую копию; отдельно audio после передачи B/C. Source packaging/A3 готовы для обычного merge C, handoff docs/handoffs/agent-a-wave2.md.
+- Следующее: A4 общий source-built SHA C с русским auth+audio B, повтор live text/audio/restart, rollback к проверенному f93536d. B7d5c109 содержит service source/corpus, ожидается рабочий live STT handoff и интеграция C. Условное включение STT/corpus в source export готовится, отдельный Python backend не создаётся. C4ac9740 объединил раннюю A packaging f0; для clean build взять и исправление f93536d.
