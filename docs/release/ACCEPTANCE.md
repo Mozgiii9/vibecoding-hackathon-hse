@@ -27,6 +27,7 @@ Base SHA: `484c396e71b3fbfe2ff65c04f6260e1899aa6bd1` из `origin/codex/integrat
 | Новый чистый demo root | PASS | Отдельный пустой synthetic root не меняет исходную память |
 | Осмотр тестового сервера | PASS | SSH read-only: 1 CPU, 1967 МБ RAM, около 24 ГБ свободно; Node/Docker глобально отсутствовали, чужая среда B сохранена |
 | Scoped Node сервера | PASS | `/srv/ryadom-hackathon/agent-a/tools/node-v22.21.1-linux-x64`, официальный archive проверен SHASUMS256; установка под общим flock |
+| Export dependencies regression | PASS | `node --test scripts/release/smoke-source-export.test.mjs`; 2/2: настоящий frontend typecheck из git archive, материализация Docker edge COPY и проверка file:.. dependency |
 
 ## Очередь интегрированной приёмки
 
@@ -38,7 +39,7 @@ Base SHA: `484c396e71b3fbfe2ff65c04f6260e1899aa6bd1` из `origin/codex/integrat
 | Узкий мобильный экран | PASS локально | Тот же live сценарий на 390×844, нет горизонтального overflow |
 | Таймаут/ошибка без ложного успеха | PASS protocol-fake | 6 passed / 1 skipped, 14:14:37–14:14:46 МСК: timeout, HTTP503, invalid JSON, реальный revision conflict, stt_unconfigured; `/private/tmp/ryadom-release-browser-fake.json`; live outage не имитируется как live quality |
 | Реальный audio upload/STT/evidence/confirm | NOT_RUN | B ещё не передал реальный adapter в проверенную ветку |
-| Fixed SHA source-build и чистый запуск | FAIL первого кандидата | Серверный clean build f0b849b: backend/MCP PASS, frontend typecheck не нашёл docs/contracts/demo-fixture.json, отсутствующий в source export. Ошибка нашей упаковки исправляется, candidate не запущен и не принят |
+| Fixed SHA source-build и чистый запуск | FAIL первого, новый RUNNING | Серверный clean build f0b849b: backend/MCP PASS, frontend fixture отсутствовал. Исправление f93536d опубликовано; новый чистый кандидат строится отдельно под heavy.lock, PID81226 |
 | Серверный health/auth smoke нашего SHA | NOT_RUN | Изолированный A source launcher, Docker отсутствует |
 | HTTP restart с сохранённой UI-целью | NOT_RUN | Отдельно от PASS unit/process persistence |
 | Приёмка финального общего SHA C | NOT_RUN | SHA/кандидат C ещё не передан |

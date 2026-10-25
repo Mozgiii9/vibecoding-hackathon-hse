@@ -8,7 +8,7 @@ Base: `484c396e71b3fbfe2ff65c04f6260e1899aa6bd1`, 25 октября 2026.
 - Общий кандидат C ещё не принят. Проверки отдельной qa-release ветки не заменяют повтор полного пути на интегрированном SHA.
 - Локальный живой Gemini UI прошёл повторный clean сценарий, production server source launch находится в работе.
 - Первый live UI прогон: намерение успешно, выполненное действие вернуло `provider_failed`; пользователь увидел ошибку без частичного прогресса. Точная причина ответа не диагностирована. Второй полный проход прошёл без fallback. Это ограничение надёжности живого provider/model response; не скрыто успешным повтором. При защите доступен повтор обработки и резервная реальная запись.
-- Первый clean source build `f0b849b` выявил ошибку A packaging: export включал app/scripts, но frontend preview импортирует `docs/contracts/demo-fixture.json` из корня. Backend и MCP собраны; frontend typecheck FAIL. Экспорт и Docker build context исправляются в следующем коммите; старый кандидат не патчится и не объявляется готовым.
+- Первый clean source build `f0b849b` выявил ошибку A packaging: export включал app/scripts, но frontend preview импортирует `docs/contracts/demo-fixture.json` из корня. Backend и MCP собраны; frontend typecheck FAIL. Исправление exporter и Docker context опубликовано в `f93536d`, regression 2/2 PASS. Новый кандидат строится отдельно; старый не патчится и не объявляется готовым.
 
 ## Baseline и среда
 
