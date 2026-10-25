@@ -1,0 +1,289 @@
+{
+  "startedAt": "2026-10-25T14:25:26.102Z",
+  "status": "PASS",
+  "origin": "https://77.239.111.64",
+  "dataset": "docs/demo/day-context/2026-10-25/notes.json",
+  "imports": [
+    {
+      "time": "08:30",
+      "title": "Утренний план и приоритеты",
+      "sourceId": "9f830090-b8ff-4a13-b50f-b5e7cb1703c0",
+      "duplicate": null,
+      "sha256": "e5b5a5697b0f28c8c3970ebde4ad39aa55357b60e05b83254c8094179ed3f1bc",
+      "evidence": [
+        {
+          "id": "82509439-1ac9-4c65-979c-37ff5d62aa9d",
+          "type": "intention",
+          "status": "proposed"
+        },
+        {
+          "id": "b541cb0a-61ab-4826-88de-2ddf764453ca",
+          "type": "intention",
+          "status": "proposed"
+        },
+        {
+          "id": "c4f243dc-8439-463e-9d66-32864935f0ce",
+          "type": "intention",
+          "status": "proposed"
+        }
+      ],
+      "resumedFromReceipt": true
+    },
+    {
+      "time": "09:10",
+      "title": "Резюме отправлено в «Маяк»",
+      "sourceId": "83b6bd4a-153c-47a3-870f-6c4043b13b46",
+      "duplicate": null,
+      "sha256": "4b2f640e131a4383b694a79ce3f2ea8e165858a28d5c7f45e12a6438f8ef7fbb",
+      "evidence": [
+        {
+          "id": "97993d61-dd46-40dd-a073-6c4d4fcaa629",
+          "type": "completed_action",
+          "status": "proposed"
+        }
+      ],
+      "resumedFromReceipt": true
+    },
+    {
+      "time": "09:45",
+      "title": "Ответ рекрутера и время собеседования",
+      "sourceId": "de61411e-533b-456e-87e4-c9919c52c790",
+      "duplicate": null,
+      "sha256": "8a80251ebe9fb4cbcc615932215b804c98f97b51d50b08d6f7232b0902f6365f",
+      "evidence": [
+        {
+          "id": "855b2bb0-1e12-49e7-a8e8-fbbd67cf7633",
+          "type": "completed_action",
+          "status": "proposed"
+        }
+      ],
+      "resumedFromReceipt": true
+    },
+    {
+      "time": "10:20",
+      "title": "Разбор проекта: метрика и утечка",
+      "sourceId": "bbca6fb6-26b9-4901-a567-4c50fb8f7321",
+      "duplicate": null,
+      "sha256": "18b6ce76a8dfd381c48ab3fd671faa7423dc02370438089413f69b51f7a73b80",
+      "evidence": [],
+      "resumedFromReceipt": true
+    },
+    {
+      "time": "11:40",
+      "title": "Пробное интервью с Дашей завершено",
+      "sourceId": "9b6a534f-3661-4d97-9774-097b169d6793",
+      "duplicate": null,
+      "sha256": "df137834ea6b9afa6c9146214ef1e3aab5627a3b467dfbedbdce815e56e423fd",
+      "evidence": [
+        {
+          "id": "0c509772-7bc8-4182-8c95-b7faa9632665",
+          "type": "completed_action",
+          "status": "proposed"
+        }
+      ],
+      "resumedFromReceipt": true
+    },
+    {
+      "time": "12:05",
+      "title": "Обратная связь Даши: три правки",
+      "sourceId": "b662acad-a7a7-450b-8cea-a83d12d4f7c9",
+      "duplicate": null,
+      "sha256": "3bbdde2b7fcef4c87cac209fb09c799b499c41ab749b41a3e8882f8379a93ecf",
+      "evidence": [
+        {
+          "id": "aed79b92-dd64-4c37-b49a-bd29d23ee47e",
+          "type": "completed_action",
+          "status": "proposed"
+        },
+        {
+          "id": "31788e1e-db39-4538-97be-6061985c9b81",
+          "type": "uncertain",
+          "status": "proposed"
+        }
+      ],
+      "resumedFromReceipt": true
+    },
+    {
+      "time": "12:40",
+      "title": "Обед и личные договорённости",
+      "sourceId": "7bda7860-bec9-412c-bb33-e85822e26893",
+      "duplicate": null,
+      "sha256": "4fc918825aee6a87bb9aef702eca44ca0bb63a9b4f501e05ec22832da95ee778",
+      "evidence": [],
+      "resumedFromReceipt": true
+    },
+    {
+      "time": "13:20",
+      "title": "Второе интервью перенесено",
+      "sourceId": "e71ff560-cd35-4638-88d1-361f5416717d",
+      "duplicate": null,
+      "sha256": "d4afc33b7f245b2687c97caad8cd8f922993ef2361f860c49a13c5f0c0532811",
+      "evidence": [
+        {
+          "id": "8c841341-7c08-4e21-afb2-68624696cec8",
+          "type": "obstacle",
+          "status": "proposed"
+        },
+        {
+          "id": "50de7518-4181-4268-9bb8-ce213445af39",
+          "type": "intention",
+          "status": "proposed"
+        }
+      ],
+      "resumedFromReceipt": true
+    },
+    {
+      "time": "14:15",
+      "title": "Правки по обратной связи внесены",
+      "sourceId": "8b839fba-c143-4e7c-9511-d0d4a2aa248c",
+      "duplicate": null,
+      "sha256": "944dbd8c9161cc9955d149635e1cfa5f81e0a58bf4213b2d95a92f0d04383afb",
+      "evidence": [
+        {
+          "id": "c96c0928-2bcc-4624-8603-7043bee2caa4",
+          "type": "completed_action",
+          "status": "proposed"
+        }
+      ],
+      "resumedFromReceipt": true
+    },
+    {
+      "time": "15:10",
+      "title": "Открытый вопрос про метрики",
+      "sourceId": "bb6cfccd-5d0e-43b8-a904-65d5a7922e77",
+      "duplicate": null,
+      "sha256": "a0c5b5e4d367e45766cfd70d8e3fe09b78baaa492f0de167d6782a20b7f9cb79",
+      "evidence": [
+        {
+          "id": "742af12f-eb59-4670-ab82-55528e477214",
+          "type": "intention",
+          "status": "proposed"
+        }
+      ],
+      "resumedFromReceipt": true
+    },
+    {
+      "time": "16:00",
+      "title": "Чек-лист на завтра",
+      "sourceId": "083493b8-ccf3-4723-8675-51c7ef4c905f",
+      "duplicate": null,
+      "sha256": "10c4acbc775baadc39775458000f2a90f88a9f768ba20c23c3f2614378d46936",
+      "evidence": [
+        {
+          "id": "d45ca4be-5d7e-4fec-8400-4b800d181f0a",
+          "type": "intention",
+          "status": "proposed"
+        }
+      ],
+      "resumedFromReceipt": true
+    },
+    {
+      "time": "16:40",
+      "title": "Итог дня без повторного зачёта",
+      "sourceId": "cb3b19bd-a669-4fec-9cd9-3807d7dbf40f",
+      "duplicate": false,
+      "sha256": "e3123c3432d95b2476a596d10182be5b54e6c0fbae012ba0e9538ec99614dba5",
+      "evidence": [
+        {
+          "id": "278e64ab-aac0-41e6-8f36-378f68604596",
+          "type": "completed_action",
+          "status": "proposed"
+        }
+      ]
+    }
+  ],
+  "confirmedByRunner": false,
+  "httpErrors": [
+    {
+      "route": "/api/auth/refresh",
+      "status": 401
+    }
+  ],
+  "goalTitle": "Подготовиться к ML-собеседованию",
+  "beforeProgress": {
+    "cv": 2,
+    "mock": 3,
+    "feedback": 0
+  },
+  "beforeEvidenceCount": 24,
+  "afterProgress": {
+    "cv": 2,
+    "mock": 3,
+    "feedback": 0
+  },
+  "afterEvidenceCount": 25,
+  "chat": {
+    "question": "Когда назначено техническое собеседование в лаборатории «Маяк» и что нужно подготовить?",
+    "answer": "В твоих материалах есть записи:\n\n«Техническое собеседование назначено на понедельник, 26 октября, в 11:30 по Москве, длительность 45 минут.»\n\n«Подготовь рассказ об учебном проекте, выборе метрики и защите от утечки данных.»",
+    "citations": [
+      {
+        "sourceId": "de61411e-533b-456e-87e4-c9919c52c790",
+        "sourceTitle": "Демо · 25 октября · 09:45 · Ответ рекрутера и время собеседования",
+        "kind": "text",
+        "quote": "Техническое собеседование назначено на понедельник, 26 октября, в 11:30 по Москве, длительность 45 минут.",
+        "textStart": 115,
+        "textEnd": 220,
+        "startMs": null,
+        "endMs": null
+      },
+      {
+        "sourceId": "de61411e-533b-456e-87e4-c9919c52c790",
+        "sourceTitle": "Демо · 25 октября · 09:45 · Ответ рекрутера и время собеседования",
+        "kind": "text",
+        "quote": "Подготовь рассказ об учебном проекте, выборе метрики и защите от утечки данных.",
+        "textStart": 221,
+        "textEnd": 300,
+        "startMs": null,
+        "endMs": null
+      }
+    ],
+    "citationCount": 2
+  },
+  "finishedAt": "2026-10-25T14:26:41.502Z",
+  "totalAddedSources": 12,
+  "totalAddedProposals": 14,
+  "proposalTypes": {
+    "intention": 6,
+    "completed_action": 6,
+    "uncertain": 1,
+    "obstacle": 1
+  },
+  "originalEvidenceCount": 11,
+  "priorAttempts": [
+    {
+      "startedAt": "2026-10-25T14:15:54.704Z",
+      "status": "FAIL",
+      "stage": "login",
+      "error": "locator.fill: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#identifier')\u001b[22m\n"
+    },
+    {
+      "startedAt": "2026-10-25T14:17:25.202Z",
+      "status": "FAIL",
+      "stage": "import-09:45",
+      "error": "Expected values to be strictly equal:\n\n1 !== 0\n"
+    },
+    {
+      "startedAt": "2026-10-25T14:18:46.049Z",
+      "status": "FAIL",
+      "stage": "import-10:20",
+      "error": "Не получилось завершить запрос\n\nНе удалось связаться с сервером.\n\nОбновить данные\n\n1 !== 0\n"
+    },
+    {
+      "startedAt": "2026-10-25T14:20:21.155Z",
+      "status": "FAIL",
+      "stage": "import-13:20",
+      "error": "page.reload: net::ERR_SSL_PROTOCOL_ERROR\nCall log:\n\u001b[2m  - waiting for navigation until \"domcontentloaded\"\u001b[22m\n"
+    },
+    {
+      "startedAt": "2026-10-25T14:23:07.009Z",
+      "status": "FAIL",
+      "stage": "import-16:00",
+      "error": "page.goto: Navigation to \"https://77.239.111.64/app\" is interrupted by another navigation to \"chrome-error://chromewebdata/\"\nCall log:\n\u001b[2m  - navigating to \"https://77.239.111.64/app\", waiting until \"domcontentloaded\"\u001b[22m\n"
+    }
+  ],
+  "limitations": [
+    "Proposal classification is model output requiring human review; quote offsets were verified.",
+    "Earlier browser TLS/network failures were recovered by resumed imports; no server change was made.",
+    "No physical iPhone test in this run."
+  ]
+}
