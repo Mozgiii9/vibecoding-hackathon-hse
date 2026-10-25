@@ -1,0 +1,142 @@
+{
+  "status": "PASS_COMPOSITE",
+  "publicOrigin": "https://77.239.111.64",
+  "deploymentSourceSha": "15ab6ebee73ab19c1727dd999db0a3f6f979e185",
+  "previousSourceSha": "eba453caec424c47a31c8f8947a83ed9389dc8a3",
+  "build": "Linux/x64 Node22.21.1; npm ci, backend/MCP/frontend build and frontend typecheck PASS under shared heavy.lock",
+  "activeInstance": "/srv/ryadom-hackathon/integration/instances/context-chat-15ab6eb",
+  "releaseDirectory": "/srv/ryadom-hackathon/integration/releases/context-chat-15ab6eb",
+  "backupDirectory": "/srv/ryadom-hackathon/integration/backups/before-context-chat-15ab6eb",
+  "backupFiles": 49,
+  "domainStateSha256BeforeAndAfterRestore": "44b2708a5cea697af8bf9a059daba2b6a648a79d90d2a8d0cc695810edd77b7e",
+  "memoryPreserved": true,
+  "privateConfiguration": "Existing master key, owner identity, provider configuration and secret store retained privately; no auth reset.",
+  "initialPublicFunctionalRun": {
+    "status": "FAIL",
+    "origin": "https://77.239.111.64",
+    "sourceSha": "15ab6ebee73ab19c1727dd999db0a3f6f979e185",
+    "strictTls": true,
+    "startedAt": "2026-10-25T13:50:44.252Z",
+    "checks": [
+      {
+        "name": "public HTTPS serves main release",
+        "status": "PASS"
+      },
+      {
+        "name": "existing demo account login",
+        "status": "PASS"
+      },
+      {
+        "name": "goal button opens context chat, no BrainDrive shell",
+        "status": "PASS"
+      },
+      {
+        "name": "real provider answer uses checked context citation",
+        "status": "PASS"
+      },
+      {
+        "name": "question outside context refused",
+        "status": "PASS"
+      }
+    ],
+    "domainSnapshotSha256": "528413ed153c8009cb912d60cc26df87546b7b253303f3a757a8d61250a373b6",
+    "failure": {
+      "stage": "reload",
+      "type": "ExpectError",
+      "message": "expect(locator).toBeVisible() failed\n\nLocator: getByRole('heading', { name: 'Чат с агентом', exact: true })\nExpected: visible\nTimeout: 5000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"to.be.visible\" with timeout 5000ms\n  - waiting for getByRole('heading', { name: 'Чат с агентом', exact: true })\n"
+    },
+    "finishedAt": "2026-10-25T13:51:13.799Z"
+  },
+  "readOnlyReloadDiagnostic": {
+    "stage": "reload",
+    "network": [
+      {
+        "path": "/api/config",
+        "status": 200
+      },
+      {
+        "path": "/api/auth/bootstrap-status",
+        "status": 200
+      },
+      {
+        "path": "/api/auth/refresh",
+        "status": 401
+      },
+      {
+        "path": "/api/auth/login",
+        "status": 200
+      },
+      {
+        "path": "/api/goals/demo",
+        "status": 200
+      },
+      {
+        "path": "/api/goals/demo/evidence",
+        "status": 200
+      },
+      {
+        "path": "/api/config",
+        "status": 200
+      },
+      {
+        "path": "/api/auth/bootstrap-status",
+        "status": 200
+      },
+      {
+        "path": "/api/auth/refresh",
+        "status": 200
+      },
+      {
+        "path": "/api/goals/demo/chat",
+        "status": 200
+      }
+    ],
+    "cookies": [
+      {
+        "name": "paa_refresh_token",
+        "path": "/",
+        "domain": "77.239.111.64",
+        "secure": true,
+        "httpOnly": true,
+        "sameSite": "Strict"
+      }
+    ],
+    "status": "PASS",
+    "messages": 4
+  },
+  "readOnlyFinalResume": {
+    "status": "PASS",
+    "kind": "read-only public resume; no chat/import/provider writes",
+    "sourceSha": "15ab6ebee73ab19c1727dd999db0a3f6f979e185",
+    "checks": [
+      {
+        "name": "public /chat reload restores all four messages",
+        "status": "PASS"
+      },
+      {
+        "name": "no BrainDrive shell",
+        "status": "PASS"
+      },
+      {
+        "name": "existing goal progress and evidence preserved exactly",
+        "status": "PASS"
+      },
+      {
+        "name": "375px mobile composer fits",
+        "status": "PASS"
+      },
+      {
+        "name": "read-only verification: zero chat or general-agent writes",
+        "status": "PASS"
+      }
+    ],
+    "domainSnapshotSha256": "528413ed153c8009cb912d60cc26df87546b7b253303f3a757a8d61250a373b6",
+    "messageCount": 4,
+    "finishedAt": "2026-10-25T13:52:40.071Z"
+  },
+  "interpretation": "Initial public run passed deployment/login/chat/citations/context refusal, then timed out waiting 5s for reload heading. No product change was made. Separate read-only runs with 30s timeout passed reload, history, mobile and exact domain-state comparison; no further model calls.",
+  "limitations": [
+    "Desktop Chrome with mobile viewport emulation; physical iPhone not retested.",
+    "Git documentation commits after deployment do not change the immutable deployed app SHA."
+  ]
+}
