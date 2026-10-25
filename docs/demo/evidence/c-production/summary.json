@@ -119,10 +119,12 @@
       }
     },
     "physicalIphone": {
-      "status": "LOGIN_SCREEN_CONFIRMED_BY_OWNER",
-      "ownerReport": "Приложение открылось, требуется вход",
-      "ordinaryLogin": "NOT_RUN",
-      "textAudioOnDevice": "NOT_RUN"
+      "status": "DEVICE_LOGIN_PENDING_RECHECK",
+      "tlsAndLoginScreen": "CONFIRMED_BY_OWNER",
+      "ordinaryLogin": "ERROR_REPORTED_BY_OWNER",
+      "textAudioOnDevice": "NOT_RUN",
+      "resultFile": "https-iphone-status.json",
+      "sameCredentialsFreshPublicChromeLogin": "PASS"
     }
   }
 }

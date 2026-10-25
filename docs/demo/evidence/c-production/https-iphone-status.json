@@ -1,0 +1,25 @@
+{
+  "updatedAt": "2026-10-25T13:18:55.935Z",
+  "origin": "https://77.239.111.64",
+  "physicalDevice": {
+    "tlsAndLoginScreen": "CONFIRMED_BY_OWNER",
+    "ordinaryLogin": "ERROR_REPORTED_BY_OWNER",
+    "reportedError": "Ошибка неверное имя пользователя или пароль",
+    "text": "NOT_RUN",
+    "audio": "NOT_RUN"
+  },
+  "integratorRecheck": {
+    "providedCredentialsMatchPrivateTestEnv": true,
+    "freshPublicChromeUiLogin": "PASS",
+    "authenticatedGoalVisible": true,
+    "fixtureBanner": false,
+    "checkedAt": "2026-10-25T13:16:44Z",
+    "credentialsAndTokensExcluded": true
+  },
+  "hypothesis": {
+    "identifierAutoCapitalization": "POSSIBLE_NOT_CONFIRMED",
+    "basis": "Login identifier text input has no explicit autoCapitalize/autoCorrect override; entered iPhone value was not observed"
+  },
+  "nextStep": "Paste exact case-sensitive synthetic credentials on physical device; report result. No password reset, auth bypass or application restart performed.",
+  "status": "DEVICE_LOGIN_PENDING_RECHECK"
+}

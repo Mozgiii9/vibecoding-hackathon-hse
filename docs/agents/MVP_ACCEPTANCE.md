@@ -1,5 +1,7 @@
 # Готовность полноценного MVP «Рядом»
 
+Обновление 16:19 МСК: владелец сообщил ошибку логина на iPhone. Интегратор сверил переданные демоданные с приватным файлом и повторно успешно вошёл с ними через публичный Chrome UI. Ввод на устройстве не наблюдался; автозаглавная буква — только гипотеза. Повтор после вставки точных данных на телефоне ожидается; физические text/audio NOT_RUN. [Текущий результат устройства](../demo/evidence/c-production/https-iphone-status.json).
+
 **Основной MVP ACCEPTED интегратором, 25 октября 2026, 15:24 МСК.** Production source **eba453c** прошёл C-проверки текста, реального аудио, review/duplicate, reload, backup и старта восстановленной копии; mobile390 без переполнения. [Точные доказательства](../demo/evidence/c-production/summary.json), [handoff C](../handoffs/agent-c-wave2.md), [запуск](../demo/OPERATIONS.md).
 
 Происхождение финальной проверки: независимый A выполнил **ef360ae**, его audio-результат **DIAGNOSTIC_RECOVERY_PASS**, первоначальные FAIL сохранены. C выполнил **семь чистых аудиопроверок PASS на eba453c**. [Перечисленные runtime-исходники](../demo/evidence/c-production/runtime-equivalence.json) ef360ae и eba453c идентичны, но A не запускал точный deployment SHA eba453c. [Resume-тест A на точном eba453c](../demo/evidence/c-production/a-authored-resume.json) выполнил C: **PASS 1/1**. Финальный handoff A `ad779d9` объединён.
