@@ -1,6 +1,19 @@
 # Машина показа «Рядом»
 
-Рабочий source-кандидат: **eba453caec424c47a31c8f8947a83ed9389dc8a3**. Backend/MCP/frontend собраны на Linux/x64, Node22.21.1 из Git-архива этого SHA. [Manifest](evidence/c-production/build-manifest.json), [проверки C](evidence/c-production/summary.json), [восстановление](evidence/c-production/restore-proof.json). Более свежие Git-коммиты могут содержать только отчёты и материалы; фактический deployment SHA всегда проверять через `/release.json`.
+Прежний полностью проверенный source-кандидат: **eba453caec424c47a31c8f8947a83ed9389dc8a3**. Backend/MCP/frontend собраны на Linux/x64, Node22.21.1 из Git-архива этого SHA. [Manifest](evidence/c-production/build-manifest.json), [проверки C](evidence/c-production/summary.json), [восстановление](evidence/c-production/restore-proof.json). Более свежие Git-коммиты могут содержать только отчёты и материалы; фактический deployment SHA всегда проверять через `/release.json`.
+
+## Текущий запуск после параллельного обновления
+
+Во время проверки разделения URL серверное приложение было независимо обновлено до **15ab6ebee73ab19c1727dd999db0a3f6f979e185** (`origin/main`, context-chat). Фактические release/instance: `releases/context-chat-15ab6eb` и `instances/context-chat-15ab6eb`; private env `private-context-chat-15ab6eb.env`. При проверке supervisor88892, gateway88932; будущие операции сверять с `instances/context-chat-15ab6eb/runtime.json`. Порты UI17073/API18789 сохранились. Этот интегратор перезапустил только собственный TLS proxy, не приложение.
+
+Новый public routing: **панель https://77.239.111.64/**, **лендинг https://77.239.111.64/landing/**. Кнопка лендинга ведёт в панель; `/landing` перенаправляется на `/landing/`. Включён `HACKATHON_HTTPS_LANDING_PORT=80`, HTTP listener самого proxy по-прежнему выключен. Исходный HTTP landing обслуживается своим процессом, его файлы не изменены. [Проверки и актуальные PID](evidence/c-production/landing-routing.json).
+
+```bash
+# Только если текущая instance остановлена: запустить её из workspace C с её собственной памятью и env.
+./tools/node-v22.21.1-linux-x64/bin/node releases/context-chat-15ab6eb/scripts/release/launch-source.mjs private-context-chat-15ab6eb.env /srv/ryadom-hackathon/integration/releases/context-chat-15ab6eb /srv/ryadom-hackathon/integration/instances/context-chat-15ab6eb
+```
+
+Работающий экземпляр не запускать повторно. Команды для eba453c ниже относятся к прежнему проверенному кандидату и его архиву; их запуск на текущих занятых портах не является обновлением context-chat. Полная приёмка eba453c не переносится автоматически на новый SHA; при routing-проверке15ab6eb подтверждены обычный вход, цель, reload и anonymous API401.
 
 ## Открыть приложение
 
@@ -19,7 +32,7 @@ ssh -N -L 127.0.0.1:17073:127.0.0.1:17073 root@77.239.111.64
 
 Для A/B/C использовать отдельные профили/контексты браузера: refresh-cookie одного hostname не разделяется портами. Проверка только ширины390px не заменяет физический телефон. Публичный HTTPS добавлен отдельным proxy без изменения app source; физическая iOS-оболочка проверяется отдельно, PWA не реализована.
 
-## Состояние на сервере
+## Архив: состояние и проверка eba453c
 
 - Workspace C: `/srv/ryadom-hackathon/integration`.
 - Immutable release: `releases/eba453c`.
@@ -40,7 +53,7 @@ Checkpoint после restore: cv1/1, mock1/2, feedback0/1;6событий. По
 
 Эту команду выполнять из `/srv/ryadom-hackathon/integration`; работающий proxy повторно не запускать. Приложение и STT для запуска TLS не перезапускаются. Ручное продление сертификата требует освободить только443 от собственного proxy: полный порядок в [HTTPS_PLAN.md](HTTPS_PLAN.md).
 
-## Запуск, smoke и restart C
+## Архив: запуск, smoke и restart eba453c
 
 Команды ниже выполнять только на сервере из workspace C. Они не устанавливают глобальные пакеты и не затрагивают A/B.
 

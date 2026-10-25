@@ -1,5 +1,7 @@
 # Рядом
 
+Разделение URL выполнено: [панель](https://77.239.111.64/) и [лендинг](https://77.239.111.64/landing/). Адрес iPhone сохранён, кнопка лендинга открывает панель. При финальной проверке обнаружен параллельный выпуск **15ab6eb** из main; public login/reload/API401 на нём PASS. Собственная операция обновила только HTTPS proxy до3ad21b4, 11тестовPASS. [Текущая маршрутизация](docs/demo/evidence/c-production/landing-routing.json); подробные eba453c-проверки ниже — история предыдущего кандидата.
+
 Физический iPhone: владелец подтвердил обычный вход и отображение цели с событиями — **PHONE_AUTH_AND_WORKSPACE_CONFIRMED**, login **PASS_BY_OWNER**. Предшествовавшие отказы имели причину `password_mismatch`; аккаунт и приложение не менялись. Импорт текста и выбор/загрузка аудио на устройстве — **PENDING_OWNER_CHECK**. [Текущий результат устройства](docs/demo/evidence/c-production/https-iphone-status.json).
 
 Второй мозг, который связывает события из заметок и коротких разговоров с личной целью. Модель предлагает события и точные цитаты; человек проверяет их, а сервер считает подтверждённый прогресс.
@@ -8,7 +10,7 @@
 
 ## Рабочая версия и показ
 
-Готовая разработка находится в ветке **codex/integration-ui**. Source-кандидат сервера — **eba453caec424c47a31c8f8947a83ed9389dc8a3**; последующие коммиты могут содержать отчёты и материалы. Проверять фактический deployment через `/release.json`.
+Готовая разработка находится в ветке **codex/integration-ui**. Прежний проверенный source-кандидат — **eba453caec424c47a31c8f8947a83ed9389dc8a3**; текущий публичный source — **15ab6ebee73ab19c1727dd999db0a3f6f979e185** из main. Проверять фактический deployment через `/release.json`.
 
 - [Открыть приложение, запуск и восстановление](docs/demo/OPERATIONS.md).
 - [Текущее доказательство production-проверок](docs/demo/evidence/c-production/summary.json) и [handoff C](docs/handoffs/agent-c-wave2.md).
@@ -17,7 +19,7 @@
 
 **Основной MVP принят интегратором:** C проверил production eba453c, включая семь чистых аудиопроверок, текст, review и восстановление. A независимо проверил ef360ae с идентичными runtime-исходниками; его audio-результат — `DIAGNOSTIC_RECOVERY_PASS` с сохранёнными первоначальными FAIL. Написанный A resume-тест выполнил C на точном eba453c, PASS 1/1. [Происхождение проверок](docs/demo/evidence/c-production/summary.json) сохранено.
 
-Публичный адрес: **[https://77.239.111.64/](https://77.239.111.64/)**, статус **PUBLIC_HTTPS_READY**. Доверенный Let’s Encrypt сертификат содержит IP SAN; независимая проверка TLS, UI/ресурсов, SHA и защищённого API — PASS. [План и ограничения HTTPS](docs/demo/HTTPS_PLAN.md), [deployment](docs/demo/evidence/c-production/https-deployment.json), [независимая проверка](docs/demo/evidence/c-production/https-independent.json). UI/API остаются на source **eba453c**; отдельный proxy публикует только 443, существующий HTTP landing сохранён. Код приложения после freeze не менялся.
+Публичный адрес: **[https://77.239.111.64/](https://77.239.111.64/)**, статус **PUBLIC_HTTPS_READY**. Доверенный Let’s Encrypt сертификат содержит IP SAN; независимая проверка TLS, UI/ресурсов, SHA и защищённого API — PASS. [План и ограничения HTTPS](docs/demo/HTTPS_PLAN.md), [deployment](docs/demo/evidence/c-production/https-deployment.json), [независимая проверка](docs/demo/evidence/c-production/https-independent.json). При первоначальной приёмке UI/API работали на source **eba453c**; отдельный proxy публикует только 443, существующий HTTP landing сохранён. Код приложения после freeze не менялся.
 
 Реальный текстовый сценарий через публичный HTTPS завершён: новый источник → точная цитата → подтверждение, mock **1→2**, **COMPLETED_TEXT**; [проверки публичного текста](docs/demo/defense/recordings/https-eba453c/metadata.json) и [резервная HTTPS-запись](docs/demo/defense/recordings/https-eba453c/completed-text/demo.webm). Независимое декодирование подтвердило реальный UI в начале, середине и конце: **11,20 с, 1440×900**, с небольшим серым полем, как у прежней записи. Белое изображение оказалось артефактом Chrome media viewer, открытой QA-проблемы файла нет. Прежняя production-текстовая запись также остаётся резервом.
 

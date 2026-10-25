@@ -1,0 +1,44 @@
+{
+  "checkedAt": "2026-10-25T13:56:45.746Z",
+  "status": "PASS",
+  "routes": {
+    "panel": "https://77.239.111.64/",
+    "landing": "https://77.239.111.64/landing/",
+    "api": "https://77.239.111.64/api/"
+  },
+  "proxy": {
+    "codeCommit": "3ad21b4",
+    "sha256": "0a000cf889a563039d7d47a0ca535f2f257da5bb7ffde5247ace01056b99cafb",
+    "pid": 88758,
+    "pidFile": "/srv/ryadom-hackathon/integration/https/proxy.pid",
+    "httpEnabled": false,
+    "landingPort": 80,
+    "unitTests": 11,
+    "previousPid": 87619
+  },
+  "application": {
+    "observedBefore": "eba453caec424c47a31c8f8947a83ed9389dc8a3",
+    "observedAfter": "15ab6ebee73ab19c1727dd999db0a3f6f979e185",
+    "concurrentUpdateDetected": true,
+    "updatedByThisRoutingChange": false,
+    "release": "/srv/ryadom-hackathon/integration/releases/context-chat-15ab6eb",
+    "instance": "/srv/ryadom-hackathon/integration/instances/context-chat-15ab6eb",
+    "uiPid": 88892,
+    "gatewayPid": 88932
+  },
+  "otherProcesses": {
+    "stt": 82144,
+    "landing": 88232,
+    "restartedByThisRoutingChange": false
+  },
+  "evidence": {
+    "landingBrowser": "landing-route-browser.json",
+    "panelAuthAndReload": "landing-route-app.json",
+    "initialOldReleaseAssertion": "landing-route-app-initial.json"
+  },
+  "limitations": [
+    "Existing core/audio/restore acceptance on eba453c is historical evidence, not a new full acceptance of 15ab6eb.",
+    "Landing canonical/OG metadata still references original HTTP address.",
+    "Physical iPhone imports were not repeated as part of this routing change."
+  ]
+}

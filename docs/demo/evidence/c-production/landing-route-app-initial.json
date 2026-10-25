@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-10-25T13:50:48.950Z",
+  "origin": "https://77.239.111.64",
+  "status": "FAIL",
+  "checks": {
+    "ordinaryRootLogin": "PASS"
+  },
+  "sourceSha": "15ab6ebee73ab19c1727dd999db0a3f6f979e185",
+  "reason": "Expected previous eba453c release; concurrent application update observed to origin/main 15ab6eb. Login had passed before version assertion.",
+  "productFailure": false
+}

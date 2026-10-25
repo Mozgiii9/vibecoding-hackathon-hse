@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-10-25T13:53:40.131Z",
+  "origin": "https://77.239.111.64",
+  "status": "PASS",
+  "checks": {
+    "ordinaryRootLogin": "PASS",
+    "rootSessionAndGoalAfterReload": "PASS",
+    "anonymousApi": 401
+  },
+  "sourceSha": "15ab6ebee73ab19c1727dd999db0a3f6f979e185"
+}

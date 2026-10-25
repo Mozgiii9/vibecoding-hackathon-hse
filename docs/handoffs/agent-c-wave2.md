@@ -1,5 +1,7 @@
 # C — общий source-кандидат «Рядом»
 
+Разделение URL выполнено: [панель](https://77.239.111.64/) и [лендинг](https://77.239.111.64/landing/). Адрес iPhone сохранён, кнопка лендинга открывает панель. При финальной проверке обнаружен параллельный выпуск **15ab6eb** из main; public login/reload/API401 на нём PASS. Собственная операция обновила только HTTPS proxy до3ad21b4, 11тестовPASS. [Текущая маршрутизация](../demo/evidence/c-production/landing-routing.json); подробные eba453c-проверки ниже — история предыдущего кандидата.
+
 Физический iPhone: владелец подтвердил обычный вход и отображение цели с событиями — **PHONE_AUTH_AND_WORKSPACE_CONFIRMED**, login **PASS_BY_OWNER**. Предшествовавшие отказы имели причину `password_mismatch`; аккаунт и приложение не менялись. Импорт текста и выбор/загрузка аудио на устройстве — **PENDING_OWNER_CHECK**. [Текущий результат устройства](../demo/evidence/c-production/https-iphone-status.json).
 
 Состояние 25 октября 2026: **основной MVP ACCEPTED** интегратором, запись принятия 15:24 МСК в [summary](../demo/evidence/c-production/summary.json). Финальный handoff A `ad779d9` объединён. Отдельный публичный HTTPS имеет статус **PUBLIC_HTTPS_READY**, реальный публичный текст — **COMPLETED_TEXT**, mock1→2. Свежий public audio **PASS_FRESH_AUDIO** 6/6, итогcv2/mock2/feedback0. Физический iPhone **PHONE_AUTH_AND_WORKSPACE_CONFIRMED**, login **PASS_BY_OWNER**. Импорт текста и выбор/загрузка аудио на устройстве — **PENDING_OWNER_CHECK**. Вся расширенная цель остаётся **ACTIVE**, не COMPLETE.

@@ -1,0 +1,114 @@
+{
+  "status": "PASS",
+  "checkedAt": "2026-10-25T13:50:46.725Z",
+  "origin": "https://77.239.111.64",
+  "headless": true,
+  "strictTls": true,
+  "credentialEntry": false,
+  "domainMutations": false,
+  "checks": [
+    {
+      "name": "landing-without-slash-308",
+      "status": "PASS",
+      "httpStatus": 308,
+      "location": "/landing/"
+    },
+    {
+      "name": "all-prefixed-assets-including-slideshow",
+      "status": "PASS",
+      "requiredAssets": 8,
+      "missingImages": 0,
+      "httpErrors": 0,
+      "consoleErrors": 0,
+      "pageErrors": 0
+    },
+    {
+      "name": "same-prefix-anchor",
+      "status": "PASS",
+      "path": "/landing/",
+      "hash": "#how-it-works"
+    },
+    {
+      "name": "cta-points-to-root-application",
+      "status": "PASS",
+      "ctaCount": 2,
+      "href": "https://77.239.111.64/"
+    },
+    {
+      "name": "cta-navigation-opens-root-application",
+      "status": "PASS",
+      "path": "/",
+      "observedState": "ordinary-login",
+      "credentialsEntered": false
+    }
+  ],
+  "landingResources": [
+    {
+      "origin": "https://77.239.111.64",
+      "path": "/landing/",
+      "status": 200,
+      "resourceType": "document"
+    },
+    {
+      "origin": "https://77.239.111.64",
+      "path": "/landing/styles.css",
+      "status": 200,
+      "resourceType": "stylesheet"
+    },
+    {
+      "origin": "https://77.239.111.64",
+      "path": "/landing/config.js",
+      "status": 200,
+      "resourceType": "script"
+    },
+    {
+      "origin": "https://77.239.111.64",
+      "path": "/landing/assets/firefly-pixel.png",
+      "status": 200,
+      "resourceType": "image"
+    },
+    {
+      "origin": "https://77.239.111.64",
+      "path": "/landing/slideshow.js",
+      "status": 200,
+      "resourceType": "script"
+    },
+    {
+      "origin": "https://77.239.111.64",
+      "path": "/landing/assets/favicon.svg",
+      "status": 200,
+      "resourceType": "other"
+    },
+    {
+      "origin": "https://77.239.111.64",
+      "path": "/landing/app.js",
+      "status": 200,
+      "resourceType": "script"
+    },
+    {
+      "origin": "https://77.239.111.64",
+      "path": "/landing/assets/context-devices-3d.png",
+      "status": 200,
+      "resourceType": "image"
+    },
+    {
+      "origin": "https://77.239.111.64",
+      "path": "/landing/assets/product-audio-verified.png",
+      "status": 200,
+      "resourceType": "image"
+    }
+  ],
+  "consoleErrorCount": 0,
+  "pageErrorCount": 0,
+  "failedRequests": [],
+  "limitations": [
+    "Original HTTP canonical/OG metadata intentionally retained from owner landing. Nonblocking follow-up, no HTML transform applied.",
+    "Fresh browser context and read-only navigation only; authenticated root checks are performed separately by the integrator."
+  ],
+  "metadata": {
+    "canonical": "http://77.239.111.64/",
+    "ogUrl": "http://77.239.111.64/",
+    "ogImage": "http://77.239.111.64/assets/og-image.png"
+  },
+  "finishedAt": "2026-10-25T13:50:55.507Z"
+}
