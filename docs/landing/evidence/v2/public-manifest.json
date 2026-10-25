@@ -1,0 +1,59 @@
+{
+  "checkedAt": "2026-10-25T12:50:57.735Z",
+  "baseUrl": "http://77.239.111.64/",
+  "sourceSha": "26a3e0d0814ca80f0625c5c346cb0b5cf9cd6861",
+  "files": [
+    {
+      "file": "index.html",
+      "bytes": 27681,
+      "sha256": "427685a8a1dd1244cd496cd97cef5f1445661fe20ff7d7cbcee3303bc10962cc"
+    },
+    {
+      "file": "styles.css",
+      "bytes": 23206,
+      "sha256": "c56024b2b27882174fe4851490831935236a2f72012f6f6908ae523321fc4885"
+    },
+    {
+      "file": "app.js",
+      "bytes": 7490,
+      "sha256": "b5a7eac5448dfaff320630d540345a5f5b85c2952ec79a901c6d580ebc05a012"
+    },
+    {
+      "file": "slideshow.js",
+      "bytes": 5834,
+      "sha256": "c304da35f18b5c13ac3d73bb904cbb2dc14457769a54749433230c38957356e1"
+    },
+    {
+      "file": "config.js",
+      "bytes": 194,
+      "sha256": "60e22c01626671c1ac5044e63bb2b0fb2adf23d8b9bec88c2cf5727f3daaefb5"
+    },
+    {
+      "file": "assets/favicon.svg",
+      "bytes": 295,
+      "sha256": "9ab00211959864f061e4f524185f3a2694cd01421c60c8e45d9742b6e65d6afd"
+    },
+    {
+      "file": "assets/og-image.png",
+      "bytes": 62134,
+      "sha256": "4de7792c79769960b7028b8a5f65da879b2088f2bf6177d4a27844887f2c6ddd"
+    },
+    {
+      "file": "assets/product-audio-verified.png",
+      "bytes": 97953,
+      "sha256": "f96fe83b4b1a904ac6ce4cf0e3ba46b5392b6a3d11f57dad707fcce12d924ea4"
+    },
+    {
+      "file": "assets/firefly-pixel.png",
+      "bytes": 654498,
+      "sha256": "8f48d53def8bc4b2b687132456eaaa3ab867f2abb3e4008d1993d8a182daa1ee"
+    },
+    {
+      "file": "assets/context-recorder-3d.png",
+      "bytes": 2107556,
+      "sha256": "560ea666703423b5cefd65afda7bddb26cafaac2b304a4edca8c55d5c91d9c56"
+    }
+  ],
+  "footerRemoved": true,
+  "visionClearlyConcept": true
+}

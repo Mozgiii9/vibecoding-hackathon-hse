@@ -76,3 +76,13 @@ Pre-commit: настроен `.githooks/pre-commit`; должен запуска
 - Сохранённый pixelfirefly02 извлечён через ImageGen с прозрачностью, добавлена предметная 3D-иллюстрация в цветах сайта. Оба PNG alpha проверены, промпты в ASSETS_V2.md.
 - Созданы A/B/C SVG-логотипы через logo-design skill с источником и headless-проверками. Владелец ответил «Пока никакой», поэтому новые знаки на сайт не ставились.
 - Независимое статическое ревью v2: блокирующих проблем нет. Headless desktop/mobile и keyboard flow прошли; точный deployed SHA и внешний прогон будут закреплены после публикации v2.
+
+### Опубликованный результат v2
+
+- Адрес http://77.239.111.64/; deployed SHA `26a3e0d0814ca80f0625c5c346cb0b5cf9cd6861`. Архив SHA256 `124cb2df87f7baaa11fb533aad937646c9c3abefb5ccc8b9127825e77ecbd1dd`.
+- 10 публичных файлов побайтно совпадают с коммитом; footer-подписи нет, future concept label присутствует. `evidence/v2/public-manifest.json`.
+- Внешний headless Chrome 15:51 МСК: 6 ширин PASS, 0 overflow, 0 console/resource errors, 0 внешних запросов; keyboard/reduced motion/anchors/details/demo flow PASS. Три кейса, fade, авто8с, hover/focus/offscreen/manual pause и reduce opt-in PASS; отдельные public-отчёты в evidence/v2/.
+- Собственная служба enabled/active/running, DynamicUser=yes, PID при публикации87709. Релизы v1 сохранены. Перезапущен только ryadom-landing. Истёкший SSH control channel восстановлен; до успешного атомарного переключения оставалась рабочая v1.
+- Все изменения интерфейса закоммичены до feature freeze; последующие операции только публикация/проверки/документация. Проверки браузера headless. Физические устройства не проверялись.
+- Новые логотипы по выбору владельца **не установлены**. Исходные варианты остаются docs/landing/logo-options/, SVG-native и monochrome/16/32 проверки PASS.
+- Заключительный коммит только с отчётами не требует новой публикации статических файлов.

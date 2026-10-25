@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-10-25T12:51:17.971Z",
+  "rejectedCases": 17,
+  "validPublicProtocols": [
+    "https:",
+    "http:"
+  ],
+  "ctasPerValidUrl": 2,
+  "externalNavigation": false,
+  "noJavaScriptFallback": "PASS"
+}
